@@ -1,0 +1,20 @@
+export const KNOWN_NPCS = [
+  'Mira',
+  'Karen',
+  'Agnes',
+  'Seren',
+  'Elin',
+  'Aelin',
+  'Rurik',
+  'Lila',
+  'Tessa',
+  'Bram',
+  'Halvar',
+  'Lenden',
+  'Finn',
+  'Livia',
+  'Mirael',
+  'Freya',
+  'Emil',
+  'Filburt'
+];

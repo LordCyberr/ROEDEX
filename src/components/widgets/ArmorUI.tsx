@@ -1,0 +1,181 @@
+import React, { useEffect, useState, useRef } from 'react';
+import { useTrackerStore } from '../../store/trackerStore';
+import { motion, useMotionValue } from 'motion/react';
+import { Shield, Shirt, Footprints, HardHat, Hand } from 'lucide-react';
+
+export const ArmorUI: React.FC = () => {
+  const armor = useTrackerStore((state) => state.armor);
+  const settings = useTrackerStore((state) => state.armorUISettings);
+  const updateSettings = useTrackerStore((state) => state.updateArmorUISettings);
+  
+  const [isFlashing, setIsFlashing] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Check if any piece is flashing
+  useEffect(() => {
+    if (!settings.enableAlerts) {
+      setIsFlashing(false);
+      return;
+    }
+    
+    let flashing = false;
+    for (const item of Object.values(armor)) {
+      if (!item) continue;
+      const percentage = (item.durability / item.maxDurability) * 100;
+      if (percentage <= settings.alertThreshold) {
+        flashing = true;
+        break;
+      }
+    }
+    setIsFlashing(flashing);
+  }, [armor, settings.enableAlerts, settings.alertThreshold]);
+
+  if (!settings.show || Object.keys(armor).length === 0) return null;
+
+  const {
+    style = 'bar_percent',
+    scale = 1,
+    opacity = 1,
+    width = 160,
+    height = 4,
+    borderRadius = 8,
+    glassStrength = 10,
+    enableAnimations = true,
+    position = 'bottom-left',
+    customPositionX = 0,
+    customPositionY = 0,
+    locked = true,
+    layout = 'vertical'
+  } = settings;
+
+  const getPositionStyles = (): React.CSSProperties => {
+    if (position === 'custom') {
+      return { top: 0, left: 0 };
+    }
+    const margin = 16;
+    const pos: React.CSSProperties = {};
+    if (position.includes('top')) pos.top = margin;
+    else pos.bottom = margin;
+    
+    if (position.includes('left')) pos.left = margin;
+    else pos.right = margin;
+    
+    return pos;
+  };
+
+  const isDraggable = !locked;
+
+  const hasText = style !== 'bar';
+  const hasBar = style === 'bar' || style.includes('bar_');
+  const showPct = style === 'text_percent' || style === 'bar_percent';
+  const showDur = style === 'text_durability' || style === 'bar_durability';
+
+  const x = useMotionValue(position === 'custom' ? customPositionX : 0);
+  const y = useMotionValue(position === 'custom' ? customPositionY : 0);
+
+  useEffect(() => {
+    if (position === 'custom') {
+      x.set(customPositionX);
+      y.set(customPositionY);
+    }
+  }, [position, customPositionX, customPositionY, x, y]);
+
+  const getIcon = (slot: string) => {
+    switch (slot) {
+      case 'Helmet': return <HardHat size={12} />;
+      case 'Torso': return <Shirt size={12} />;
+      case 'Gloves': return <Hand size={12} />;
+      case 'Pants': return <Shield size={12} />; // lucide doesn't have good pants, shield fallback
+      case 'Boots': return <Footprints size={12} />;
+      default: return <Shield size={12} />;
+    }
+  };
+
+  return (
+    <motion.div 
+      ref={ref}
+      drag={isDraggable}
+      dragMomentum={false}
+      dragElastic={0}
+      onDragEnd={() => {
+        if (!locked) {
+          updateSettings({
+            position: 'custom',
+            customPositionX: x.get(),
+            customPositionY: y.get()
+          });
+        }
+      }}
+      className={`fixed z-50 flex ${layout === 'vertical' ? 'flex-col gap-1' : 'flex-row gap-2'} items-center justify-center shadow-2xl select-none
+        ${isDraggable ? 'pointer-events-auto cursor-grab active:cursor-grabbing border-2 border-dashed border-emerald-400 p-2' : 'pointer-events-none'}
+        ${isFlashing && enableAnimations ? 'animate-pulse' : ''}
+      `}
+      style={{
+        ...getPositionStyles(),
+        x, y,
+        scale,
+        opacity,
+        backdropFilter: hasText ? `blur(${glassStrength}px)` : 'none',
+        backgroundColor: hasText ? 'rgba(0, 0, 0, 0.4)' : 'transparent',
+        borderRadius: `${borderRadius}px`,
+        border: isDraggable ? undefined : (hasText ? '1px solid rgba(255,255,255,0.05)' : 'none'),
+        padding: hasText && !isDraggable ? '6px' : undefined
+      }}
+    >
+      {Object.entries(armor).map(([slot, item]) => {
+        if (!item) return null;
+        
+        const percentage = Math.max(0, Math.min(100, (item.durability / item.maxDurability) * 100));
+        let color = 'bg-emerald-400';
+        let textColor = 'text-emerald-400';
+        
+        if (percentage <= 9) {
+          color = 'bg-red-500';
+          textColor = 'text-red-400';
+        } else if (percentage <= 39) {
+          color = 'bg-orange-500';
+          textColor = 'text-orange-400';
+        } else if (percentage <= 79) {
+          color = 'bg-yellow-400';
+          textColor = 'text-yellow-400';
+        }
+
+        const pctStr = `${Math.round(percentage)}%`;
+        const durStr = `${item.durability} / ${item.maxDurability}`;
+
+        return (
+          <div key={slot} className="relative flex items-center justify-center overflow-hidden" style={{ width: `${width}px`, height: hasText ? `${Math.max(20, height + 12)}px` : `${height}px`, borderRadius: `${borderRadius}px` }}>
+            {/* Background Health Bar */}
+            {hasBar && (
+              <div 
+                className={`absolute left-0 top-0 bottom-0 w-full ${!hasText ? 'bg-black/40 border border-white/5' : 'bg-black/20'}`} 
+                style={{ borderRadius: borderRadius }}
+              >
+                <motion.div 
+                  className={`h-full ${color} ${hasText ? 'opacity-40 mix-blend-screen' : ''}`}
+                  initial={false}
+                  animate={{ width: `${percentage}%` }}
+                  transition={{ duration: enableAnimations ? 0.3 : 0 }}
+                  style={{ borderRadius: borderRadius }}
+                />
+              </div>
+            )}
+
+            {/* Foreground Text */}
+            {hasText && (
+              <div className="relative z-10 w-full px-2 flex items-center justify-between gap-2 drop-shadow-md">
+                <div className={`flex items-center gap-1.5 ${textColor}`}>
+                  {getIcon(slot)}
+                </div>
+                <span className={`font-mono font-bold text-[10px] text-white tracking-wide drop-shadow-sm`}>
+                  {showPct && pctStr}
+                  {showDur && durStr}
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </motion.div>
+  );
+};

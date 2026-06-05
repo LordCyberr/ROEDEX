@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "ROEDEX overlay v4",
+  "version": "1.0.1",
+  "description": "Premium overlay tracker and WebSocket interceptor. Roots of Embervault.",
+  "action": {
+    "default_title": "ROEDEX Overlay"
+  },
+  "content_scripts": [
+    {
+      "js": ["src/main.tsx"],
+      "matches": ["*://embervault.ruyui.com/*"]
+    },
+    {
+      "js": ["src/core/websocket/interceptor.ts"],
+      "matches": ["*://embervault.ruyui.com/*"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    }
+  ]
+}
