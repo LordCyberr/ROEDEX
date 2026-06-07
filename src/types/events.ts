@@ -109,3 +109,19 @@ export interface OverlayNotification {
   type: 'info' | 'success' | 'warning' | 'error' | 'rare';
   timestamp: number;
 }
+
+export interface RunStats {
+  id: string;
+  startTime: number;
+  endTime: number;
+  duration: number; // in milliseconds
+  runes: number;
+  chestValue: number;
+  lootWorth: number; // calculated from drops
+  loot: Record<string, number>;
+  mobsKilled: number;
+  treesCut: number;
+  oresMined: number;
+  plantsHarvested: number;
+  zonesVisited: string[];
+}

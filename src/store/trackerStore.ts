@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { EnemyEntity, ResourceNode, LootDrop, RespawnTimer, Vector2, WeaponState, OverlayNotification } from '../types/events';
+import { EnemyEntity, ResourceNode, LootDrop, RespawnTimer, Vector2, WeaponState, OverlayNotification, RunStats } from '../types/events';
 
 export type ArmorSlot = 'Helmet' | 'Torso' | 'Pants' | 'Gloves' | 'Boots';
 export interface ArmorItem {
@@ -149,6 +149,24 @@ interface TrackerState {
   addSessionLoot: (itemName: string, quantity: number) => void;
   chestTotalValue: number;
   setChestTotalValue: (val: number | ((prev: number) => number)) => void;
+  
+  // Session Metrics
+  sessionMobsKilled: number;
+  sessionTreesCut: number;
+  sessionOresMined: number;
+  sessionPlantsHarvested: number;
+  sessionZonesVisited: string[];
+  
+  // Run History & Goals
+  runHistory: RunStats[];
+  sessionSettings: {
+    timeAttackMinutes: number;
+    lootValueGoal: number;
+  };
+  updateSessionSettings: (settings: Partial<TrackerState['sessionSettings']>) => void;
+  endSession: (lootWorth: number) => void;
+  clearRunHistory: () => void;
+
   clearSession: () => void;
   clearSessionCache: () => void; // New action to clear entities/resources
 
@@ -399,9 +417,14 @@ export const useTrackerStore = create<TrackerState>()(
             newCollapsedZones[zone] = false;
           }
 
+          const newZonesVisited = state.sessionActive && !state.sessionZonesVisited.includes(zone)
+            ? [...state.sessionZonesVisited, zone]
+            : state.sessionZonesVisited;
+
           set({ 
             currentZone: zone,
-            collapsedSidebarZones: newCollapsedZones
+            collapsedSidebarZones: newCollapsedZones,
+            sessionZonesVisited: newZonesVisited
           });
         }
       },
@@ -424,11 +447,67 @@ export const useTrackerStore = create<TrackerState>()(
       setChestTotalValue: (val) => set((state) => ({ 
         chestTotalValue: typeof val === 'function' ? val(state.chestTotalValue) : val 
       })),
+      
+      sessionMobsKilled: 0,
+      sessionTreesCut: 0,
+      sessionOresMined: 0,
+      sessionPlantsHarvested: 0,
+      sessionZonesVisited: [],
+      runHistory: [],
+      sessionSettings: {
+        timeAttackMinutes: 0,
+        lootValueGoal: 0,
+      },
+      updateSessionSettings: (settings) => set((state) => ({
+        sessionSettings: { ...state.sessionSettings, ...settings }
+      })),
+      endSession: (lootWorth) => set((state) => {
+        if (!state.sessionActive || !state.sessionStartTime) return state;
+        const endTime = Date.now();
+        const duration = endTime - state.sessionStartTime;
+        
+        const newRun: RunStats = {
+          id: Math.random().toString(36).substr(2, 9),
+          startTime: state.sessionStartTime,
+          endTime,
+          duration,
+          runes: state.sessionRunes,
+          chestValue: state.chestTotalValue,
+          lootWorth,
+          loot: { ...state.sessionLoot },
+          mobsKilled: state.sessionMobsKilled,
+          treesCut: state.sessionTreesCut,
+          oresMined: state.sessionOresMined,
+          plantsHarvested: state.sessionPlantsHarvested,
+          zonesVisited: [...state.sessionZonesVisited],
+        };
+
+        return {
+          sessionActive: false,
+          sessionStartTime: null,
+          sessionRunes: 0,
+          chestTotalValue: 0,
+          sessionLoot: {},
+          sessionMobsKilled: 0,
+          sessionTreesCut: 0,
+          sessionOresMined: 0,
+          sessionPlantsHarvested: 0,
+          sessionZonesVisited: [],
+          runHistory: [newRun, ...state.runHistory]
+        };
+      }),
+      clearRunHistory: () => set({ runHistory: [] }),
+
       clearSession: () => set({ 
         sessionActive: false, 
         sessionStartTime: null, 
         sessionRunes: 0, 
-        sessionLoot: {} 
+        sessionLoot: {},
+        sessionMobsKilled: 0,
+        sessionTreesCut: 0,
+        sessionOresMined: 0,
+        sessionPlantsHarvested: 0,
+        sessionZonesVisited: []
       }),
       clearSessionCache: () => set({
         enemies: {},
@@ -539,7 +618,14 @@ export const useTrackerStore = create<TrackerState>()(
         set((state) => {
           const enemy = state.enemies[key];
           if (!enemy) return state;
+          
+          let newMobsKilled = state.sessionMobsKilled;
+          if (isDead && !enemy.isDead && state.sessionActive) {
+            newMobsKilled += 1;
+          }
+
           return {
+            sessionMobsKilled: newMobsKilled,
             enemies: {
               ...state.enemies,
               [key]: { ...enemy, hp, isDead }
@@ -584,7 +670,24 @@ export const useTrackerStore = create<TrackerState>()(
         set((state) => {
           const res = state.resources[key];
           if (!res) return state;
+          
+          let { sessionTreesCut, sessionOresMined, sessionPlantsHarvested } = state;
+          
+          if (gathered && !res.gathered && state.sessionActive) {
+            const t = res.type.toLowerCase();
+            if (t.includes('tree') || t.includes('log') || t.includes('wood')) {
+              sessionTreesCut += 1;
+            } else if (t.includes('ore') || t.includes('rock') || t.includes('stone') || t.includes('vein')) {
+              sessionOresMined += 1;
+            } else {
+              sessionPlantsHarvested += 1;
+            }
+          }
+
           return {
+            sessionTreesCut,
+            sessionOresMined,
+            sessionPlantsHarvested,
             resources: {
               ...state.resources,
               [key]: { ...res, hp, gathered: gathered !== undefined ? gathered : res.gathered }
@@ -679,6 +782,8 @@ export const useTrackerStore = create<TrackerState>()(
         sessionStartTime: state.sessionStartTime,
         sessionRunes: state.sessionRunes,
         sessionLoot: state.sessionLoot,
+        runHistory: state.runHistory,
+        sessionSettings: state.sessionSettings,
         enemies: state.enemies,
         resources: state.resources,
         timers: state.timers,

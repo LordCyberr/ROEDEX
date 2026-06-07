@@ -30,7 +30,7 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
         if ((e.target as HTMLElement).closest('button')) return;
         onPointerDown?.(e);
       }}
-      className={`flex items-center justify-between bg-[var(--bg-base)] border-b border-[var(--border-subtle)] shrink-0 select-none cursor-grab active:cursor-grabbing relative z-50 overflow-hidden ${
+      className={`flex items-center justify-between bg-[var(--bg-base)] border-b border-[var(--border-subtle)] shrink-0 select-none cursor-grab active:cursor-grabbing relative z-50 ${
         layoutMode === 'horizontal' ? 'px-4 py-1' : 'px-3 py-1'
       }`}
     >

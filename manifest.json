@@ -1,9 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "ROEDEX overlay v4",
+  "name": "ROEDEX: Ultimate Overlay Tracker",
   "version": "1.0.1",
-  "description": "Premium overlay tracker and WebSocket interceptor. Roots of Embervault.",
+  "description": "The definitive real-time farming, session tracking, and analytics overlay for Roots of Embervault.",
+  "icons": {
+    "16": "icon128.png",
+    "48": "icon128.png",
+    "128": "icon128.png"
+  },
   "action": {
+    "default_icon": "icon128.png",
     "default_title": "ROEDEX Overlay"
   },
   "content_scripts": [
