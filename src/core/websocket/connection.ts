@@ -3,6 +3,7 @@ import { useTrackerStore } from '../../store/trackerStore';
 
 export function connectWebSocket() {
   console.log('[ROEDEX] Content Script listening for Interceptor data...');
+  let packetCount = 0;
   
   // Always minimize on reload/restart
   setTimeout(() => {
@@ -36,6 +37,8 @@ export function connectWebSocket() {
     else if (event.data.type === 'WS_MESSAGE' || event.data.type === 'WS_MESSAGE_SEND') {
       const rawMessage = event.data.data;
       
+      packetCount++;
+
       // If we are still connected, assume yes if we get a message
       if (!useTrackerStore.getState().connected) {
         useTrackerStore.getState().setConnected(true);
@@ -44,6 +47,12 @@ export function connectWebSocket() {
       parsePacket(rawMessage);
     }
   });
+
+  // Track Packets Per Second
+  setInterval(() => {
+    useTrackerStore.getState().updateDebugStats(packetCount);
+    packetCount = 0;
+  }, 1000);
 }
 
 export function disconnectWebSocket() {

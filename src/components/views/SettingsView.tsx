@@ -9,25 +9,25 @@ import { useTranslation } from '../../hooks/useTranslation';
 const AccordionSection: React.FC<{
   title: string;
   icon: React.ReactNode;
-  defaultOpen?: boolean;
+  isOpen: boolean;
+  onToggle: () => void;
   children: React.ReactNode;
-}> = ({ title, icon, defaultOpen = false, children }) => {
-  const [open, setOpen] = useState(defaultOpen);
+}> = ({ title, icon, isOpen, onToggle, children }) => {
   return (
     <div className="mb-2.5">
       <button
-        onClick={() => setOpen(!open)}
+        onClick={onToggle}
         className={`flex items-center gap-2 w-full px-3 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all duration-200 select-none ${
-          open 
+          isOpen 
             ? 'bg-[var(--accent-primary)] text-white shadow-md shadow-[var(--accent-primary)]/20 scale-[0.98]' 
             : 'bg-[var(--bg-panel)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-card)]'
         }`}
       >
         {icon}
         <span className="flex-1 text-left">{title}</span>
-        {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+        {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
       </button>
-      {open && <div className="px-1 pt-2 pb-1 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">{children}</div>}
+      {isOpen && <div className="px-1 pt-2 pb-1 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">{children}</div>}
     </div>
   );
 };
@@ -109,28 +109,8 @@ export const SettingsView: React.FC = () => {
             label={t('settings.uiTheme')} 
             value={store.theme} 
             options={[
-              {label: 'Default Dark', value: 'default'},
-              {label: 'Tokyo Night', value: 'tokyo-night'},
-              {label: 'Dracula', value: 'dracula'},
-              {label: 'Nord', value: 'nord'},
-              {label: 'Mocha (Catppuccin)', value: 'mocha'},
-              {label: 'Solarized Dark', value: 'solarized'},
-              {label: 'Frost UI (Soft Glass)', value: 'frost'},
-              {label: 'Neo-Brutalism', value: 'neo-brutalism'},
-              {label: 'Tech Spec', value: 'tech-spec'},
-              {label: 'Obsidian Luxury', value: 'obsidian'},
-              {label: 'Acid Fade', value: 'acid-fade'},
-              {label: 'Assertive Minimalist', value: 'minimalist'},
-              {label: 'Ocean Blue', value: 'ocean'},
-              {label: 'Crimson Red', value: 'crimson'},
-              {label: 'Neon Purple', value: 'neon'},
-              {label: 'Royal Purple', value: 'royal'},
-              {label: 'Forest Green', value: 'forest'},
-              {label: 'Sunset Orange', value: 'sunset'},
-              {label: 'Midnight Obsidian', value: 'midnight'},
-              {label: 'Cyberpunk Neon', value: 'cyberpunk'},
-              {label: 'Monochrome', value: 'monochrome'},
-              {label: 'Amethyst Royal', value: 'amethyst'}
+              {label: 'Dark Mode', value: 'default'},
+              {label: 'Light Mode', value: 'light'}
             ]} 
             onChange={(v) => store.setTheme(v)} 
           />
@@ -573,12 +553,19 @@ export const SettingsView: React.FC = () => {
 
   // Vertical Layout Mode
   return (
-    <div className="flex flex-col text-[var(--text-primary)] overflow-y-auto custom-scrollbar pb-1 px-1 pt-1 w-full min-w-[150px]">
-      {sections.map(s => (
-        <AccordionSection key={s.id} title={s.title} icon={s.icon} defaultOpen={false}>
-          {s.content}
+    <div className="p-2 space-y-1 pb-10">
+      {sections.map((section) => (
+        <AccordionSection 
+          key={section.id} 
+          title={section.title} 
+          icon={section.icon} 
+          isOpen={activeTab === section.id}
+          onToggle={() => setActiveTab(activeTab === section.id ? '' : section.id)}
+        >
+          {section.content}
         </AccordionSection>
       ))}
+      <div className="h-4"></div>
     </div>
   );
 };

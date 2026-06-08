@@ -57,7 +57,7 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
                 title={tab.label}
                 className={`group relative transition-all duration-200 flex items-center justify-center shrink-0 p-1.5 rounded-xl ${
                   activeTab === tab.id 
-                    ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] shadow-[0_0_8px_rgba(0,0,0,0)] shadow-[var(--accent-primary)]/10 ring-1 ring-[var(--accent-primary)]/50' 
+                    ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] shadow-[0_0_8px_rgba(0,0,0,0)] shadow-[var(--accent-primary)]/10 ring-1 ring-inset ring-[var(--accent-primary)]/50' 
                     : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5'
                 }`}
               >

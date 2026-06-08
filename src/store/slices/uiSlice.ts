@@ -3,6 +3,11 @@ import { TrackerState, UISlice } from '../storeTypes';
 import { OverlayNotification } from '../../types/events';
 
 export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) => ({
+  isDebugPanelOpen: false,
+  toggleDebugPanel: () => set((state) => ({ isDebugPanelOpen: !state.isDebugPanelOpen })),
+  debugStats: { pps: 0 },
+  updateDebugStats: (pps: number) => set({ debugStats: { pps } }),
+  
   poppedOutWindows: {},
   popOutTab: (id: string, x: number, y: number) => set((state) => ({
     poppedOutWindows: {

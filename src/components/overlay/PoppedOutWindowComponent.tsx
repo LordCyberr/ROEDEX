@@ -149,7 +149,7 @@ export const PoppedOutWindowComponent: React.FC<{ window: PoppedOutWindow }> = (
       className={`
         absolute top-0 left-0 ${isUILocked ? 'pointer-events-none' : 'pointer-events-auto'} z-50 
         shadow-[0_8px_30px_rgba(0,0,0,0.8)] border-[var(--border-accent)] 
-        flex transition-opacity duration-300 overflow-hidden rounded-xl border
+        flex transition-opacity duration-300 overflow-hidden border
         bg-[var(--bg-base)] flex-col min-h-[150px] min-w-[200px]
       `}
     >

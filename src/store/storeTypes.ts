@@ -52,6 +52,11 @@ export interface Quest {
 }
 
 export interface UISlice {
+  isDebugPanelOpen: boolean;
+  toggleDebugPanel: () => void;
+  debugStats: { pps: number };
+  updateDebugStats: (pps: number) => void;
+
   // UI State
   poppedOutWindows: Record<string, PoppedOutWindow>;
   popOutTab: (id: string, x: number, y: number) => void;

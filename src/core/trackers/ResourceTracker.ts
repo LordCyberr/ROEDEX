@@ -47,10 +47,20 @@ export class ResourceTracker {
 
     if (isNew && node.resource) {
       const name = node.resource.toLowerCase();
-      if (name.includes('rare') || name.includes('crystal') || name.includes('gem')) {
+      const isRare = name.includes('rare') || name.includes('crystal') || name.includes('gem') || name.includes('titanium') || name.includes('goldleaf') || name.includes('moonpetal');
+      
+      if (isRare) {
         import('../companion/BobCompanion').then(({ BobCompanion }) => {
           BobCompanion.onRareResource();
         });
+        
+        if (store.notificationSettings.enabled && store.notificationSettings.toasts && store.notificationSettings.rareDrop) {
+          store.addNotification({ 
+            type: 'mythic', 
+            title: 'Rare Node Spotted!', 
+            message: `A highly valuable ${node.resource} has spawned in ${zone}!` 
+          });
+        }
       }
     }
   }

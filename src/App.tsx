@@ -48,8 +48,18 @@ function App() {
     // Phase 1: Initialize connection
     connectWebSocket();
 
+    // Hotkey for Debug Panel (Ctrl + Shift + D)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        useTrackerStore.getState().toggleDebugPanel();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       unsubscribe();
+      window.removeEventListener('keydown', handleKeyDown);
       disconnectWebSocket();
     };
   }, []);

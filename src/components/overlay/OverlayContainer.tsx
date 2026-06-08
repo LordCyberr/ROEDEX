@@ -3,6 +3,7 @@ import { Header } from '../layout/Header';
 import { useTrackerStore } from '../../store/trackerStore';
 import { TrackingView } from '../views/TrackingView';
 import { LootView } from '../views/LootView';
+
 import { NPCView } from '../views/NPCView';
 import { QuestView } from '../views/QuestView';
 import { SettingsView } from '../views/SettingsView';
@@ -10,6 +11,8 @@ import { WeaponUI } from '../widgets/WeaponUI';
 import { ArmorUI } from '../widgets/ArmorUI';
 import { NotificationToaster } from '../widgets/NotificationToaster';
 import { BobOverlay } from '../widgets/BobOverlay';
+import { EfficiencyHUD } from '../widgets/EfficiencyHUD';
+import { DebugPanel } from '../widgets/DebugPanel';
 import { MinimizedOrb } from './MinimizedOrb';
 import { PoppedOutWindowComponent } from './PoppedOutWindowComponent';
 import { motion, useMotionValue, useDragControls } from 'motion/react';
@@ -190,6 +193,8 @@ export const OverlayContainer: React.FC = () => {
       <WeaponUI />
       <ArmorUI />
       <NotificationToaster />
+      <EfficiencyHUD />
+      <DebugPanel />
       <BobOverlay constraintsRef={containerRef} />
     </div>
   );
