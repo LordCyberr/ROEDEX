@@ -14,12 +14,22 @@ export class LootTracker {
     store.addLoot(drop);
 
     if (event.itemName) {
-      const name = event.itemName.toLowerCase();
-      if (name.includes('rare') || name.includes('core') || name.includes('heart') || name.includes('gem') || name.includes('recipe')) {
-        import('../companion/BobCompanion').then(({ BobCompanion }) => {
-          BobCompanion.onRareDrop();
-        });
-      }
+      import('../../data/rarity').then(({ getItemInfo }) => {
+        const info = getItemInfo(event.itemName);
+        if (info && info.source === 'monster') {
+          if (info.rarity === 'rare') {
+            import('../companion/BobCompanion').then(({ BobCompanion }) => BobCompanion.onRareDrop());
+            if (store.notificationSettings.enabled && store.notificationSettings.toasts && store.notificationSettings.lootEvents) {
+              store.addNotification({ type: 'rare', title: 'Rare Drop', message: `You found a ${event.itemName}!` });
+            }
+          } else if (info.rarity === 'mythic') {
+            import('../companion/BobCompanion').then(({ BobCompanion }) => BobCompanion.onMythicDrop());
+            if (store.notificationSettings.enabled && store.notificationSettings.toasts && store.notificationSettings.lootEvents) {
+              store.addNotification({ type: 'mythic', title: 'Mythic Drop', message: `You found a ${event.itemName}!` });
+            }
+          }
+        }
+      });
     }
     
     // Loot despawns after some time (usually 60 seconds in many MMOs)

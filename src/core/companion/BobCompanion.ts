@@ -1,4 +1,5 @@
 import { useTrackerStore } from '../../store/trackerStore';
+import { bobTranslations } from '../../i18n/bobTranslations';
 
 export class BobCompanion {
   private static lastZone: string = '';
@@ -9,230 +10,21 @@ export class BobCompanion {
   private static lastMessageTimes: Record<string, number> = {};
   private static lastMessageContent: Set<string> = new Set();
   
+  // Slayer Tracking
+  private static lastKilledMonster: string = '';
+  private static consecutiveKills: number = 0;
+  
+  // Level Up Tracking
+  private static lastNotifiedLevel: number = 0;
+  
   // Timers
   private static idleTimer: any = null;
 
-  // Quotes
-  private static readonly QUOTES = {
-    login: [
-      "Hey! Ready for another adventure?",
-      "Welcome back!",
-      "Good to see you again!",
-      "Adventure awaits!",
-      "Ready when you are!",
-      "Let's see what we discover today!",
-      "I kept an eye on things while you were away.",
-      "The world looks different today.",
-      "Ready to explore?",
-      "Let's go break some rocks!",
-      "I have a good feeling about today.",
-      "Time for another journey!",
-      "Welcome back, friend.",
-      "I've been waiting!",
-      "The forest missed you."
-    ],
-    idle: [
-      "I wonder where all these ores come from.",
-      "Do wolves have favorite wolves?",
-      "Imagine being a tree for 500 years.",
-      "I forgot what I was thinking about.",
-      "This place feels different today.",
-      "I think we're being watched.",
-      "Nothing suspicious happening. Probably.",
-      "One day I'm going to count every rock.",
-      "I wonder if mushrooms get lonely.",
-      "Still no candy clouds.",
-      "The caves are quieter than usual.",
-      "I should start a journal.",
-      "Today feels lucky.",
-      "I have questions. Many questions."
-    ],
-    mining: [
-      "That ore won't mine itself.",
-      "Nice swing!",
-      "Rock acquired.",
-      "That ore looked expensive.",
-      "Mining is treasure hunting with extra steps.",
-      "I would help, but I forgot my pickaxe.",
-      "That rock never stood a chance.",
-      "The cave is getting lighter.",
-      "More ore! More shiny things!",
-      "You can never have enough ore.",
-      "That one looked valuable.",
-      "The miners would be proud.",
-      "A productive day underground.",
-      "Keep swinging!"
-    ],
-    chopping: [
-      "Sorry tree.",
-      "Another one falls.",
-      "The forest won't be happy.",
-      "That tree fought bravely.",
-      "Wood collected!",
-      "Trees take years to grow. You take seconds to cut them.",
-      "I heard that tree complaining earlier.",
-      "That's a sturdy one.",
-      "Good thing trees don't run away.",
-      "More wood for future projects.",
-      "The lumberjacks approve.",
-      "That's a big trunk.",
-      "Nice chop!",
-      "Timber!"
-    ],
-    gathering: [
-      "That plant smelled nice.",
-      "Nature provides.",
-      "Careful with the rare ones.",
-      "I don't know what that plant does.",
-      "Looks useful.",
-      "That's a healthy harvest.",
-      "The alchemists would love that.",
-      "Another plant saved from boredom.",
-      "Fresh ingredients!",
-      "Nice find.",
-      "That one looks rare.",
-      "The herbalists would be jealous.",
-      "A fine collection.",
-      "Plants everywhere!"
-    ],
-    combatStart: [
-      "Uh oh.",
-      "Looks angry.",
-      "Incoming trouble.",
-      "Let's not get hit.",
-      "Combat mode activated.",
-      "That thing definitely noticed us.",
-      "I believe in you.",
-      "Good luck! No pressure.",
-      "This could get interesting.",
-      "Time to fight.",
-      "Stay sharp!",
-      "Weapons ready!",
-      "Let's do this."
-    ],
-    combatWin: [
-      "Victory!",
-      "Good fight.",
-      "We survived.",
-      "That went well.",
-      "You made that look easy.",
-      "Another enemy defeated.",
-      "Nice work.",
-      "That was impressive.",
-      "One less threat.",
-      "The loot better be worth it.",
-      "A clean victory.",
-      "Nicely done.",
-      "That enemy picked the wrong fight."
-    ],
-    lowDurability: [
-      "Your weapon looks tired.",
-      "Might want to repair soon.",
-      "That durability is dropping fast.",
-      "Your weapon is asking for help.",
-      "Maybe stop hitting things. Just kidding.",
-      "Repair time soon.",
-      "The weapon sounds unhappy.",
-      "Warning: Durability getting low.",
-      "I think it's falling apart.",
-      "Let's not break it.",
-      "Maybe visit a blacksmith soon.",
-      "Your weapon has seen better days."
-    ],
-    rareResource: [
-      "Rare resource detected!",
-      "Now that's valuable.",
-      "You might want this one.",
-      "I marked something special.",
-      "Lucky find!",
-      "That's not an everyday resource.",
-      "Nice spot!",
-      "Rare material nearby.",
-      "This could be worth collecting.",
-      "Don't miss this one.",
-      "That's a good one.",
-      "A collector's dream."
-    ],
-    rareDrop: [
-      "Whoa!",
-      "That looks rare.",
-      "Nice drop!",
-      "Lucky!",
-      "Today's your day.",
-      "Now that's treasure.",
-      "Big find!",
-      "Save that one.",
-      "I like shiny things.",
-      "Excellent drop.",
-      "That's worth celebrating.",
-      "Very nice.",
-      "Great luck today."
-    ],
-    achievement: [
-      "Congratulations!",
-      "Nice progress.",
-      "You're getting stronger.",
-      "That deserves a celebration.",
-      "Another milestone reached.",
-      "Great work.",
-      "Look at you go!",
-      "Impressive.",
-      "Achievement unlocked!",
-      "You're on a roll.",
-      "Keep it up!",
-      "Outstanding work."
-    ],
-    zoneForest: [
-      "The forest feels alive.",
-      "Watch your surroundings.",
-      "Fresh air!",
-      "Nice place for gathering.",
-      "The trees seem friendly.",
-      "Lots of resources nearby.",
-      "I like this place.",
-      "The forest is peaceful today."
-    ],
-    zoneCave: [
-      "It's darker down here.",
-      "I hear something moving.",
-      "Stay alert.",
-      "Perfect place for mining.",
-      "The cave never sleeps.",
-      "Keep your eyes open.",
-      "Something feels different.",
-      "Watch your step."
-    ],
-    zoneTown: [
-      "Civilization!",
-      "Time to relax.",
-      "The town feels busy today.",
-      "A safe place at last.",
-      "Maybe somebody sells candy clouds.",
-      "Friendly faces everywhere.",
-      "Good place to rest."
-    ],
-    funny: [
-      "I once tried mining with a spoon. Didn't work.",
-      "I still don't know what candy clouds are. One day I'll find one.",
-      "If a tree falls and nobody hears it... we still get the wood.",
-      "I think that ore was looking at me.",
-      "I have several questions. No answers.",
-      "I should start a rock collection. Actually, you already did.",
-      "Sometimes I wonder who tracks the trackers. That would be weird.",
-      "The mushrooms know something. I'm sure of it.",
-      "I tried counting trees. I lost count."
-    ],
-    ultraRare: [
-      "I found the meaning of life. I forgot it.",
-      "I think we're inside a game. Don't tell anyone.",
-      "The mushrooms know something.",
-      "For legal reasons, I cannot fight bosses.",
-      "One day we'll find candy clouds. Today is not that day.",
-      "If you're reading this, Bob is working correctly.",
-      "I saw a tree move. Maybe.",
-      "The cave whispered my name. I'm pretending that didn't happen."
-    ]
-  };
+  private static getQuotes() {
+    const store = useTrackerStore.getState();
+    const lang = store.language || 'en';
+    return (bobTranslations as any)[lang] || bobTranslations.en;
+  }
 
   private static getFrequencyMs() {
     const store = useTrackerStore.getState();
@@ -269,18 +61,35 @@ export class BobCompanion {
     
     // 1% chance for ultra rare
     if (Math.random() < 0.01 && store.notificationSettings.bobSecret) {
-      this.triggerCategory('ultraRare', this.QUOTES.ultraRare, 0, 'bobSecret');
+      this.triggerCategory('ultraRare', this.getQuotes().ultraRare, 0, 'bobSecret');
       return;
     }
 
     // 20% chance for funny if enabled
     if (Math.random() < 0.20 && store.notificationSettings.bobJokes) {
-      this.triggerCategory('funny', this.QUOTES.funny, 0, 'bobJokes');
+      this.triggerCategory('funny', this.getQuotes().funny, 0, 'bobJokes');
       return;
     }
 
+    const currentZone = store.currentZone.toLowerCase();
+    const quotes = this.getQuotes();
+    
+    // Check if there are zone specific quotes
+    if (currentZone.includes('forest') && quotes.zoneForest) {
+       this.triggerCategory('zoneForest', quotes.zoneForest, 0, 'bobTips');
+       return;
+    }
+    if ((currentZone.includes('cave') || currentZone.includes('mine') || currentZone.includes('dungeon')) && quotes.zoneCave) {
+       this.triggerCategory('zoneCave', quotes.zoneCave, 0, 'bobTips');
+       return;
+    }
+    if (currentZone.includes('town') && quotes.zoneTown) {
+       this.triggerCategory('zoneTown', quotes.zoneTown, 0, 'bobTips');
+       return;
+    }
+
     // Default to normal idle
-    this.triggerCategory('idle', this.QUOTES.idle, 0, 'bobTips');
+    this.triggerCategory('idle', quotes.idle, 0, 'bobTips');
   }
 
   static greetUser(username?: string) {
@@ -293,7 +102,7 @@ export class BobCompanion {
       return;
     }
 
-    let line = this.pickRandom(this.QUOTES.login);
+    let line = this.pickRandom(this.getQuotes().login);
     if (username) {
       // Pick specific quotes that work well with names, or just prepend/append
       if (line.includes("Welcome back!")) {
@@ -315,42 +124,83 @@ export class BobCompanion {
   }
 
   static onMine() {
-    this.triggerCategory('mining', this.QUOTES.mining, 60000, 'bobMining');
+    this.triggerCategory('mining', this.getQuotes().mining, 60000, 'bobMining');
     this.onActivity();
   }
 
   static onChop() {
-    this.triggerCategory('chopping', this.QUOTES.chopping, 60000, 'bobGathering');
+    this.triggerCategory('chopping', this.getQuotes().chopping, 60000, 'bobGathering');
     this.onActivity();
   }
 
   static onGather() {
-    this.triggerCategory('gathering', this.QUOTES.gathering, 60000, 'bobGathering');
+    this.triggerCategory('gathering', this.getQuotes().gathering, 60000, 'bobGathering');
     this.onActivity();
   }
 
   static onCombatStart() {
-    this.triggerCategory('combatStart', this.QUOTES.combatStart, 120000, 'bobCombat');
+    this.triggerCategory('combatStart', this.getQuotes().combatStart, 120000, 'bobCombat');
     this.onActivity();
   }
 
-  static onCombatWin() {
-    this.triggerCategory('combatWin', this.QUOTES.combatWin, 60000, 'bobCombat');
+  static onCombatWin(monsterName?: string) {
+    if (monsterName) {
+      import('../../utils/formatters').then(({ formatInternalName }) => {
+        const cleanName = formatInternalName(monsterName);
+        if (this.lastKilledMonster === monsterName) {
+          this.consecutiveKills++;
+          if (this.consecutiveKills === 3) {
+             this.sendBobMessage('chat', `You are a true ${cleanName} slayer!`);
+          }
+        } else {
+          this.lastKilledMonster = monsterName;
+          this.consecutiveKills = 1;
+        }
+      });
+    }
+    this.triggerCategory('combatWin', this.getQuotes().combatWin, 60000, 'bobCombat');
     this.onActivity();
   }
 
   static onRareResource() {
-    this.triggerCategory('rareResource', this.QUOTES.rareResource, 10000, 'bobRareResource', true);
+    this.triggerCategory('rareResource', this.getQuotes().rareResource, 10000, 'bobRareResource', true);
     this.onActivity();
   }
 
   static onRareDrop() {
-    this.triggerCategory('rareDrop', this.QUOTES.rareDrop, 5000, 'bobRareDrop', true);
+    this.triggerCategory('rareDrop', this.getQuotes().rareDrop, 5000, 'bobRareDrop', true);
     this.onActivity();
+    import('../../utils/sound').then(({ playSound }) => {
+      const store = useTrackerStore.getState();
+      if (store.notificationSettings.audio) playSound('rare');
+    });
+  }
+
+  static onMythicDrop() {
+    this.triggerCategory('mythicDrop', this.getQuotes().mythicDrop, 5000, 'bobRareDrop', true);
+    this.onActivity();
+    import('../../utils/sound').then(({ playSound }) => {
+      const store = useTrackerStore.getState();
+      if (store.notificationSettings.audio) playSound('mythic');
+    });
   }
 
   static onLevelUp() {
-    this.triggerCategory('achievement', this.QUOTES.achievement, 5000, 'bobAchievement', true);
+    this.triggerCategory('achievement', this.getQuotes().achievement, 5000, 'bobAchievement', true);
+    this.onActivity();
+  }
+
+  static onLevelUpReady(level: number) {
+    if (this.lastNotifiedLevel === level) return;
+    this.lastNotifiedLevel = level;
+    
+    // Check if quotes exist (for backward compatibility if missing in some languages)
+    const quotes = this.getQuotes();
+    if (quotes.levelUpReady) {
+       this.triggerCategory('levelUpReady', quotes.levelUpReady, 10000, 'bobAchievement', true);
+    } else {
+       this.sendBobMessage('chat', `You have enough Runes to level up! Head to the Temple!`);
+    }
     this.onActivity();
   }
 
@@ -363,18 +213,15 @@ export class BobCompanion {
     const lowerZone = zoneName.toLowerCase();
 
     if (!store.notificationSettings.bobMode) {
-      if (store.notificationSettings.enabled && store.notificationSettings.zoneChange) {
-        this.sendGenericMessage('info', 'System', `Entered Zone: ${zoneName}`);
-      }
       return;
     }
 
     if (lowerZone.includes('forest')) {
-      this.triggerCategory('zone', this.QUOTES.zoneForest, 60000, 'bobZone');
+      this.triggerCategory('zone', this.getQuotes().zoneForest, 60000, 'bobZone');
     } else if (lowerZone.includes('town') || lowerZone.includes('home') || lowerZone.includes('bank')) {
-      this.triggerCategory('zone', this.QUOTES.zoneTown, 60000, 'bobZone');
+      this.triggerCategory('zone', this.getQuotes().zoneTown, 60000, 'bobZone');
     } else if (lowerZone.includes('mine') || lowerZone.includes('cave')) {
-      this.triggerCategory('zone', this.QUOTES.zoneCave, 60000, 'bobZone');
+      this.triggerCategory('zone', this.getQuotes().zoneCave, 60000, 'bobZone');
     } else {
       if (store.notificationSettings.bobZone) {
          this.sendBobMessage('zone', `We've entered ${zoneName}! Keep your eyes peeled.`);
@@ -387,13 +234,36 @@ export class BobCompanion {
     if (max <= 0) return;
     const percentage = current / max;
     
-    if (percentage < 0.1) {
+    if (current === 0) {
+      // Check if it's a sword
+      const isSword = toolName.toLowerCase().includes('sword');
+      if (isSword) {
+         this.sendBobMessage('chat', `Your sword broke! Check your inventory for another SWORD, not a tool!`);
+      } else {
+         this.sendBobMessage('chat', `Your ${toolName} broke! Equip another one from your bag.`);
+      }
+      this.warnedTools.add(toolName);
+    } else if (percentage < 0.1 && current < 50) {
       if (!this.warnedTools.has(toolName)) {
         this.warnedTools.add(toolName);
-        this.triggerCategory('lowDurability', this.QUOTES.lowDurability, 60000, 'bobTips', true);
+        this.triggerCategory('lowDurability', this.getQuotes().lowDurability, 60000, 'bobTips', true);
       }
-    } else {
+    } else if (current > 50 || percentage > 0.1) {
       this.warnedTools.delete(toolName);
+    }
+  }
+
+  static onWeaponUnequipped(toolName: string) {
+    const zone = useTrackerStore.getState().currentZone.toLowerCase();
+    // Only warn if they are NOT in a safe zone like town/bank/home
+    if (!zone.includes('town') && !zone.includes('bank') && !zone.includes('home')) {
+       // Wait a tiny bit to see if they instantly equip something else. If not, they might have bug-dropped it.
+       setTimeout(() => {
+          const currentState = useTrackerStore.getState();
+          if (!currentState.weapon) {
+             this.sendBobMessage('chat', `Hey! I think I accidentally put ${toolName} back in the backpack. Can you put it back in my hand or hotbar? If you die with it in your inventory, you'll lose it!`);
+          }
+       }, 1500); // 1.5 seconds grace period for weapon swapping
     }
   }
 
@@ -435,17 +305,8 @@ export class BobCompanion {
 
   private static sendBobMessage(type: string, message: string) {
     const store = useTrackerStore.getState();
-    store.addNotification({
+    store.addBobMessage({
       title: 'Bob',
-      message: message,
-      type: type as any
-    });
-  }
-
-  private static sendGenericMessage(type: string, title: string, message: string) {
-    const store = useTrackerStore.getState();
-    store.addNotification({
-      title: title,
       message: message,
       type: type as any
     });

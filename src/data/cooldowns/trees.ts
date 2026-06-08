@@ -1,7 +1,7 @@
 export const treeCooldowns: Record<string, number> = {
   'Black Oak': 1800, // 30 minutes
-  'Ironwood': 2700, // 45 minutes
-  'Bronze Wood': 2700,
+  'Ironwood': 1800, // 30 minutes
+  'Bronze Wood': 1800,
   'Dread Wood': 3600, // 60 minutes
   'Cinder Heart': 3600,
   'Gold Leaf': 3600,

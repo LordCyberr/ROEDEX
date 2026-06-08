@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
 import { DebugPanel } from './DebugPanel';
-import { Shield, ShieldAlert, Palette, Bell, Sword, ChevronDown, ChevronRight, Database, Bot, MessageSquare } from 'lucide-react';
+import { Shield, ShieldAlert, Palette, Bell, Sword, ChevronDown, ChevronRight, Database, Bot } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // ── Accordion Section ──────────────────────────────────────────
 const AccordionSection: React.FC<{
@@ -74,6 +75,7 @@ const SelectRow: React.FC<{ label: string; value: string; options: { label: stri
 );
 
 export const SettingsView: React.FC = () => {
+  const { t } = useTranslation();
   const store = useTrackerStore(useShallow(state => {
     const { 
       packetCounts, enemies, resources, loot, timers, 
@@ -88,12 +90,23 @@ export const SettingsView: React.FC = () => {
   const sections = [
     {
       id: 'general',
-      title: 'General',
+      title: t('settings.general'),
       icon: <Palette size={14} />,
       content: (
         <>
           <SelectRow 
-            label="UI Theme" 
+            label={t('settings.language')} 
+            value={store.language} 
+            options={[
+              {label: 'English', value: 'en'},
+              {label: 'Español', value: 'es'},
+              {label: 'Русский', value: 'ru'},
+              {label: '한국어', value: 'ko'}
+            ]} 
+            onChange={(v) => store.setLanguage(v as any)} 
+          />
+          <SelectRow 
+            label={t('settings.uiTheme')} 
             value={store.theme} 
             options={[
               {label: 'Default Dark', value: 'default'},
@@ -122,23 +135,24 @@ export const SettingsView: React.FC = () => {
             onChange={(v) => store.setTheme(v)} 
           />
           <SelectRow 
-            label="Display Density" 
+            label={t('settings.displayDensity')} 
             value={store.displayDensity} 
             options={[{label: 'Compact Mode', value: 'compact'}, {label: 'Standard Mode', value: 'standard'}]} 
             onChange={(v) => store.setDisplayDensity(v as any)} 
           />
           <SelectRow 
-            label="Vertical Layout" 
+            label={t('settings.verticalLayout')} 
             value={store.verticalGroupingMode} 
             options={[{label: 'Grouped by Zone', value: 'grouped'}, {label: 'Simple Titles', value: 'flat'}]} 
             onChange={(v) => store.setVerticalGroupingMode(v as any)} 
             disabled={store.layoutMode !== 'vertical'}
           />
-          <SliderRow label="Active Opacity" value={store.activeOpacity} min={0.1} max={1} step={0.05} display={`${Math.round(store.activeOpacity * 100)}%`} onChange={store.setActiveOpacity} />
-          <SliderRow label="Idle Opacity" value={store.idleOpacity} min={0.1} max={1} step={0.05} display={`${Math.round(store.idleOpacity * 100)}%`} onChange={store.setIdleOpacity} />
-          <SliderRow label="Minimized Orb Size" value={store.orbSize} min={30} max={100} step={2} display={`${store.orbSize}px`} onChange={store.setOrbSize} />
+          <SliderRow label={t('settings.activeOpacity')} value={store.activeOpacity} min={0.1} max={1} step={0.05} display={`${Math.round(store.activeOpacity * 100)}%`} onChange={store.setActiveOpacity} />
+          <SliderRow label={t('settings.idleOpacity')} value={store.idleOpacity} min={0.1} max={1} step={0.05} display={`${Math.round(store.idleOpacity * 100)}%`} onChange={store.setIdleOpacity} />
+          <SliderRow label={t('settings.minimizedOrbSize')} value={store.orbSize} min={30} max={100} step={2} display={`${store.orbSize}px`} onChange={store.setOrbSize} />
+          <SliderRow label="Orb Border Thickness" value={store.orbBorderThickness} min={0} max={10} step={1} display={`${store.orbBorderThickness}px`} onChange={store.setOrbBorderThickness} />
           <SelectRow 
-            label="Minimized Icon" 
+            label={t('settings.minimizedIcon')} 
             value={store.minimizedIcon} 
             options={[
               {label: 'Tracking Pulse', value: 'pulse'},
@@ -151,41 +165,44 @@ export const SettingsView: React.FC = () => {
             ]} 
             onChange={(v) => store.setMinimizedIcon(v as any)} 
           />
+          
+          <div className="text-[9px] font-bold text-[var(--text-muted)] mt-4 mb-1 pl-1">BEHAVIOR</div>
+          <ToggleRow label="Auto-Minimize on Chest Open" value={store.autoMinimizeOnChest} onChange={(v) => store.setAutoMinimizeOnChest(v)} />
         </>
       )
     },
     {
       id: 'tracking',
-      title: 'Tracking & Data',
+      title: t('settings.trackingData'),
       icon: <Database size={14} />,
       content: (
         <>
           <SelectRow 
-            label="Display Mode" 
+            label={t('settings.displayMode')} 
             value={store.displayMode} 
             options={[{label: 'Session View', value: 'session'}, {label: 'Current Zone', value: 'current_zone'}]} 
             onChange={(v) => store.setDisplayMode(v as any)} 
           />
-          <p className="text-[9px] text-[var(--text-muted)] mt-1 mb-2 px-1">Session view retains all discovered data continuously until manually reset.</p>
+          <p className="text-[9px] text-[var(--text-muted)] mt-1 mb-2 px-1">{t('settings.sessionViewDesc')}</p>
           
           <button 
             onClick={store.clearSessionCache}
             className="w-full text-center py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[10px] rounded border border-red-500/20 transition-colors mb-1 shadow-sm"
           >
-            Clear Session Cache
+            {t('settings.clearSessionCache')}
           </button>
           <button 
             onClick={store.clearSession}
             className="w-full text-center py-1.5 bg-[var(--bg-panel)] hover:bg-[var(--bg-card)] text-[#cfd2d5] text-[10px] rounded border border-[var(--border-subtle)] transition-colors shadow-sm"
           >
-            Reset Loot Session
+            {t('settings.resetLootSession')}
           </button>
         </>
       )
     },
     {
       id: 'weapon',
-      title: 'Weapon Overlay',
+      title: t('settings.weaponOverlay'),
       icon: <Sword size={14} />,
       content: (
         <>
@@ -220,8 +237,12 @@ export const SettingsView: React.FC = () => {
             <SliderRow label="Height (Bar)" value={store.weaponUISettings.height} min={2} max={20} step={2} display={`${store.weaponUISettings.height}px`} onChange={(v) => store.updateWeaponUISettings({ height: v })} />
             <SliderRow label="Scale" value={store.weaponUISettings.scale} min={0.5} max={1.5} step={0.1} display={`${(store.weaponUISettings.scale * 100).toFixed(0)}%`} onChange={(v) => store.updateWeaponUISettings({ scale: v })} />
             <SliderRow label="Opacity" value={store.weaponUISettings.opacity} min={0.1} max={1} step={0.05} display={`${(store.weaponUISettings.opacity * 100).toFixed(0)}%`} onChange={(v) => store.updateWeaponUISettings({ opacity: v })} />
-            <SliderRow label="Border Radius" value={store.weaponUISettings.borderRadius} min={0} max={24} step={2} display={`${store.weaponUISettings.borderRadius}px`} onChange={(v) => store.updateWeaponUISettings({ borderRadius: v })} />
-            <SliderRow label="Glass Blur" value={store.weaponUISettings.glassStrength} min={0} max={30} step={2} display={`${store.weaponUISettings.glassStrength}px`} onChange={(v) => store.updateWeaponUISettings({ glassStrength: v })} />
+            <SliderRow label="Background Radius" value={store.weaponUISettings.borderRadius} min={0} max={24} step={2} display={`${store.weaponUISettings.borderRadius}px`} onChange={(v) => store.updateWeaponUISettings({ borderRadius: v })} />
+            <SliderRow label="Background Blur" value={store.weaponUISettings.glassStrength} min={0} max={30} step={2} display={`${store.weaponUISettings.glassStrength}px`} onChange={(v) => store.updateWeaponUISettings({ glassStrength: v })} />
+
+            <div className="text-[9px] font-bold text-[var(--text-muted)] mt-4 mb-1 pl-1">BORDER SETTINGS</div>
+            <SliderRow label="Border Thickness" value={store.weaponUISettings.borderWidth || 0} min={0} max={10} step={1} display={`${store.weaponUISettings.borderWidth || 0}px`} onChange={(v) => store.updateWeaponUISettings({ borderWidth: v })} />
+            <ToggleRow label="Dynamic Color (Match Health)" value={store.weaponUISettings.dynamicBorderColor ?? true} onChange={(v) => store.updateWeaponUISettings({ dynamicBorderColor: v })} />
 
             <div className="text-[9px] font-bold text-[var(--text-muted)] mt-4 mb-1 pl-1">ALERTS & ANCHOR</div>
             <ToggleRow label="Enable Alerts" value={store.weaponUISettings.enableAlerts} onChange={(v) => store.updateWeaponUISettings({ enableAlerts: v })} />
@@ -255,7 +276,7 @@ export const SettingsView: React.FC = () => {
     },
     {
       id: 'armor',
-      title: 'Armor Overlay',
+      title: t('settings.armorOverlay'),
       icon: <Shield size={14} />,
       content: (
         <>
@@ -290,8 +311,12 @@ export const SettingsView: React.FC = () => {
             <SliderRow label="Height (Bar)" value={store.armorUISettings.height} min={2} max={20} step={2} display={`${store.armorUISettings.height}px`} onChange={(v) => store.updateArmorUISettings({ height: v })} />
             <SliderRow label="Scale" value={store.armorUISettings.scale} min={0.5} max={1.5} step={0.1} display={`${(store.armorUISettings.scale * 100).toFixed(0)}%`} onChange={(v) => store.updateArmorUISettings({ scale: v })} />
             <SliderRow label="Opacity" value={store.armorUISettings.opacity} min={0.1} max={1} step={0.05} display={`${(store.armorUISettings.opacity * 100).toFixed(0)}%`} onChange={(v) => store.updateArmorUISettings({ opacity: v })} />
-            <SliderRow label="Border Radius" value={store.armorUISettings.borderRadius} min={0} max={24} step={2} display={`${store.armorUISettings.borderRadius}px`} onChange={(v) => store.updateArmorUISettings({ borderRadius: v })} />
-            <SliderRow label="Glass Blur" value={store.armorUISettings.glassStrength} min={0} max={30} step={2} display={`${store.armorUISettings.glassStrength}px`} onChange={(v) => store.updateArmorUISettings({ glassStrength: v })} />
+            <SliderRow label="Background Radius" value={store.armorUISettings.borderRadius} min={0} max={24} step={2} display={`${store.armorUISettings.borderRadius}px`} onChange={(v) => store.updateArmorUISettings({ borderRadius: v })} />
+            <SliderRow label="Background Blur" value={store.armorUISettings.glassStrength} min={0} max={30} step={2} display={`${store.armorUISettings.glassStrength}px`} onChange={(v) => store.updateArmorUISettings({ glassStrength: v })} />
+
+            <div className="text-[9px] font-bold text-[var(--text-muted)] mt-4 mb-1 pl-1">BORDER SETTINGS</div>
+            <SliderRow label="Border Thickness" value={store.armorUISettings.borderWidth || 0} min={0} max={10} step={1} display={`${store.armorUISettings.borderWidth || 0}px`} onChange={(v) => store.updateArmorUISettings({ borderWidth: v })} />
+            <ToggleRow label="Dynamic Color (Match Health)" value={store.armorUISettings.dynamicBorderColor ?? true} onChange={(v) => store.updateArmorUISettings({ dynamicBorderColor: v })} />
 
             <div className="text-[9px] font-bold text-[var(--text-muted)] mt-4 mb-1 pl-1">ALERTS & ANCHOR</div>
             <ToggleRow label="Enable Alerts" value={store.armorUISettings.enableAlerts} onChange={(v) => store.updateArmorUISettings({ enableAlerts: v })} />
@@ -325,7 +350,7 @@ export const SettingsView: React.FC = () => {
     },
     {
       id: 'notifications',
-      title: 'UI Notifications',
+      title: t('settings.uiNotifications'),
       icon: <Bell size={14} />,
       content: (
         <>
@@ -333,7 +358,17 @@ export const SettingsView: React.FC = () => {
           <div className={`space-y-1.5 mt-2 pt-2 border-t border-[var(--border-subtle)] ${!store.notificationSettings.enabled ? 'opacity-50 pointer-events-none' : ''}`}>
 
             <div className="text-[9px] font-bold text-[var(--text-muted)] mt-2 mb-1 pl-1">UI DESIGN</div>
-            <ToggleRow label="Compact Mode" value={store.notificationSettings.compactMode} onChange={(v) => store.updateNotificationSettings({ compactMode: v })} />
+            <SelectRow 
+              label="Toast Shape" 
+              value={store.notificationSettings.toastShape} 
+              options={[
+                {label: 'Rectangle (Default)', value: 'rectangle'},
+                {label: 'Square', value: 'square'},
+                {label: 'Smooth Curves', value: 'smooth'},
+                {label: 'Pill', value: 'pill'}
+              ]} 
+              onChange={(v) => store.updateNotificationSettings({ toastShape: v as any })} 
+            />
             <ToggleRow label="Neon Glowing Border" value={store.notificationSettings.neonGlow} onChange={(v) => store.updateNotificationSettings({ neonGlow: v })} />
             <SliderRow label="Width" value={store.notificationSettings.width} min={150} max={400} step={10} display={`${store.notificationSettings.width}px`} onChange={(v) => store.updateNotificationSettings({ width: v })} />
             <SliderRow label="Min Height" value={store.notificationSettings.height} min={30} max={120} step={5} display={`${store.notificationSettings.height}px`} onChange={(v) => store.updateNotificationSettings({ height: v })} />
@@ -350,26 +385,28 @@ export const SettingsView: React.FC = () => {
               ]} 
               onChange={(v) => store.updateNotificationSettings({ position: v as any })} 
             />
-            {store.notificationSettings.position === 'custom' && (
-               <button 
-                 onClick={() => {
-                   if (!useTrackerStore.getState().notifications.find(n => n.id === 'placeholder')) {
-                     useTrackerStore.setState((s) => ({
-                       notifications: [...s.notifications, { id: 'placeholder', title: 'Bob', message: 'Drag me to set position', type: 'info', timestamp: Date.now() }]
-                     }));
-                   }
-                 }}
-                 className="w-full text-center py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 text-[10px] rounded border border-indigo-500/20 transition-colors mb-1 shadow-sm"
-               >
-                 Set Custom Position (Spawns Dummy)
-               </button>
-            )}
-
+            <ToggleRow 
+              label="Show Preview Dummy"
+              value={!!useTrackerStore.getState().notifications.find(n => n.id === 'placeholder')}
+              onChange={(v) => {
+                if (v) {
+                  if (!useTrackerStore.getState().notifications.find(n => n.id === 'placeholder')) {
+                    useTrackerStore.setState((s) => ({
+                      notifications: [...s.notifications, { id: 'placeholder', title: 'Preview', message: 'Drag me to set position', type: 'info', timestamp: Date.now() }]
+                    }));
+                  }
+                } else {
+                  useTrackerStore.setState((s) => ({
+                    notifications: s.notifications.filter(n => n.id !== 'placeholder')
+                  }));
+                }
+              }}
+            />
             <SliderRow label="Display Duration" value={store.notificationSettings.duration} min={1000} max={10000} step={500} display={`${(store.notificationSettings.duration / 1000).toFixed(1)}s`} onChange={(v) => store.updateNotificationSettings({ duration: v })} />
             
             <div className="text-[9px] font-bold text-[var(--text-muted)] mt-4 mb-1 pl-1">EVENT TRIGGERS</div>
             <ToggleRow label="Zone Changes" value={store.notificationSettings.zoneChange} onChange={(v) => store.updateNotificationSettings({ zoneChange: v })} />
-            <ToggleRow label="Tool Durability Warnings" value={store.notificationSettings.rareDrop} onChange={(v) => store.updateNotificationSettings({ rareDrop: v })} />
+            <ToggleRow label="Tool Durability Warnings" value={store.notificationSettings.toolWarning} onChange={(v) => store.updateNotificationSettings({ toolWarning: v })} />
             <ToggleRow label="Loot Drops" value={store.notificationSettings.lootEvents} onChange={(v) => store.updateNotificationSettings({ lootEvents: v })} />
           </div>
         </>
@@ -377,13 +414,68 @@ export const SettingsView: React.FC = () => {
     },
     {
       id: 'bob',
-      title: 'Bob Companion',
+      title: t('settings.bobCompanion'),
       icon: <Bot size={14} />,
       content: (
         <>
           <ToggleRow label="Enable Bob" value={store.notificationSettings.bobMode} onChange={(v) => store.updateNotificationSettings({ bobMode: v })} />
           <div className={`space-y-1.5 mt-2 pt-2 border-t border-[var(--border-subtle)] ${!store.notificationSettings.bobMode ? 'opacity-50 pointer-events-none' : ''}`}>
             
+            <SelectRow 
+              label="Bob Preset" 
+              value={store.notificationSettings.bobJokes ? 'all' : 'essential'} 
+              options={[
+                {label: 'All Enabled', value: 'all'},
+                {label: 'Essential Only', value: 'essential'}
+              ]} 
+              onChange={(v) => {
+                if (v === 'all') {
+                  store.updateNotificationSettings({ 
+                    bobGreetings: true, bobJokes: true, bobTips: true, bobSecret: true, 
+                    bobAchievement: true, bobRareResource: true 
+                  });
+                } else {
+                  store.updateNotificationSettings({ 
+                    bobGreetings: false, bobJokes: false, bobTips: false, bobSecret: false, 
+                    bobAchievement: false, bobRareResource: false 
+                  });
+                }
+              }} 
+            />
+
+            <SliderRow label="Bob Icon Size" value={store.notificationSettings.bobIconScale || 1.0} min={0.5} max={2.5} step={0.1} display={`${((store.notificationSettings.bobIconScale || 1.0) * 100).toFixed(0)}%`} onChange={(v) => store.updateNotificationSettings({ bobIconScale: v })} />
+            <SliderRow label="Bob Text Size" value={store.notificationSettings.bobTextScale || 1.0} min={0.5} max={2.5} step={0.1} display={`${((store.notificationSettings.bobTextScale || 1.0) * 100).toFixed(0)}%`} onChange={(v) => store.updateNotificationSettings({ bobTextScale: v })} />
+            <SliderRow label="Message Duration" value={store.notificationSettings.bobDuration || 5000} min={1000} max={15000} step={500} display={`${((store.notificationSettings.bobDuration || 5000) / 1000).toFixed(1)}s`} onChange={(v) => store.updateNotificationSettings({ bobDuration: v })} />
+            <SliderRow label="Bubble Distance (Horizontal)" value={store.notificationSettings.bobBubbleDistance ?? 16} min={-50} max={150} step={2} display={`${store.notificationSettings.bobBubbleDistance ?? 16}px`} onChange={(v) => store.updateNotificationSettings({ bobBubbleDistance: v })} />
+            <SliderRow label="Bubble Offset (Vertical)" value={store.notificationSettings.bobBubbleOffsetY ?? 0} min={-100} max={100} step={2} display={`${store.notificationSettings.bobBubbleOffsetY ?? 0}px`} onChange={(v) => store.updateNotificationSettings({ bobBubbleOffsetY: v })} />
+
+            <SelectRow 
+              label="Bob Icon" 
+              value={store.notificationSettings.bobIcon || 'bot'} 
+              options={[
+                {label: 'Default Bot', value: 'bot'},
+                {label: 'Ghost', value: 'ghost'},
+                {label: 'Cat', value: 'cat'},
+                {label: 'Wizard', value: 'wizard'},
+                {label: 'Skull', value: 'skull'},
+                {label: 'Smiley', value: 'alien'},
+                {label: 'Dog', value: 'dog'}
+              ]} 
+              onChange={(v) => store.updateNotificationSettings({ bobIcon: v as any })} 
+            />
+
+            <SelectRow 
+              label="Bubble Theme" 
+              value={store.notificationSettings.bobTheme || 'default'} 
+              options={[
+                {label: 'Default Light', value: 'default'},
+                {label: 'Cyberpunk', value: 'cyberpunk'},
+                {label: 'Fantasy', value: 'fantasy'},
+                {label: 'Minimal Dark', value: 'minimal'},
+                {label: 'Hologram', value: 'hologram'}
+              ]} 
+              onChange={(v) => store.updateNotificationSettings({ bobTheme: v as any })} 
+            />
             <SelectRow 
               label="Toast Frequency" 
               value={store.notificationSettings.bobFrequency} 
@@ -409,26 +501,30 @@ export const SettingsView: React.FC = () => {
             <ToggleRow label="Enable Secret Messages" value={store.notificationSettings.bobSecret} onChange={(v) => store.updateNotificationSettings({ bobSecret: v })} />
 
             <div className="text-[9px] font-bold text-[var(--text-muted)] mt-4 mb-1 pl-1">PREVIEW</div>
-            <button 
-              onClick={() => {
-                useTrackerStore.getState().addNotification({
-                  title: 'Bob',
-                  message: 'I have a good feeling about today.',
-                  type: 'chat' as any
-                });
+            <ToggleRow 
+              label="Show Preview Dummy"
+              value={!!useTrackerStore.getState().bobMessages.find(n => n.id === 'placeholder_bob')}
+              onChange={(v) => {
+                if (v) {
+                  if (!useTrackerStore.getState().bobMessages.find(n => n.id === 'placeholder_bob')) {
+                    useTrackerStore.setState((s) => ({
+                      bobMessages: [...s.bobMessages, { id: 'placeholder_bob', title: 'Bob', message: 'Drag me to set position', type: 'chat', timestamp: Date.now() } as any]
+                    }));
+                  }
+                } else {
+                  useTrackerStore.setState((s) => ({
+                    bobMessages: s.bobMessages.filter(n => n.id !== 'placeholder_bob')
+                  }));
+                }
               }}
-              className="w-full text-center py-1.5 bg-[var(--accent-primary)]/10 hover:bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] text-[10px] rounded border border-[var(--accent-primary)]/20 transition-colors mb-1 shadow-sm font-bold uppercase tracking-widest flex justify-center items-center gap-2"
-            >
-              <MessageSquare size={12} />
-              Preview Message
-            </button>
+            />
           </div>
         </>
       )
     },
     {
       id: 'advanced',
-      title: 'Advanced',
+      title: t('settings.advanced'),
       icon: <ShieldAlert size={14} className={store.developerMode ? 'text-amber-400' : ''} />,
       content: (
         <>
@@ -443,9 +539,9 @@ export const SettingsView: React.FC = () => {
   if (store.layoutMode === 'horizontal') {
     const activeSection = sections.find(s => s.id === activeTab) || sections[0];
     return (
-      <div className="flex w-full h-[360px] text-[var(--text-primary)] pl-1">
+      <div className="flex w-[520px] h-[280px] text-[var(--text-primary)] pl-1">
          {/* Sidebar Tabs */}
-         <div className="w-[140px] shrink-0 flex flex-col gap-1 pr-2 border-r border-[var(--border-subtle)] mr-2 overflow-y-auto custom-scrollbar pt-1 pb-4">
+         <div className="w-[160px] shrink-0 flex flex-col gap-1 pr-2 border-r border-[var(--border-subtle)] mr-2 overflow-y-auto custom-scrollbar pt-1 pb-4">
            {sections.map(s => (
              <button
                key={s.id}
@@ -462,7 +558,7 @@ export const SettingsView: React.FC = () => {
            ))}
          </div>
          {/* Tab Content */}
-         <div className="flex-1 w-[260px] overflow-y-auto custom-scrollbar pr-1 pb-4 pt-1">
+         <div className="flex-1 w-[320px] overflow-y-auto custom-scrollbar pr-1 pb-4 pt-1">
             <h3 className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-3 pl-1 border-b border-[var(--border-subtle)] pb-2 flex items-center gap-2">
               {activeSection.icon}
               {activeSection.title}
@@ -477,9 +573,9 @@ export const SettingsView: React.FC = () => {
 
   // Vertical Layout Mode
   return (
-    <div className="flex flex-col text-[var(--text-primary)] overflow-y-auto custom-scrollbar pb-8 px-1 pt-1 w-full">
+    <div className="flex flex-col text-[var(--text-primary)] overflow-y-auto custom-scrollbar pb-1 px-1 pt-1 w-full min-w-[150px]">
       {sections.map(s => (
-        <AccordionSection key={s.id} title={s.title} icon={s.icon} defaultOpen={s.id === 'general'}>
+        <AccordionSection key={s.id} title={s.title} icon={s.icon} defaultOpen={false}>
           {s.content}
         </AccordionSection>
       ))}

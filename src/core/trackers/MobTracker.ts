@@ -52,12 +52,17 @@ export class MobTracker {
     }
     
     if (isDead && !enemy.isDead) {
-      import('../companion/BobCompanion').then(({ BobCompanion }) => BobCompanion.onCombatWin());
+      import('../companion/BobCompanion').then(({ BobCompanion }) => BobCompanion.onCombatWin(enemy.type));
     }
 
     store.updateEnemyHp(key, newHp || 0, isDead);
     
     if (isDead) {
+      if (!enemy.isDead) {
+        store.incrementMobsKilled();
+        store.incrementLifetimeStat('mobsKilled', enemy.type, 1);
+      }
+      
       // Prefer exact timestamp if provided in future packet updates, else fallback
       const respawnTime = Date.now() + (getFallbackCooldown(enemy.type) * 1000);
 

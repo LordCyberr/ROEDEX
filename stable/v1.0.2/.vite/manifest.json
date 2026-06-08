@@ -1,0 +1,23 @@
+{
+  "../../../../@crx/manifest": {
+    "file": "assets/crx-manifest.js-DXEbP9VV.js",
+    "name": "crx-manifest.js",
+    "src": "../../../../@crx/manifest",
+    "isEntry": true
+  },
+  "src/core/websocket/interceptor.ts": {
+    "file": "assets/interceptor.ts-rG_xdLT9.js",
+    "name": "interceptor.ts",
+    "src": "src/core/websocket/interceptor.ts",
+    "isEntry": true
+  },
+  "src/main.tsx": {
+    "file": "assets/main.tsx-lK_uL-8D.js",
+    "name": "main.tsx",
+    "src": "src/main.tsx",
+    "isEntry": true,
+    "css": [
+      "assets/main-DhjmNi8y.css"
+    ]
+  }
+}

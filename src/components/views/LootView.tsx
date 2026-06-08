@@ -1,33 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
 import { useShallow } from 'zustand/react/shallow';
-import { PackageOpen, Play, Square, Coins, Diamond, Activity, List, Settings2, Sword, Pickaxe, Axe, Leaf, Target, Map, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { PackageOpen, Play, Square, Coins, Diamond, Activity, Sword, Pickaxe, Axe, Leaf, Trash2, User } from 'lucide-react';
 
 import { getResellValue } from '../../data/prices';
+import { getItemInfo } from '../../data/rarity';
 
 const getRarityColor = (name: string) => {
-  const lower = name.toLowerCase();
-  if (lower.includes('god') || lower.includes('crystal') || lower.includes('gem')) return 'text-orange-400 font-bold';
-  if (lower.includes('gold') || lower.includes('dino')) return 'text-fuchsia-400 font-bold';
-  if (lower.includes('iron') || lower.includes('wolf') || lower.includes('spider')) return 'text-blue-400';
-  if (lower.includes('copper') || lower.includes('slime') || lower.includes('boar')) return 'text-emerald-400';
-  return 'text-slate-300';
+  const info = getItemInfo(name);
+  if (!info) return 'text-slate-300';
+  switch (info.rarity) {
+    case 'uncommon': return 'text-blue-400 font-medium';
+    case 'rare': return 'text-green-400 font-bold';
+    case 'mythic': return 'text-purple-400 font-black';
+    case 'common':
+    default: return 'text-slate-300';
+  }
+};
+
+const getRarityWeight = (name: string) => {
+  const info = getItemInfo(name);
+  if (!info) return 0;
+  switch (info.rarity) {
+    case 'mythic': return 3;
+    case 'rare': return 2;
+    case 'uncommon': return 1;
+    case 'common':
+    default: return 0;
+  }
 };
 
 export const LootView: React.FC = () => {
   const { 
     sessionActive, setSessionActive, 
-    sessionRunes, sessionLoot, 
-    chestTotalValue,
+    sessionRunes, sessionLoot, chestInventory,
     clearSession, sessionStartTime, setSessionStartTime,
-    sessionMobsKilled, sessionTreesCut, sessionOresMined, sessionPlantsHarvested, sessionZonesVisited,
-    runHistory, sessionSettings, updateSessionSettings, endSession, clearRunHistory
+    sessionMobsKilled, sessionTreesCut, sessionOresMined, sessionPlantsHarvested,
+    sessionSettings, endSession,
+    playerProfile, lifetimeStats
   } = useTrackerStore(useShallow(state => ({
     sessionActive: state.sessionActive,
     setSessionActive: state.setSessionActive,
     sessionRunes: state.sessionRunes,
     sessionLoot: state.sessionLoot,
     chestTotalValue: state.chestTotalValue,
+    chestInventory: state.chestInventory,
     clearSession: state.clearSession,
     sessionStartTime: state.sessionStartTime,
     setSessionStartTime: state.setSessionStartTime,
@@ -36,16 +53,29 @@ export const LootView: React.FC = () => {
     sessionOresMined: state.sessionOresMined,
     sessionPlantsHarvested: state.sessionPlantsHarvested,
     sessionZonesVisited: state.sessionZonesVisited,
-    runHistory: state.runHistory,
     sessionSettings: state.sessionSettings,
-    updateSessionSettings: state.updateSessionSettings,
     endSession: state.endSession,
-    clearRunHistory: state.clearRunHistory
+    playerProfile: state.playerProfile,
+    lifetimeStats: state.lifetimeStats
   })));
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'ledger' | 'settings'>('dashboard');
+
+  const [activeTab, setActiveTab] = useState<'profile' | 'session' | 'chest'>('profile');
   const [now, setNow] = useState(Date.now());
-  const [expandedRuns, setExpandedRuns] = useState<Record<string, boolean>>({});
+
+  // Chest Tab State
+  const [includeRunesInChest, setIncludeRunesInChest] = useState(false);
+  const [chestSortBy, setChestSortBy] = useState<'value' | 'count' | 'rarity'>('value');
+  const [excludedItems, setExcludedItems] = useState<Set<string>>(new Set());
+
+  const toggleExclude = (name: string) => {
+    setExcludedItems(prev => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (sessionActive) {
@@ -83,21 +113,124 @@ export const LootView: React.FC = () => {
     }
   };
 
-  const toggleRunDetails = (runId: string) => {
-    setExpandedRuns(prev => ({ ...prev, [runId]: !prev[runId] }));
-  };
-
   // Check goals
   const isTimeGoalMet = sessionSettings.timeAttackMinutes > 0 && durationMs >= sessionSettings.timeAttackMinutes * 60000;
   const isLootGoalMet = sessionSettings.lootValueGoal > 0 && totalWorth >= sessionSettings.lootValueGoal;
 
-  const renderDashboard = () => (
+  const renderProfile = () => {
+    const pct = playerProfile.runesRequired > 0 ? Math.min(100, Math.floor((playerProfile.currentRunes / playerProfile.runesRequired) * 100)) : 0;
+    
+    const getTotal = (record: Record<string, number>) => Object.values(record).reduce((a, b) => a + b, 0);
+    const totalMobs = getTotal(lifetimeStats.mobsKilled);
+    const totalOres = getTotal(lifetimeStats.oresMined);
+    const totalTrees = getTotal(lifetimeStats.treesCut);
+    const totalPlants = getTotal(lifetimeStats.plantsHarvested);
+
+    return (
+      <div className="flex flex-col gap-2 h-full relative overflow-y-auto custom-scrollbar pr-1">
+        
+        {/* Profile Header */}
+        <div className="flex items-center gap-3 bg-black/30 border border-white/[0.05] p-2 rounded-lg relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-blue-500/10 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+          
+          <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
+             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="16" fill="none" className="stroke-white/10" strokeWidth="3" />
+                <circle cx="18" cy="18" r="16" fill="none" className="stroke-emerald-400" strokeWidth="3" strokeDasharray={`${pct}, 100`} />
+             </svg>
+             <div className="absolute flex flex-col items-center justify-center">
+                <span className="text-[7px] text-emerald-400/80 uppercase font-bold tracking-widest -mb-1">LVL</span>
+                <span className="text-[14px] font-black text-white">{playerProfile.level}</span>
+             </div>
+          </div>
+          
+          <div className="flex flex-col flex-1 z-10">
+             <div className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-0.5 truncate">{playerProfile.name || 'Player Profile'}</div>
+             <div className="flex items-center justify-between text-[9px] mb-1 gap-2">
+                <span className="text-slate-400 truncate">Runes to Level Up</span>
+                <span className="text-emerald-400 font-mono font-bold shrink-0">{playerProfile.currentRunes.toLocaleString()} / {playerProfile.runesRequired.toLocaleString()}</span>
+             </div>
+             <div className="w-full bg-black/50 h-1.5 rounded-full overflow-hidden border border-white/5">
+                <div className="h-full bg-emerald-400/80 rounded-full" style={{ width: `${pct}%` }}></div>
+             </div>
+          </div>
+        </div>
+
+        {/* Lifetime Stats */}
+        <div className="text-[9px] font-bold text-slate-400 tracking-widest uppercase mt-1 mb-0.5 px-1">Lifetime Statistics</div>
+        <div className="grid grid-cols-2 gap-1.5">
+          <div className="bg-gradient-to-br from-black/40 to-rose-900/10 border border-rose-500/20 p-2 rounded flex flex-col hover:border-rose-500/40 transition-colors">
+             <div className="flex justify-between items-center mb-1">
+               <span className="text-rose-400 font-bold uppercase tracking-wider text-[8px] flex items-center gap-1"><Sword size={10} /> Combat</span>
+               <span className="text-white font-mono text-[11px] font-black">{totalMobs.toLocaleString()}</span>
+             </div>
+             <div className="flex flex-col gap-0.5 text-[8px] text-slate-400 mt-1">
+                {Object.entries(lifetimeStats.mobsKilled).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v]) => (
+                   <div key={k} className="flex justify-between">
+                     <span className="truncate pr-1">{k}</span>
+                     <span className="font-mono text-rose-300">{v}</span>
+                   </div>
+                ))}
+             </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-black/40 to-slate-800/20 border border-slate-500/20 p-2 rounded flex flex-col hover:border-slate-500/40 transition-colors">
+             <div className="flex justify-between items-center mb-1">
+               <span className="text-slate-400 font-bold uppercase tracking-wider text-[8px] flex items-center gap-1"><Pickaxe size={10} /> Mining</span>
+               <span className="text-white font-mono text-[11px] font-black">{totalOres.toLocaleString()}</span>
+             </div>
+             <div className="flex flex-col gap-0.5 text-[8px] text-slate-400 mt-1">
+                {Object.entries(lifetimeStats.oresMined).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v]) => (
+                   <div key={k} className="flex justify-between">
+                     <span className="truncate pr-1">{k}</span>
+                     <span className="font-mono text-slate-300">{v}</span>
+                   </div>
+                ))}
+             </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-black/40 to-amber-900/10 border border-amber-500/20 p-2 rounded flex flex-col hover:border-amber-500/40 transition-colors">
+             <div className="flex justify-between items-center mb-1">
+               <span className="text-amber-500 font-bold uppercase tracking-wider text-[8px] flex items-center gap-1"><Axe size={10} /> Logging</span>
+               <span className="text-white font-mono text-[11px] font-black">{totalTrees.toLocaleString()}</span>
+             </div>
+             <div className="flex flex-col gap-0.5 text-[8px] text-slate-400 mt-1">
+                {Object.entries(lifetimeStats.treesCut).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v]) => (
+                   <div key={k} className="flex justify-between">
+                     <span className="truncate pr-1">{k}</span>
+                     <span className="font-mono text-amber-300">{v}</span>
+                   </div>
+                ))}
+             </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-black/40 to-emerald-900/10 border border-emerald-500/20 p-2 rounded flex flex-col hover:border-emerald-500/40 transition-colors">
+             <div className="flex justify-between items-center mb-1">
+               <span className="text-emerald-500 font-bold uppercase tracking-wider text-[8px] flex items-center gap-1"><Leaf size={10} /> Foraging</span>
+               <span className="text-white font-mono text-[11px] font-black">{totalPlants.toLocaleString()}</span>
+             </div>
+             <div className="flex flex-col gap-0.5 text-[8px] text-slate-400 mt-1">
+                {Object.entries(lifetimeStats.plantsHarvested).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v]) => (
+                   <div key={k} className="flex justify-between">
+                     <span className="truncate pr-1">{k}</span>
+                     <span className="font-mono text-emerald-300">{v}</span>
+                   </div>
+                ))}
+             </div>
+          </div>
+        </div>
+
+      </div>
+    );
+  };
+
+  const renderSession = () => (
     <div className="flex flex-col gap-1.5 h-full relative">
       {(isTimeGoalMet || isLootGoalMet) && sessionActive && (
         <div className="absolute inset-0 pointer-events-none rounded border-2 border-emerald-500/50 animate-pulse z-0"></div>
       )}
       
-      <div className="flex items-center justify-between z-10">
+      <div className="flex items-center gap-1.5 z-10">
         <button 
           onClick={handleToggleSession}
           className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded text-[11px] font-bold uppercase transition-all shadow-md ${
@@ -107,6 +240,13 @@ export const LootView: React.FC = () => {
           }`}
         >
           {sessionActive ? <><Square size={12} fill="currentColor" /> Finish Run</> : <><Play size={12} fill="currentColor" /> Start New Run</>}
+        </button>
+        <button
+          onClick={clearSession}
+          title="Reset Current Loot"
+          className="flex items-center justify-center px-2 py-1.5 rounded bg-[var(--bg-panel)] hover:bg-[var(--bg-card)] text-[#cfd2d5] border border-[var(--border-subtle)] transition-all shadow-md"
+        >
+          <Trash2 size={12} />
         </button>
       </div>
 
@@ -164,191 +304,182 @@ export const LootView: React.FC = () => {
             No loot gathered yet
           </div>
         ) : (
-          sortedLoot.map(([name, quantity]) => (
-            <div key={name} className="flex justify-between items-center bg-white/[0.02] px-1.5 py-[2px] rounded border border-white/[0.02]">
-              <span className={`truncate pr-1 ${getRarityColor(name)}`}>{name}</span>
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className="text-[#5a6270] font-mono text-[8px]">~{getResellValue(name, quantity)}c</span>
-                <span className="font-mono text-emerald-400 font-bold">x{quantity}</span>
+          <>
+            <div className="flex justify-between items-center px-1.5 py-0.5 mt-1 border-b border-white/5">
+              <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">Item</span>
+              <div className="flex items-center gap-4 shrink-0">
+                <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest w-16 text-right">Total Runes</span>
+                <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest w-12 text-right">Count</span>
               </div>
             </div>
-          ))
+            {sortedLoot.map(([name, quantity]) => (
+              <div key={name} className="flex justify-between items-center bg-white/[0.02] px-1.5 py-[2px] rounded border border-white/[0.02]">
+                <span className={`truncate pr-1 ${getRarityColor(name)}`}>{name}</span>
+                <div className="flex items-center gap-4 shrink-0">
+                  <span className="text-[#5a6270] font-mono text-[9px] w-16 text-right">{getResellValue(name, quantity)}</span>
+                  <span className="font-mono text-emerald-400 font-bold text-[10px] w-12 text-right">x{quantity}</span>
+                </div>
+              </div>
+            ))}
+          </>
         )}
       </div>
     </div>
   );
 
-  const renderLedger = () => {
-    const totalHistoricalRunes = runHistory.reduce((acc, run) => acc + run.runes, 0);
-    const totalHistoricalWorth = runHistory.reduce((acc, run) => acc + run.runes + run.lootWorth, 0);
+  const renderChest = () => {
+    const combinedInventory: Record<string, number> = { ...chestInventory };
+
+    if (includeRunesInChest && playerProfile.currentRunes > 0) {
+       combinedInventory['Runes'] = (combinedInventory['Runes'] || 0) + playerProfile.currentRunes;
+    }
+
+    const chestItemsListAll = Object.entries(combinedInventory).map(([name, count]) => {
+       const unitVal = getResellValue(name, 1);
+       const totVal = getResellValue(name, count);
+       return { name, count, unitVal, totVal };
+    }).filter(i => i.count > 0);
+
+    chestItemsListAll.sort((a, b) => {
+       if (chestSortBy === 'value') return b.totVal - a.totVal;
+       if (chestSortBy === 'count') return b.count - a.count;
+       if (chestSortBy === 'rarity') {
+          const wA = getRarityWeight(a.name);
+          const wB = getRarityWeight(b.name);
+          if (wA !== wB) return wB - wA;
+          return b.totVal - a.totVal;
+       }
+       return 0;
+    });
+
+    const displayTotalValue = chestItemsListAll.reduce((acc, i) => acc + (excludedItems.has(i.name) ? 0 : i.totVal), 0);
+    const chestItemsListUI = chestItemsListAll;
+
+    const isToolOrWeapon = (name: string) => {
+       const n = name.toLowerCase();
+       return n.includes('sword') || n.includes('pickaxe') || n.includes('axe') || n.includes('tool') || n.includes('weapon');
+    };
+
+    const inventoryLootValue = Object.entries(chestInventory).reduce((acc, [name, qty]) => {
+      if (isToolOrWeapon(name)) return acc;
+      if (name.toLowerCase() === 'runes' || name.toLowerCase() === 'runestone') return acc;
+      return acc + getResellValue(name, qty);
+    }, 0);
 
     return (
-      <div className="flex flex-col gap-1.5 h-full">
-        <div className="bg-gradient-to-r from-[var(--bg-panel)] to-[var(--bg-base)] border border-[var(--border-subtle)] rounded p-1.5 flex justify-between items-center">
-          <div>
-            <div className="text-[8px] text-slate-400 uppercase tracking-widest font-bold">All-Time Yield</div>
-            <div className="text-yellow-400 font-mono text-[11px] font-black">{totalHistoricalRunes.toLocaleString()} Runes</div>
+      <div className="flex flex-col gap-1.5 h-full relative">
+        
+        {/* Simplified Chest Header */}
+        <div className="flex items-center justify-between bg-black/20 p-2 border border-white/5 rounded shrink-0">
+          <div className="flex items-center gap-4">
+            <div title="Total value of all items in your inventory, including tools and weapons">
+              <span className="text-[8px] text-slate-400 uppercase tracking-widest font-bold cursor-help">Total Worth</span>
+              <div className="text-white font-mono font-black text-[12px] leading-none mt-0.5">{displayTotalValue.toLocaleString()}</div>
+            </div>
+            <div className="w-px h-6 bg-white/10" />
+            <div title="Total value of gathered resources and materials, excluding tools and weapons">
+              <span className="text-[8px] text-slate-400 uppercase tracking-widest font-bold cursor-help text-emerald-500/80">Loot Value</span>
+              <div className="text-emerald-400 font-mono font-black text-[12px] leading-none mt-0.5">{inventoryLootValue.toLocaleString()}</div>
+            </div>
           </div>
-          <div className="text-right">
-            <div className="text-[8px] text-slate-400 uppercase tracking-widest font-bold">Total Worth</div>
-            <div className="text-cyan-400 font-mono text-[11px] font-black">{totalHistoricalWorth.toLocaleString()}</div>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between px-1">
-          <span className="text-[9px] font-bold text-slate-300 tracking-wider">RUN HISTORY</span>
-          {runHistory.length > 0 && (
-            <button onClick={clearRunHistory} className="text-red-400 hover:text-red-300 flex items-center gap-1 text-[8px] uppercase tracking-wider">
-              <Trash2 size={10} /> Clear
+          <div className="flex items-center gap-2">
+            <select 
+              value={chestSortBy} 
+              onChange={(e) => setChestSortBy(e.target.value as any)}
+              className="bg-black/40 text-[8px] text-slate-300 outline-none uppercase tracking-widest font-bold cursor-pointer p-1 rounded border border-white/5"
+              title="Sort the inventory list below"
+            >
+              <option value="value">Value</option>
+              <option value="count">Count</option>
+              <option value="rarity">Rarity</option>
+            </select>
+            <button 
+              onClick={() => setIncludeRunesInChest(!includeRunesInChest)} 
+              className={`text-[8px] font-bold uppercase p-1 rounded border transition-colors ${includeRunesInChest ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' : 'bg-black/40 text-slate-400 border-white/5'}`}
+              title="Include your current Runes balance in the 'Total Worth' calculation"
+            >
+              Runes
             </button>
-          )}
+          </div>
         </div>
 
-        <div className="flex flex-col gap-1 overflow-y-auto custom-scrollbar flex-1">
-          {runHistory.length === 0 ? (
-            <div className="text-center text-[#3a3f47] italic py-4 text-[9px]">No completed runs yet</div>
+        {/* Chest List */}
+        <div className="flex flex-col gap-0.5 overflow-y-auto custom-scrollbar flex-1 min-h-0">
+          {chestItemsListUI.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-[#3a3f47] italic text-[9px] gap-1 py-4">
+              <PackageOpen size={16} className="opacity-50" />
+              Inventory is empty
+            </div>
           ) : (
-            runHistory.map((run, index) => {
-              const runWorth = run.runes + run.lootWorth;
-              const isExpanded = !!expandedRuns[run.id];
-              const runNumber = runHistory.length - index;
-
-              return (
-                <div key={run.id} className="bg-black/20 border border-white/[0.04] rounded flex flex-col">
-                  <button 
-                    onClick={() => toggleRunDetails(run.id)}
-                    className="flex items-center justify-between p-1.5 hover:bg-white/5 transition-colors"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-[9px] font-black text-slate-300">#{runNumber}</span>
-                      <span className="text-[9px] font-mono text-slate-400">{formatDuration(run.duration)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-cyan-400 font-mono text-[9px] font-bold">{runWorth.toLocaleString()}</span>
-                      {isExpanded ? <ChevronUp size={12} className="text-slate-500" /> : <ChevronDown size={12} className="text-slate-500" />}
-                    </div>
-                  </button>
-                  
-                  {isExpanded && (
-                    <div className="p-1.5 border-t border-white/[0.04] bg-black/40 flex flex-col gap-1">
-                      <div className="flex justify-between text-[8px] text-slate-400">
-                        <span>Runes: <span className="text-yellow-400">{run.runes.toLocaleString()}</span></span>
-                        <span>Loot Worth: <span className="text-purple-400">{run.lootWorth.toLocaleString()}</span></span>
-                      </div>
-                      <div className="grid grid-cols-4 gap-1 text-center py-1 border-y border-white/[0.04]">
-                        <span className="text-[8px] text-slate-400" title="Mobs Killed">⚔️ {run.mobsKilled}</span>
-                        <span className="text-[8px] text-slate-400" title="Trees Cut">🪓 {run.treesCut}</span>
-                        <span className="text-[8px] text-slate-400" title="Ores Mined">⛏️ {run.oresMined}</span>
-                        <span className="text-[8px] text-slate-400" title="Plants Harvested">🌿 {run.plantsHarvested}</span>
-                      </div>
-                      {run.zonesVisited.length > 0 && (
-                        <div className="text-[8px] text-slate-500 truncate" title={run.zonesVisited.join(' → ')}>
-                          <Map size={8} className="inline mr-1" />
-                          {run.zonesVisited.join(' → ')}
-                        </div>
-                      )}
-                      
-                      <div className="mt-1 flex flex-col gap-0.5">
-                        <span className="text-[7px] uppercase tracking-widest text-slate-500 mb-0.5">Loot Breakdown</span>
-                        {Object.entries(run.loot).sort((a,b) => b[1] - a[1]).slice(0, 5).map(([name, qty]) => (
-                          <div key={name} className="flex justify-between text-[8px]">
-                            <span className={`truncate ${getRarityColor(name)}`}>{name}</span>
-                            <span className="font-mono text-emerald-400">x{qty}</span>
-                          </div>
-                        ))}
-                        {Object.keys(run.loot).length > 5 && (
-                          <div className="text-[7px] text-slate-500 text-center italic mt-0.5">
-                            + {Object.keys(run.loot).length - 5} more items
-                          </div>
+            <>
+              <div className="flex justify-between items-center px-1.5 py-0.5 mt-1 border-b border-white/5">
+                <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest pl-5">Item</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest w-12 text-right" title="Unit Value">Unit</span>
+                  <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest w-12 text-right">Count</span>
+                  <span className="text-[8px] text-purple-400/80 font-bold uppercase tracking-widest w-16 text-right" title="Total Value">Total</span>
+                </div>
+              </div>
+              {chestItemsListUI.map((item) => {
+                const isExcluded = excludedItems.has(item.name);
+                return (
+                  <div key={item.name} className={`flex justify-between items-center px-1.5 py-1 rounded border hover:bg-white/[0.04] transition-colors ${isExcluded ? 'bg-white/[0.01] border-transparent opacity-50' : 'bg-white/[0.02] border-white/[0.02]'}`}>
+                    <div className="flex items-center gap-1.5 overflow-hidden pr-1 flex-1">
+                      <button onClick={() => toggleExclude(item.name)} className="shrink-0 w-3.5 h-3.5 flex items-center justify-center rounded bg-black/40 border border-white/10 hover:border-white/30 transition-colors">
+                        <div className={`w-1.5 h-1.5 rounded-full ${isExcluded ? 'bg-transparent' : 'bg-emerald-500'}`}></div>
+                      </button>
+                      <div className="flex flex-col truncate">
+                        <span className={`truncate text-[10px] ${isExcluded ? 'text-slate-500 line-through' : getRarityColor(item.name)}`}>{item.name}</span>
+                        {getItemInfo(item.name)?.rarity && (
+                          <span className={`text-[7px] uppercase tracking-widest opacity-80 -mt-0.5 ${isExcluded ? 'text-slate-600' : getRarityColor(item.name)}`}>{getItemInfo(item.name)?.rarity}</span>
                         )}
                       </div>
                     </div>
-                  )}
-                </div>
-              );
-            })
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[#5a6270] font-mono text-[9px] w-12 text-right">{item.unitVal > 0 ? item.unitVal : '-'}</span>
+                      <span className="font-mono text-emerald-400 font-bold text-[10px] w-12 text-right">x{item.count}</span>
+                      <span className={`${isExcluded ? 'text-slate-600' : 'text-purple-300'} font-mono font-bold text-[10px] w-16 text-right`}>{item.totVal}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </>
           )}
         </div>
       </div>
     );
   };
 
-  const renderSettings = () => (
-    <div className="flex flex-col gap-2 h-full p-1">
-      <div className="text-[9px] font-bold text-slate-300 tracking-wider mb-1">RUN SETTINGS & GOALS</div>
-      
-      <div className="flex flex-col gap-1 bg-black/20 p-2 rounded border border-white/[0.04]">
-        <label className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-slate-300 text-[10px]">
-            <Target size={12} className="text-rose-400" />
-            Time Attack (Minutes)
-          </div>
-          <input 
-            type="number" 
-            min="0"
-            max="1440"
-            className="w-12 bg-black/50 border border-white/10 rounded px-1 py-0.5 text-[10px] text-white text-right font-mono focus:border-[var(--accent-primary)] focus:outline-none"
-            value={sessionSettings.timeAttackMinutes || ''}
-            placeholder="Off"
-            onChange={(e) => updateSessionSettings({ timeAttackMinutes: parseInt(e.target.value) || 0 })}
-          />
-        </label>
-        <div className="text-[8px] text-slate-500 leading-tight">
-          Set a timer for your run. The dashboard will flash when you reach this time limit. Set to 0 to disable.
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-1 bg-black/20 p-2 rounded border border-white/[0.04]">
-        <label className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-slate-300 text-[10px]">
-            <Diamond size={12} className="text-cyan-400" />
-            Target Loot Worth
-          </div>
-          <input 
-            type="number" 
-            min="0"
-            className="w-16 bg-black/50 border border-white/10 rounded px-1 py-0.5 text-[10px] text-white text-right font-mono focus:border-[var(--accent-primary)] focus:outline-none"
-            value={sessionSettings.lootValueGoal || ''}
-            placeholder="Off"
-            onChange={(e) => updateSessionSettings({ lootValueGoal: parseInt(e.target.value) || 0 })}
-          />
-        </label>
-        <div className="text-[8px] text-slate-500 leading-tight">
-          Set a combined total worth goal (Runes + Loot). The dashboard will flash when you reach this goal. Set to 0 to disable.
-        </div>
-      </div>
-    </div>
-  );
-
   return (
-    <div className="flex flex-col h-full text-[10px]">
+    <div className="flex flex-col h-full w-full min-w-[150px] text-[10px] bg-[var(--bg-base)]">
+
       {/* Tab Navigation */}
       <div className="flex p-1 gap-1 border-b border-white/[0.04] bg-black/20 shrink-0">
         <button 
-          onClick={() => setActiveTab('dashboard')}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-1 rounded transition-colors ${activeTab === 'dashboard' ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
+          onClick={() => setActiveTab('profile')}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-1 rounded transition-colors ${activeTab === 'profile' ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
         >
-          <Activity size={12} /> Dashboard
+          <User size={12} /> Profile
         </button>
         <button 
-          onClick={() => setActiveTab('ledger')}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-1 rounded transition-colors ${activeTab === 'ledger' ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
+          onClick={() => setActiveTab('session')}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-1 rounded transition-colors ${activeTab === 'session' ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
         >
-          <List size={12} /> Ledger
+          <Activity size={12} /> Session
         </button>
         <button 
-          onClick={() => setActiveTab('settings')}
-          className={`px-2 flex items-center justify-center py-1 rounded transition-colors ${activeTab === 'settings' ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
+          onClick={() => setActiveTab('chest')}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-1 rounded transition-colors ${activeTab === 'chest' ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
         >
-          <Settings2 size={12} />
+          <PackageOpen size={12} /> Chest
         </button>
       </div>
 
       {/* Content Area */}
       <div className="flex-1 overflow-hidden p-1.5 relative">
-        {activeTab === 'dashboard' && renderDashboard()}
-        {activeTab === 'ledger' && renderLedger()}
-        {activeTab === 'settings' && renderSettings()}
+        {activeTab === 'profile' && renderProfile()}
+        {activeTab === 'session' && renderSession()}
+        {activeTab === 'chest' && renderChest()}
       </div>
     </div>
   );

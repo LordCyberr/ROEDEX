@@ -9,6 +9,7 @@ export const MinimizedOrb: React.FC = () => {
   const notifications = useTrackerStore((state) => state.notifications);
   const setIsMinimized = useTrackerStore((state) => state.setIsMinimized);
   const orbSize = useTrackerStore((state) => state.orbSize || 56);
+  const orbBorderThickness = useTrackerStore((state) => state.orbBorderThickness || 2);
   const orbPosition = useTrackerStore((state) => state.orbPosition || { x: 16, y: 16 });
   const setOrbPosition = useTrackerStore((state) => state.setOrbPosition);
   const minimizedIcon = useTrackerStore((state) => state.minimizedIcon);
@@ -92,14 +93,15 @@ export const MinimizedOrb: React.FC = () => {
     >
       {/* Background Pulse Ring */}
       <div 
-        className={`absolute inset-0 rounded-full border-2 ${glowColor} opacity-50 animate-slow-ping pointer-events-none`}
+        className={`absolute inset-0 rounded-full ${glowColor.replace('border-', 'border-')} opacity-50 animate-slow-ping pointer-events-none`}
+        style={{ borderWidth: orbBorderThickness }}
       />
 
       <div 
-        style={{ width: orbSize, height: orbSize }}
+        style={{ width: orbSize, height: orbSize, borderWidth: orbBorderThickness }}
         className={`
         group relative flex items-center justify-center rounded-full cursor-pointer
-        bg-[var(--bg-base)] backdrop-blur-md border-2 ${glowColor}
+        bg-[var(--bg-base)] backdrop-blur-md ${glowColor}
         transition-all duration-300 hover:scale-105 hover:brightness-110
         ${pulse ? 'animate-pulse' : ''}
       `}

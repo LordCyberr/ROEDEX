@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "ROEDEX: Ultimate Overlay Tracker",
+  "version": "1.0.2",
+  "description": "The definitive real-time farming, session tracking, and analytics overlay for Roots of Embervault.",
+  "icons": {
+    "16": "icon128.png",
+    "48": "icon128.png",
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_icon": "icon128.png",
+    "default_title": "ROEDEX Overlay"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "assets/main.tsx-CIwJUu-y.js"
+      ],
+      "matches": [
+        "*://embervault.ruyui.com/*"
+      ],
+      "css": [
+        "assets/main-Zj_j-gg2.css"
+      ]
+    },
+    {
+      "js": [
+        "assets/interceptor.ts-rG_xdLT9.js"
+      ],
+      "matches": [
+        "*://embervault.ruyui.com/*"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "*://embervault.ruyui.com/*"
+      ],
+      "resources": [
+        "assets/main.tsx-CIwJUu-y.js",
+        "assets/interceptor.ts-rG_xdLT9.js"
+      ],
+      "use_dynamic_url": false
+    }
+  ]
+}

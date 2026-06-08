@@ -9,6 +9,7 @@ import {
   DropSpawnEvent, 
   ResourceRespawnEvent 
 } from '../../types/events';
+import { getRunesRequired } from '../../data/levelRequirements';
 import { getResellValue } from '../../data/prices';
 import { BobCompanion } from '../companion/BobCompanion';
 
@@ -23,6 +24,9 @@ const RARE_RESOURCES = [
 /**
  * Parses raw Socket.IO packets (e.g. `42/game,["event_name", {...}]`)
  */
+let previousInventory: Record<string, number> = {};
+let lastWeaponBreakTime = 0;
+
 export function parsePacket(rawMessage: string) {
   const store = useTrackerStore.getState();
   
@@ -57,6 +61,7 @@ export function parsePacket(rawMessage: string) {
       const possibleName = payload.username || payload.characterName || payload.name || payload.data?.username || payload.data?.characterName || payload.data?.name || payload.player?.name;
       if (possibleName && typeof possibleName === 'string') {
          BobCompanion.greetUser(possibleName);
+         import('../notifications/NotificationManager').then(({ NotificationManager }) => NotificationManager.greetUser(possibleName));
       }
     }
 
@@ -152,7 +157,45 @@ export function parsePacket(rawMessage: string) {
               maxDurability: newMax,
               slot: d.weapon.slot !== undefined ? d.weapon.slot : currentWeapon?.slot
             });
+          } // <-- Added missing bracket
+
+          // Attempt to capture level and runes/exp
+          const store = useTrackerStore.getState();
+          const profileUpdate: any = {};
+          
+          if (d.level !== undefined || d.Level !== undefined || d.lvl !== undefined) {
+             profileUpdate.level = d.level ?? d.Level ?? d.lvl;
           }
+          
+          if (d.name || d.playerName) {
+             profileUpdate.name = d.name || d.playerName;
+          }
+          
+          if (d.exp !== undefined || d.Exp !== undefined || d.runes !== undefined || d.experience !== undefined) {
+             profileUpdate.currentRunes = d.runes ?? d.exp ?? d.Exp ?? d.experience;
+          }
+          
+          if (d.nextLevelExp !== undefined || d.next_exp !== undefined || d.NextExp !== undefined || d.nextLevel !== undefined) {
+             profileUpdate.runesRequired = d.nextLevelExp ?? d.next_exp ?? d.NextExp ?? d.nextLevel;
+          }
+          
+          // Only update if we found something
+          if (Object.keys(profileUpdate).length > 0) {
+             const finalLevel = profileUpdate.level || store.playerProfile.level || 1;
+             
+             // Fallback using our new levelRequirements table
+             if (!profileUpdate.runesRequired && (!store.playerProfile.runesRequired || profileUpdate.level)) {
+               profileUpdate.runesRequired = getRunesRequired(finalLevel);
+             }
+             
+             store.setPlayerProfile(profileUpdate);
+             
+             const updatedProfile = useTrackerStore.getState().playerProfile;
+             if (updatedProfile.currentRunes >= updatedProfile.runesRequired && updatedProfile.runesRequired > 0) {
+               BobCompanion.onLevelUpReady(updatedProfile.level);
+             }
+          }
+
           if (d.t && typeof d.t === 'string') {
             const resourceType = d.t.toLowerCase();
             if (resourceType.includes('ore') || resourceType.includes('rock') || resourceType.includes('copper') || resourceType.includes('iron') || resourceType.includes('gold')) {
@@ -166,15 +209,41 @@ export function parsePacket(rawMessage: string) {
         }
         break;
       }
-      
-      case 'chest':
+      case 'chest_opened': {
+        const state = useTrackerStore.getState();
+        
+        // Fix: Ignore false-positive chest_opened events that happen right after a weapon breaks
+        if (Date.now() - lastWeaponBreakTime < 2000) {
+          break;
+        }
+        
+        if (state.autoMinimizeOnChest) {
+          state.setIsMinimized(true);
+          Object.keys(state.poppedOutWindows).forEach(id => {
+            state.updatePoppedOutWindow(id, { isMinimized: true });
+          });
+        }
+        break;
+      }
+      case 'chest_closed': {
+        const state = useTrackerStore.getState();
+        if (state.autoMinimizeOnChest) {
+          state.setIsMinimized(false);
+          Object.keys(state.poppedOutWindows).forEach(id => {
+            state.updatePoppedOutWindow(id, { isMinimized: false });
+          });
+        }
+        break;
+      }
       case 'inventory': {
+        
         // payload = {"data": {"InventoryItems": [...]}}
         const data = payload?.data;
         const items = data?.InventoryItems;
         
         if (Array.isArray(items)) {
           let chestItemsVal = 0;
+          const currentInventory: Record<string, number> = {};
           
           const itemMap = new Map();
           for (const item of items) {
@@ -183,6 +252,7 @@ export function parsePacket(rawMessage: string) {
             }
             if (item.itemId && item.Quantity) {
               chestItemsVal += getResellValue(item.itemId, item.Quantity);
+              currentInventory[item.itemId] = (currentInventory[item.itemId] || 0) + item.Quantity;
             }
             
             // Sync true MaxDurability and Durability from server if present
@@ -200,7 +270,33 @@ export function parsePacket(rawMessage: string) {
               }
             }
           }
+
+          // --- LIVE LOOT TRACKING VIA INVENTORY DIFF ---
+          if (eventName === 'inventory' && Object.keys(previousInventory).length > 0) {
+            const state = useTrackerStore.getState();
+            if (state.sessionActive) {
+              for (const [itemId, currentQty] of Object.entries(currentInventory)) {
+                const prevQty = previousInventory[itemId] || 0;
+                if (currentQty > prevQty) {
+                  const diff = currentQty - prevQty;
+                  
+                  // Ignore massive diffs (likely withdrawing from bank)
+                  if (diff < 5000) {
+                    if (itemId.toLowerCase().includes('rune')) {
+                      state.setSessionRunes((prev: number) => prev + diff);
+                    } else {
+                      state.addSessionLoot(itemId, diff);
+                    }
+                  }
+                }
+              }
+            }
+          }
           
+          if (eventName === 'inventory') {
+            previousInventory = currentInventory;
+          }
+
           if (eventName === 'inventory' && data?.InventoryDetails) {
             const details = data.InventoryDetails;
             const state = useTrackerStore.getState();
@@ -255,6 +351,7 @@ export function parsePacket(rawMessage: string) {
           
           // Set the literal value of what is in the physical chest / inventory
           useTrackerStore.getState().setChestTotalValue(chestItemsVal);
+          useTrackerStore.getState().setChestInventory(currentInventory);
         }
 
         break;
@@ -262,29 +359,17 @@ export function parsePacket(rawMessage: string) {
 
       case 'game_loot': {
         const state = useTrackerStore.getState();
-        let sessionRunesAdded = 0;
-        let sessionLootValueAdded = 0;
         
         payload.forEach((item: any) => {
           if (item.name && item.qty) {
             const qty = item.qty;
-            store.addLoot({
+            useTrackerStore.getState().addLoot({
               dropId: Math.random().toString(36).substring(7),
               itemName: item.name,
               quantity: qty,
               pos: state.playerPosition || { x: 0, y: 0 },
               spawnTime: Date.now()
             });
-            
-            if (state.sessionActive) {
-              if (item.name.toLowerCase().includes('rune')) {
-                sessionRunesAdded += qty;
-                store.setSessionRunes((prev: number) => prev + qty);
-              } else {
-                sessionLootValueAdded += getResellValue(item.name, qty);
-                store.addSessionLoot(item.name, qty);
-              }
-            }
           }
         });
         
@@ -303,11 +388,11 @@ export function parsePacket(rawMessage: string) {
 
       case 'combat_hit_ack': {
         const d = payload?.data || payload;
-        if (d?.weaponDurability !== undefined && d.weaponDurability !== -1) {
+        if (d?.weaponDurability !== undefined) {
            const state = useTrackerStore.getState();
            const slot = d.weaponSlot !== undefined ? d.weaponSlot : -1;
            const currentMax = slot !== -1 ? (state.slotDurabilities[slot] || 150) : 150;
-           const newMax = Math.max(currentMax, d.weaponDurability);
+           const newMax = Math.max(currentMax, d.weaponDurability !== -1 ? d.weaponDurability : 0);
            
            if (slot !== -1 && newMax > currentMax) {
              state.updateSlotDurability(slot, newMax);
@@ -315,14 +400,28 @@ export function parsePacket(rawMessage: string) {
 
            const name = state.weapon?.name || 'weapon';
            
-           state.setWeapon({
-             name: name,
-             durability: d.weaponDurability,
-             maxDurability: newMax,
-             slot: slot
-           });
+           if (d.weaponDurability === -1) {
+             const oldWeapon = state.weapon?.name;
+             if (oldWeapon) {
+                state.setWeapon(null);
+                BobCompanion.checkDurability(oldWeapon, 0, newMax);
+                import('../notifications/NotificationManager').then(({ NotificationManager }) => NotificationManager.checkDurability(oldWeapon, 0, newMax));
+             }
+           } else {
+             if (d.weaponDurability === 0 && state.weapon?.durability && state.weapon.durability > 0) {
+               lastWeaponBreakTime = Date.now();
+             }
 
-           BobCompanion.checkDurability(name, d.weaponDurability, newMax);
+             state.setWeapon({
+               name: name,
+               durability: d.weaponDurability,
+               maxDurability: newMax,
+               slot: slot
+             });
+
+             BobCompanion.checkDurability(name, d.weaponDurability, newMax);
+             import('../notifications/NotificationManager').then(({ NotificationManager }) => NotificationManager.checkDurability(name, d.weaponDurability, newMax));
+           }
         }
         if (TrackerValidator.validateCombatHit(payload)) {
           MobTracker.handleDamage(payload, store.currentZone);
@@ -343,11 +442,11 @@ export function parsePacket(rawMessage: string) {
       case 'resource_cooldown': {
         if (eventName === 'gather_hit_ack' && payload?.data) {
            const d = payload.data;
-           if (d.weaponDurability !== undefined && d.weaponDurability !== -1) {
+           if (d?.weaponDurability !== undefined) {
              const state = useTrackerStore.getState();
              const slot = d.weaponSlot !== undefined ? d.weaponSlot : -1;
              const currentMax = slot !== -1 ? (state.slotDurabilities[slot] || 150) : 150;
-             const newMax = Math.max(currentMax, d.weaponDurability);
+             const newMax = Math.max(currentMax, d.weaponDurability !== -1 ? d.weaponDurability : 0);
              
              if (slot !== -1 && newMax > currentMax) {
                state.updateSlotDurability(slot, newMax);
@@ -355,14 +454,28 @@ export function parsePacket(rawMessage: string) {
 
              const name = state.weapon?.name || 'tool';
              
-             state.setWeapon({
-               name: name,
-               durability: d.weaponDurability,
-               maxDurability: newMax,
-               slot: slot
-             });
+             if (d.weaponDurability === -1) {
+                const oldWeapon = state.weapon?.name;
+                if (oldWeapon) {
+                   state.setWeapon(null);
+                   BobCompanion.checkDurability(oldWeapon, 0, newMax);
+                   import('../notifications/NotificationManager').then(({ NotificationManager }) => NotificationManager.checkDurability(oldWeapon, 0, newMax));
+                }
+             } else {
+                if (d.weaponDurability === 0 && state.weapon?.durability && state.weapon.durability > 0) {
+                  lastWeaponBreakTime = Date.now();
+                }
 
-             BobCompanion.checkDurability(name, d.weaponDurability, newMax);
+                state.setWeapon({
+                  name: name,
+                  durability: d.weaponDurability,
+                  maxDurability: newMax,
+                  slot: slot
+                });
+
+                BobCompanion.checkDurability(name, d.weaponDurability, newMax);
+                import('../notifications/NotificationManager').then(({ NotificationManager }) => NotificationManager.checkDurability(name, d.weaponDurability, newMax));
+             }
            }
            ResourceTracker.handleGather(payload, store.currentZone);
         } else if (eventName === 'resource_cooldown') {
@@ -379,12 +492,40 @@ export function parsePacket(rawMessage: string) {
          break;
       }
 
+      case 'npcquest_all_result': {
+        try {
+          // payload is already the object {"success":true, "npcs": [...]}
+          const npcs = payload?.npcs || [];
+          const activeQuests: any[] = [];
+          
+          for (const npc of npcs) {
+            if (npc.quests && Array.isArray(npc.quests)) {
+              for (const q of npc.quests) {
+                if (q.status === 'accepted') {
+                  // Map result.currentAmount to currentAmount directly on the quest
+                  q.currentAmount = q.result?.currentAmount || 0;
+                  activeQuests.push(q);
+                }
+              }
+            }
+          }
+          
+          useTrackerStore.getState().setQuests(activeQuests);
+        } catch (err) {
+          console.error("Error parsing quests:", err);
+        }
+        break;
+      }
+
       case 'zone_change':
       case 'join_zone': {
          const zone = payload?.zone || payload?.data?.zone;
          if (zone) {
             store.setCurrentZone(zone);
             BobCompanion.zoneChange(zone);
+            if (store.notificationSettings.enabled && store.notificationSettings.toasts && store.notificationSettings.zoneChange) {
+              store.addNotification({ type: 'info', title: 'System', message: `Entered Zone: ${zone}` });
+            }
          }
          break;
       }
@@ -426,7 +567,12 @@ export function parsePacket(rawMessage: string) {
       case 'inventory_unequip': {
          const state = useTrackerStore.getState();
          if (payload?.equipSlot === 'weapon') {
+            const oldWeapon = state.weapon?.name;
             state.setWeapon(null);
+            if (oldWeapon) {
+               BobCompanion.onWeaponUnequipped(oldWeapon);
+               import('../notifications/NotificationManager').then(({ NotificationManager }) => NotificationManager.onWeaponUnequipped(oldWeapon));
+            }
          } else if (payload?.equipSlot?.startsWith('armor')) {
             state.setArmor(payload.equipSlot, null);
          }

@@ -104,9 +104,9 @@ export interface WeaponState {
 
 export interface OverlayNotification {
   id: string;
-  title: string;
+  title?: string;
   message: string;
-  type: 'info' | 'success' | 'warning' | 'error' | 'rare';
+  type?: 'info' | 'success' | 'warning' | 'error' | 'rare' | 'mythic' | 'combat';
   timestamp: number;
 }
 

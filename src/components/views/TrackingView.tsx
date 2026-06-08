@@ -13,19 +13,7 @@ const calculateDistance = (p1: Vector2 | null, p2: Vector2) => {
   return Math.round(Math.sqrt(dx * dx + dy * dy));
 };
 
-const formatDisplayName = (raw: string) => {
-  let clean = raw.trim();
-  if (clean.toLowerCase() === 'crystalrock') return 'Crystal';
-  if (clean.toLowerCase() === 'dinobones') return 'Dino Bone';
-  
-  // Strip common suffixes case-insensitively
-  clean = clean.replace(/\s*(ore|node|flower|tree|ai)$/i, '').trim();
-  
-  // Format camelCase to Title Case if needed
-  clean = clean.replace(/([a-z])([A-Z])/g, '$1 $2');
-  
-  return clean.replace(/^./, (str) => str.toUpperCase());
-};
+import { formatInternalName as formatDisplayName } from '../../utils/formatters';
 
 const getCategoryName = (type: string, isResource: boolean): string => {
   const t = type.toLowerCase();
@@ -45,7 +33,11 @@ interface DynamicGroup {
   items: Record<string, TableRowData>;
 }
 
-export const TrackingView: React.FC = () => {
+interface TrackingViewProps {
+  forcedTab?: string;
+}
+
+export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
   const {
     enemies, resources, timers, throttledPlayerPosition, activeTab, 
     favorites, layoutMode, displayMode, currentZone,
@@ -69,6 +61,7 @@ export const TrackingView: React.FC = () => {
     toggleSidebarZone: state.toggleSidebarZone
   })));
   
+  const effectiveTab = forcedTab || activeTab;
   const isHorizontal = layoutMode === 'horizontal';
 
   const visibleCategories = useMemo(() => {
@@ -80,6 +73,7 @@ export const TrackingView: React.FC = () => {
       category: string,
       name: string,
       dist: number,
+      pos: Vector2,
       isAlive: boolean,
       isTimerInjection: boolean,
       respawnTimeMs?: number
@@ -105,6 +99,7 @@ export const TrackingView: React.FC = () => {
           id: name,
           name,
           dist: dist,
+          nearestPos: pos,
           counts: { alive: 0, dead: 0 }
         };
       }
@@ -114,6 +109,7 @@ export const TrackingView: React.FC = () => {
       // Keep shortest distance
       if (dist >= 0 && (row.dist === -1 || dist < row.dist)) {
         row.dist = dist;
+        row.nearestPos = pos;
       }
       
       if (!isTimerInjection) {
@@ -147,12 +143,12 @@ export const TrackingView: React.FC = () => {
       const name = formatDisplayName(nameRaw);
       const zone = zoneRaw || 'Unknown';
       
-      if (activeTab === 'favorites' && !isFavorite(name)) return;
+      if (effectiveTab === 'favorites' && !isFavorite(name)) return;
       if (displayMode === 'current_zone' && zone !== currentZone) return;
 
       const dist = calculateDistance(throttledPlayerPosition, pos);
       const category = getCategoryName(typeRaw, isResource);
-      addOrUpdate(zone, category, name, dist, isAlive, isTimerInjection, respawnTimeMs);
+      addOrUpdate(zone, category, name, dist, pos, isAlive, isTimerInjection, respawnTimeMs);
     };
 
     // 1. Process Enemies
@@ -208,15 +204,15 @@ export const TrackingView: React.FC = () => {
     });
 
     return sortedGroups;
-  }, [enemies, resources, timers, throttledPlayerPosition, activeTab, favorites, displayMode, currentZone]);
+  }, [enemies, resources, timers, throttledPlayerPosition, effectiveTab, favorites, displayMode, currentZone]);
 
-  if (activeTab !== 'global' && activeTab !== 'favorites') return null;
+  if (effectiveTab !== 'global' && effectiveTab !== 'favorites') return null;
 
   // ── VERTICAL MODE: flat list with single global header ──
   if (!isHorizontal) {
     if (verticalGroupingMode === 'flat') {
       return (
-        <div className="flex flex-col">
+        <div className="flex flex-col w-full min-w-[150px]">
           {visibleCategories.length > 0 && <GlobalTableHeader />}
           {visibleCategories.map(cat => (
             <CategorySection
@@ -238,7 +234,7 @@ export const TrackingView: React.FC = () => {
     }, {} as Record<string, typeof visibleCategories>);
 
     return (
-      <div className="flex flex-col">
+      <div className="flex flex-col w-full min-w-[150px]">
         {visibleCategories.length > 0 && <GlobalTableHeader />}
         {Object.entries(groupedByZone).map(([zone, cats]) => {
           const isZoneCollapsed = collapsedSidebarZones[zone];

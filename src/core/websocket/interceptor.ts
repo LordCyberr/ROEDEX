@@ -48,4 +48,29 @@ class HookedWebSocket extends OriginalWebSocket {
 // Override the native WebSocket
 (window as any).WebSocket = HookedWebSocket;
 
+// Intercept console messages for game events not broadcasted via WebSocket
+const methods: ('log' | 'info' | 'debug')[] = ['log', 'info', 'debug'];
+methods.forEach(method => {
+  const original = console[method];
+  console[method] = function(...args: any[]) {
+    if (args.length > 0 && typeof args[0] === 'string') {
+      const msg = args[0];
+      if (msg.includes('OnMMEvent ContentChanged (ChestInventory)')) {
+        window.postMessage({
+          source: 'ROEDEX_INTERCEPTOR',
+          type: 'WS_MESSAGE',
+          data: '42' + JSON.stringify(["chest_opened", {}])
+        }, '*');
+      } else if (msg.includes('Close Invoked')) {
+        window.postMessage({
+          source: 'ROEDEX_INTERCEPTOR',
+          type: 'WS_MESSAGE',
+          data: '42' + JSON.stringify(["chest_closed", {}])
+        }, '*');
+      }
+    }
+    original.apply(console, args);
+  };
+});
+
 console.log('[ROEDEX] WebSocket Interceptor Injected Successfully');

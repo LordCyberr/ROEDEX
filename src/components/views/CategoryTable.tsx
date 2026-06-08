@@ -1,56 +1,76 @@
 import React, { memo, useState, useEffect } from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
 import { Star, ChevronDown, ChevronRight, Clock } from 'lucide-react';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export interface TableRowData {
   id: string;
   name: string;
   dist: number;
+  nearestPos?: Vector2;
   counts?: { alive: number; dead: number };
   respawnTimeMs?: number;
 }
 
-// ── Rarity Colors ──────────────────────────────────────────────
-export const getRarityColor = (name: string) => {
-  const lower = name.toLowerCase();
+import { Vector2 } from '../../types/events';
+import { getItemInfo } from '../../data/rarity';
+
+const calculateDistance = (p1: Vector2 | null, p2: Vector2 | undefined) => {
+  if (!p1 || !p2) return -1;
+  const dx = p1.x - p2.x;
+  const dy = p1.y - p2.y;
+  return Math.round(Math.sqrt(dx * dx + dy * dy));
+};
+
+const RealtimeDistance: React.FC<{ targetPos?: Vector2, fallbackDist: number }> = ({ targetPos, fallbackDist }) => {
+  const playerPosition = useTrackerStore(state => state.playerPosition);
   
-  // Mystical (Pink)
-  if (lower.includes('magic') || lower.includes('void') || lower.includes('shadow') || lower.includes('ember')) {
-    return 'text-[#e879f9]'; 
-  }
-  
-  // Epic / Legendary (Orange)
-  if (lower.includes('god') || lower.includes('elemental') || lower.includes('dino')) {
-    return 'text-[#fbbf24]'; 
-  }
-  
-  // Rare (Green)
-  if (lower.includes('crystal') || lower.includes('gold') || lower.includes('titanium')) {
-    return 'text-[#4ade80]'; 
-  }
-  
-  // Uncommon (Blue)
-  if (lower.includes('iron') || lower.includes('silver') || lower.includes('fang') || lower.includes('claw')) {
-    return 'text-[#60a5fa]'; 
+  if (!targetPos) {
+    return <>{fallbackDist >= 0 ? `${fallbackDist}m` : '--'}</>;
   }
 
-  // Common (White / Theme Default)
-  // Includes: Wolf, Slime, Copper, Wood, Stone, Pelt, etc.
-  return 'text-[var(--text-primary)]';
+  const dist = calculateDistance(playerPosition, targetPos);
+  return <>{dist >= 0 ? `${dist}m` : '--'}</>;
+};
+
+// ── Rarity Colors ──────────────────────────────────────────────
+export const getRarityColor = (name: string) => {
+  const info = getItemInfo(name);
+  if (!info) return 'text-[var(--text-primary)]'; // Common default
+
+  switch (info.rarity) {
+    case 'mythic': return 'text-[#e879f9]';     // Purple
+    case 'rare': return 'text-[#4ade80]';       // Green
+    case 'uncommon': return 'text-[#60a5fa]';   // Blue
+    case 'common': return 'text-[var(--text-muted)]'; // Gray
+    default: return 'text-[var(--text-primary)]';
+  }
 };
 
 // ── Global Table Header (used by TrackingView) ─────────────────
 export const GlobalTableHeader: React.FC = () => {
+  const tableSettings = useTrackerStore((state) => state.tableSettings);
+  const { t } = useTranslation();
+  
+  let gridCols = '1fr';
+  if (tableSettings.showDistance) gridCols += ' 24px';
+  if (tableSettings.showCount) gridCols += ' 38px';
+  if (tableSettings.showTimer) gridCols += ' 24px';
+
   return (
-    <div className={`grid grid-cols-[1fr_24px_38px_24px] gap-1 items-center px-1.5 py-0.5 text-[8.5px] font-bold text-[var(--text-accent)] border-b border-[var(--border-subtle)] uppercase tracking-wider bg-[var(--bg-panel)] font-[var(--font-heading)]`}>
-      <div>Name</div>
-      <div className="text-right">Dist</div>
-      <div className="text-right flex items-center justify-end gap-0.5 whitespace-nowrap">
-        ❤️/💀
-      </div>
-      <div className="text-right flex justify-end">
-        <Clock size={9} className="text-gray-500" />
-      </div>
+    <div className={`grid gap-1 items-center px-1.5 py-0.5 text-[8.5px] font-bold text-[var(--text-muted)] border-b border-[var(--border-subtle)] uppercase tracking-wider bg-[var(--bg-panel)] font-[var(--font-heading)]`} style={{ gridTemplateColumns: gridCols }}>
+      <div>{t('columns.name')}</div>
+      {tableSettings.showDistance && <div className="text-right">{t('columns.dist')}</div>}
+      {tableSettings.showCount && (
+        <div className="text-right flex items-center justify-end gap-0.5 whitespace-nowrap">
+          ❤️/💀
+        </div>
+      )}
+      {tableSettings.showTimer && (
+        <div className="text-right flex justify-end">
+          <Clock size={9} className="text-gray-500" />
+        </div>
+      )}
     </div>
   );
 };
@@ -74,26 +94,48 @@ const getTimerColor = (targetMs: number, now: number): string => {
   return 'text-[#ff9900]'; // Orange
 };
 
+const TimerDisplay = memo(({ targetMs, textSmall }: { targetMs: number, textSmall: string }) => {
+  const [now, setNow] = useState(Date.now());
+  
+  useEffect(() => {
+    if (targetMs <= now) return;
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, [targetMs, now]);
+
+  const timerStr = formatCountdown(targetMs, now);
+  const timerColor = getTimerColor(targetMs, now);
+
+  return (
+    <div className={`text-right ${textSmall} ${timerColor}`}>
+      {timerStr}
+    </div>
+  );
+});
+
 // ── Single Data Row ────────────────────────────────────────────
-const DataRow = memo(({ row, now }: { row: TableRowData; now: number }) => {
+const DataRow = memo(({ row }: { row: TableRowData }) => {
   const toggleFavorite = useTrackerStore((state) => state.toggleFavorite);
   const isFav = useTrackerStore((state) => state.favorites.includes(row.name));
   const density = useTrackerStore((state) => state.displayDensity);
+  const tableSettings = useTrackerStore((state) => state.tableSettings);
 
-  const distance = row.dist >= 0 ? `${row.dist}m` : '--';
   const alive = row.counts?.alive ?? 0;
   const dead = row.counts?.dead ?? 0;
 
-  const hasTimer = row.respawnTimeMs && row.respawnTimeMs > now;
-  const timerStr = hasTimer ? formatCountdown(row.respawnTimeMs!, now) : '--';
-  const timerColor = hasTimer ? getTimerColor(row.respawnTimeMs!, now) : 'text-[var(--text-muted)]';
+  const hasTimer = !!row.respawnTimeMs && row.respawnTimeMs > Date.now();
 
   const py = density === 'compact' ? 'py-0' : 'py-1';
   const textBase = density === 'compact' ? 'text-[9.5px]' : 'text-[11px]';
   const textSmall = density === 'compact' ? 'text-[8.5px]' : 'text-[10px]';
 
+  let gridCols = '1fr';
+  if (tableSettings.showDistance) gridCols += ' 24px';
+  if (tableSettings.showCount) gridCols += ' 38px';
+  if (tableSettings.showTimer) gridCols += ' 24px';
+
   return (
-    <div className={`grid grid-cols-[1fr_24px_38px_24px] gap-1 items-center px-1.5 ${py} hover:bg-[var(--bg-hover)] ${textBase} font-mono leading-[1.2]`}>
+    <div className={`grid gap-1 items-center px-1.5 ${py} hover:bg-[var(--bg-hover)] ${textBase} font-mono leading-[1.2]`} style={{ gridTemplateColumns: gridCols }}>
       <div className="flex items-center gap-1 min-w-0">
         <Star
           size={10}
@@ -105,34 +147,32 @@ const DataRow = memo(({ row, now }: { row: TableRowData; now: number }) => {
           {row.name}
         </span>
       </div>
-      <div className="text-right text-[var(--text-muted)]">{distance}</div>
-      <div className="text-right">
-        <span className={alive > 0 ? 'text-[#00ff55]' : 'text-[var(--text-muted)]'}>{alive}</span>
-        <span className="text-[var(--text-muted)] mx-px">/</span>
-        <span className={dead > 0 ? 'text-red-500' : 'text-[var(--text-muted)]'}>{dead}</span>
-      </div>
-      <div className={`text-right ${textSmall} ${timerColor}`}>
-        {timerStr}
-      </div>
+      {tableSettings.showDistance && <div className="text-right text-[var(--text-muted)]"><RealtimeDistance targetPos={row.nearestPos} fallbackDist={row.dist} /></div>}
+      {tableSettings.showCount && (
+        <div className="text-right">
+          <span className={alive > 0 ? 'text-[#00ff55]' : 'text-[var(--text-muted)]'}>{alive}</span>
+          <span className="text-[var(--text-muted)] mx-px">/</span>
+          <span className={dead > 0 ? 'text-red-500' : 'text-[var(--text-muted)]'}>{dead}</span>
+        </div>
+      )}
+      {tableSettings.showTimer && (
+        hasTimer ? (
+          <TimerDisplay targetMs={row.respawnTimeMs!} textSmall={textSmall} />
+        ) : (
+          <div className={`text-right ${textSmall} text-[var(--text-muted)]`}>--</div>
+        )
+      )}
     </div>
   );
 });
 
-// ── Shared Category List (Timer Logic) ─────────────────────────
+// ── Shared Category List ─────────────────────────
 const CategoryList: React.FC<{ data: TableRowData[]; collapsed: boolean }> = ({ data, collapsed }) => {
-  const [now, setNow] = useState(Date.now());
-  const hasTimers = data.some(d => d.respawnTimeMs && d.respawnTimeMs > Date.now());
-
-  useEffect(() => {
-    if (!hasTimers || collapsed) return;
-    const interval = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(interval);
-  }, [hasTimers, collapsed]);
-
+  if (collapsed) return null;
   return (
     <>
       {data.map((row) => (
-        <DataRow key={row.id} row={row} now={now} />
+        <DataRow key={row.id} row={row} />
       ))}
     </>
   );
@@ -176,10 +216,9 @@ export const CategoryCard: React.FC<{ categoryId: string; title: string; data: T
 
   const py = density === 'compact' ? 'py-0.5' : 'py-1';
   const textSz = density === 'compact' ? 'text-[8.5px]' : 'text-[10px]';
-  const w = density === 'compact' ? 'w-[170px]' : 'w-[200px]';
 
   return (
-    <div className={`flex flex-col bg-[var(--bg-card)] rounded-2xl overflow-hidden shrink-0 shadow-md border border-[var(--border-subtle)] ${w} h-fit max-h-full`}>
+    <div className={`flex flex-col bg-[var(--bg-card)] rounded-2xl overflow-hidden shrink-0 shadow-md border border-[var(--border-subtle)] w-fit min-w-fit h-fit max-h-full`}>
       <button
         onClick={() => toggleCategory(categoryId)}
         title={`Toggle ${title}`}

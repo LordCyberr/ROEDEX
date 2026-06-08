@@ -106,6 +106,8 @@ export const RESELL_VALUES: Record<string, number> = {
   'ambersap': 140,
   'enchantedbark': 120,
   'glowingspores': 15,
+  'runes': 1,
+  'rune': 1,
 };
 
 export const getResellValue = (name: string, qty: number) => {

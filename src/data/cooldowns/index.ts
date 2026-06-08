@@ -28,6 +28,9 @@ export function getFallbackCooldown(name: string): number {
     .replace(/\(bush\)/i, '')
     .replace(/\(tree\)/i, '')
     .replace(/\(ore\)/i, '')
+    .replace(/ore$/i, '')
+    .replace(/rock$/i, '')
+    .replace(/vein$/i, '')
     .replace(/\s+/g, '');
 
   const sanitizedName = sanitize(name);

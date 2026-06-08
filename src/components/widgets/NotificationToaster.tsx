@@ -1,20 +1,20 @@
 import React, { useEffect } from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
-import { motion, AnimatePresence, useDragControls } from 'motion/react';
-import { Bot } from 'lucide-react';
+import { motion, AnimatePresence, useDragControls, useMotionValue } from 'motion/react';
+import { Sparkles, Star, Info, Sword, Pickaxe, Map } from 'lucide-react';
 
 export const NotificationToaster: React.FC = () => {
   const notifications = useTrackerStore((state) => state.notifications);
   const removeNotification = useTrackerStore((state) => state.removeNotification);
   const notificationSettings = useTrackerStore((state) => state.notificationSettings);
   const updateNotificationSettings = useTrackerStore((state) => state.updateNotificationSettings);
-  
   const { 
     position, animation, duration, width, height, scale, opacity, 
-    compactMode, customPositionX, customPositionY 
+    customPositionX, customPositionY, toastShape, neonGlow 
   } = notificationSettings;
-
   const dragControls = useDragControls();
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
 
   // Auto-remove notifications
   useEffect(() => {
@@ -53,18 +53,61 @@ export const NotificationToaster: React.FC = () => {
   const getAnimationConfig = () => {
     const yOffset = isTop ? -20 : 20;
     switch (animation) {
-      case 'fade': return { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } };
-      case 'pop': return { initial: { opacity: 0, scale: 0.8 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0, scale: 0.8 } };
-      case 'slide': default: return { initial: { opacity: 0, y: yOffset, scale: 0.95 }, animate: { opacity: 1, y: 0, scale: 1 }, exit: { opacity: 0, scale: 0.95 } };
+      case 'fade': return { initial: { opacity: 0, scale }, animate: { opacity: 1, scale }, exit: { opacity: 0, scale } };
+      case 'pop': return { initial: { opacity: 0, scale: 0.8 * scale }, animate: { opacity: 1, scale }, exit: { opacity: 0, scale: 0.8 * scale } };
+      case 'slide': default: return { initial: { opacity: 0, y: yOffset, scale: 0.95 * scale }, animate: { opacity: 1, y: 0, scale }, exit: { opacity: 0, scale: 0.95 * scale } };
     }
   };
 
   const animConfig = getAnimationConfig();
 
+  const getShapeClass = () => {
+    switch (toastShape) {
+      case 'square': return 'rounded-none';
+      case 'smooth': return 'rounded-2xl';
+      case 'pill': return 'rounded-full px-6';
+      case 'rectangle': default: return 'rounded-md';
+    }
+  };
+
+  const getIcon = (type?: string) => {
+    if (!type) return <Info size={16} className="text-blue-400" />;
+    const t = type.toLowerCase();
+    if (t.includes('mythic')) return <Sparkles size={16} className="text-purple-400" />;
+    if (t.includes('rare')) return <Sparkles size={16} className="text-green-400" />;
+    if (t.includes('achievement')) return <Star size={16} className="text-fuchsia-400" />;
+    if (t.includes('combat')) return <Sword size={16} className="text-red-400" />;
+    if (t.includes('mining')) return <Pickaxe size={16} className="text-gray-400" />;
+    if (t.includes('zone')) return <Map size={16} className="text-emerald-400" />;
+    return <Info size={16} className="text-blue-400" />;
+  };
+
+  const getGlowClass = (type?: string) => {
+    if (!neonGlow) return 'shadow-lg border-[var(--border-subtle)]';
+    if (!type) return 'shadow-lg border-[var(--border-subtle)]';
+    const t = type.toLowerCase();
+    if (t.includes('mythic')) return 'shadow-[0_0_20px_rgba(168,85,247,0.4)] border-purple-500/60';
+    if (t.includes('rare')) return 'shadow-[0_0_20px_rgba(74,222,128,0.3)] border-green-500/50';
+    if (t.includes('achievement')) return 'shadow-[0_0_20px_rgba(217,70,239,0.3)] border-fuchsia-500/50';
+    return 'shadow-lg border-[var(--border-subtle)]';
+  };
+
   return (
-    <div 
+    <motion.div 
       className={`fixed ${getPositionClasses()} z-[60] flex flex-col gap-2 pointer-events-none max-w-[calc(100vw-32px)]`}
-      style={getPositionStyles()}
+      style={{ ...getPositionStyles(), x, y }}
+      drag={position === 'custom'}
+      dragListener={false}
+      dragControls={dragControls}
+      dragMomentum={false}
+      onDragEnd={() => {
+        updateNotificationSettings({
+          customPositionX: Math.max(0, customPositionX + x.get()),
+          customPositionY: Math.max(0, customPositionY + y.get())
+        });
+        x.set(0);
+        y.set(0);
+      }}
     >
       <AnimatePresence>
         {notifications.map((notif) => (
@@ -72,32 +115,19 @@ export const NotificationToaster: React.FC = () => {
             key={notif.id}
             layout
             initial={animConfig.initial}
-            animate={{ ...animConfig.animate, scale }}
+            animate={{ ...animConfig.animate, x: 0, y: 0 }}
             exit={animConfig.exit}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
             style={{ 
-              width: 'fit-content',
-              minWidth: '220px',
-              maxWidth: `min(${width}px, calc(100vw - 32px))`, 
+              width: `${width}px`,
+              maxWidth: 'calc(100vw - 32px)', 
               minHeight: `${height}px`,
-              opacity 
+              opacity,
+              transformOrigin: isTop ? 'top center' : 'bottom center'
             }}
-            drag={notif.id === 'placeholder'}
-            dragControls={dragControls}
-            dragListener={false}
-            onDragEnd={(_, info) => {
-               if (notif.id === 'placeholder') {
-                 // Update custom position based on drag offset
-                 updateNotificationSettings({
-                   customPositionX: customPositionX + info.offset.x,
-                   customPositionY: customPositionY + info.offset.y
-                 });
-               }
-            }}
-            className={`flex items-center justify-center backdrop-blur-md rounded-md px-3 py-2 pointer-events-auto
-              border border-[var(--border-subtle)] bg-black/60 shadow-md
-              ${notif.id === 'placeholder' ? 'cursor-grab active:cursor-grabbing border-dashed' : ''}
-              ${compactMode ? 'py-1 px-2' : ''}
+            className={`flex items-center justify-center backdrop-blur-xl px-4 py-3 pointer-events-auto
+              bg-[var(--bg-panel)] border ${getShapeClass()} ${getGlowClass(notif.type)}
+              ${notif.id === 'placeholder' ? 'cursor-grab active:cursor-grabbing border-dashed border-indigo-400' : ''}
             `}
           >
             {notif.id === 'placeholder' && (
@@ -107,33 +137,22 @@ export const NotificationToaster: React.FC = () => {
               />
             )}
             
-            <div className={`flex items-center w-full gap-2 ${notif.title === 'Bob' ? 'justify-start text-left' : 'flex-col justify-center text-center'}`}>
-              
-              {notif.title === 'Bob' && (
-                <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/50 text-indigo-400 shadow-[0_0_10px_rgba(99,102,241,0.3)]">
-                  <Bot size={18} />
+            <div className={`flex flex-col items-center justify-center w-full gap-1 text-center`}>
+              {notif.title && (
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  {getIcon(notif.type)}
+                  <span className="text-[11px] font-black text-[var(--accent-primary)] opacity-100 tracking-[0.15em] uppercase drop-shadow-sm">
+                    {notif.id === 'placeholder' ? 'Drag Me' : notif.title}
+                  </span>
                 </div>
               )}
-
-              <div className={`flex flex-col flex-1 overflow-hidden w-full ${notif.title === 'Bob' ? 'text-left' : 'text-center'}`}>
-                {!compactMode && notif.title && notif.title !== 'Bob' && (
-                  <div className="flex items-center justify-center gap-1.5 mb-0.5">
-                    <span className="text-[9px] font-bold text-[var(--accent-primary)] opacity-90 tracking-widest uppercase">
-                      {notif.id === 'placeholder' ? 'Drag Me' : notif.title}
-                    </span>
-                  </div>
-                )}
-                {notif.title === 'Bob' && !compactMode && (
-                   <div className="text-[9px] font-bold text-indigo-400 opacity-90 tracking-widest uppercase mb-0.5">BOB</div>
-                )}
-                <span className={`text-slate-200 font-medium leading-snug break-words ${compactMode ? 'text-[11px]' : 'text-xs'} ${notif.title === 'Bob' ? 'italic text-indigo-100' : ''}`}>
-                  {notif.title === 'Bob' ? `"${notif.message}"` : notif.message}
-                </span>
-              </div>
+              <span className={`text-[var(--text-primary)] font-bold leading-relaxed break-words text-sm md:text-base`}>
+                {notif.message}
+              </span>
             </div>
           </motion.div>
         ))}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 };

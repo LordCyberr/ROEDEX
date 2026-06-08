@@ -30,8 +30,6 @@ export const ArmorUI: React.FC = () => {
     setIsFlashing(flashing);
   }, [armor, settings.enableAlerts, settings.alertThreshold]);
 
-  if (!settings.show || Object.keys(armor).length === 0) return null;
-
   const {
     style = 'bar_percent',
     scale = 1,
@@ -45,8 +43,32 @@ export const ArmorUI: React.FC = () => {
     customPositionX = 0,
     customPositionY = 0,
     locked = true,
-    layout = 'vertical'
+    layout = 'vertical',
+    borderWidth = 1,
+    dynamicBorderColor = true
   } = settings;
+
+  const x = useMotionValue(position === 'custom' ? customPositionX : 0);
+  const y = useMotionValue(position === 'custom' ? customPositionY : 0);
+
+  useEffect(() => {
+    if (position === 'custom') {
+      x.set(customPositionX);
+      y.set(customPositionY);
+    }
+  }, [position, customPositionX, customPositionY, x, y]);
+
+  let displayArmor: any = armor;
+  if (Object.keys(armor).length === 0 && !locked) {
+    displayArmor = {
+      Helmet: { name: 'Mock Helmet', instanceId: '1', durability: 850, maxDurability: 1000 },
+      Torso: { name: 'Mock Torso', instanceId: '2', durability: 500, maxDurability: 1000 },
+      Pants: { name: 'Mock Pants', instanceId: '3', durability: 200, maxDurability: 1000 },
+      Boots: { name: 'Mock Boots', instanceId: '4', durability: 50, maxDurability: 1000 }
+    };
+  }
+
+  if (!settings.show || Object.keys(displayArmor).length === 0) return null;
 
   const getPositionStyles = (): React.CSSProperties => {
     if (position === 'custom') {
@@ -69,16 +91,6 @@ export const ArmorUI: React.FC = () => {
   const hasBar = style === 'bar' || style.includes('bar_');
   const showPct = style === 'text_percent' || style === 'bar_percent';
   const showDur = style === 'text_durability' || style === 'bar_durability';
-
-  const x = useMotionValue(position === 'custom' ? customPositionX : 0);
-  const y = useMotionValue(position === 'custom' ? customPositionY : 0);
-
-  useEffect(() => {
-    if (position === 'custom') {
-      x.set(customPositionX);
-      y.set(customPositionY);
-    }
-  }, [position, customPositionX, customPositionY, x, y]);
 
   const getIcon = (slot: string) => {
     switch (slot) {
@@ -107,7 +119,7 @@ export const ArmorUI: React.FC = () => {
         }
       }}
       className={`fixed z-50 flex ${layout === 'vertical' ? 'flex-col gap-1' : 'flex-row gap-2'} items-center justify-center shadow-2xl select-none
-        ${isDraggable ? 'pointer-events-auto cursor-grab active:cursor-grabbing border-2 border-dashed border-emerald-400 p-2' : 'pointer-events-none'}
+        ${isDraggable ? 'pointer-events-auto cursor-grab active:cursor-grabbing border-dashed border-emerald-400 p-2' : 'pointer-events-none border-solid'}
         ${isFlashing && enableAnimations ? 'animate-pulse' : ''}
       `}
       style={{
@@ -116,35 +128,41 @@ export const ArmorUI: React.FC = () => {
         scale,
         opacity,
         backdropFilter: hasText ? `blur(${glassStrength}px)` : 'none',
-        backgroundColor: hasText ? 'rgba(0, 0, 0, 0.4)' : 'transparent',
+        backgroundColor: hasText ? 'rgba(0, 0, 0, 0.6)' : 'transparent',
         borderRadius: `${borderRadius}px`,
-        border: isDraggable ? undefined : (hasText ? '1px solid rgba(255,255,255,0.05)' : 'none'),
+        borderWidth: isDraggable ? '2px' : '0px',
+        borderColor: isDraggable ? undefined : 'transparent',
         padding: hasText && !isDraggable ? '6px' : undefined
       }}
     >
-      {Object.entries(armor).map(([slot, item]) => {
+      {Object.entries(displayArmor).map(([slot, item]: [string, any]) => {
         if (!item) return null;
         
         const percentage = Math.max(0, Math.min(100, (item.durability / item.maxDurability) * 100));
-        let color = 'bg-emerald-400';
-        let textColor = 'text-emerald-400';
+        let color = 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]';
+        let textColor = 'text-emerald-400 drop-shadow-[0_0_4px_rgba(16,185,129,0.5)]';
+        let borderColor = 'border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]';
         
-        if (percentage <= 9) {
-          color = 'bg-red-500';
-          textColor = 'text-red-400';
-        } else if (percentage <= 39) {
-          color = 'bg-orange-500';
-          textColor = 'text-orange-400';
-        } else if (percentage <= 79) {
-          color = 'bg-yellow-400';
-          textColor = 'text-yellow-400';
+        if (percentage <= 20) {
+          color = 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]';
+          textColor = 'text-red-400 drop-shadow-[0_0_4px_rgba(239,68,68,0.5)]';
+          borderColor = 'border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]';
+        } else if (percentage <= 40) {
+          color = 'bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.3)]';
+          textColor = 'text-orange-400 drop-shadow-[0_0_4px_rgba(249,115,22,0.5)]';
+          borderColor = 'border-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.3)]';
+        } else if (percentage <= 75) {
+          color = 'bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]';
+          textColor = 'text-yellow-400 drop-shadow-[0_0_4px_rgba(250,204,21,0.5)]';
+          borderColor = 'border-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]';
         }
 
         const pctStr = `${Math.round(percentage)}%`;
         const durStr = `${item.durability} / ${item.maxDurability}`;
+        const borderColorClass = dynamicBorderColor ? borderColor : 'border-white/20';
 
         return (
-          <div key={slot} className="relative flex items-center justify-center overflow-hidden" style={{ width: `${width}px`, height: hasText ? `${Math.max(20, height + 12)}px` : `${height}px`, borderRadius: `${borderRadius}px` }}>
+          <div key={slot} className={`relative flex items-center justify-center overflow-hidden ${!isDraggable && borderWidth > 0 ? `border-solid ${borderColorClass}` : ''}`} style={{ width: hasBar ? `${width}px` : 'max-content', height: hasText ? `${Math.max(20, height + 12)}px` : `${height}px`, borderRadius: `${borderRadius}px`, borderWidth: borderWidth > 0 && !isDraggable ? `${borderWidth}px` : undefined, borderColor: borderWidth > 0 && !isDraggable ? undefined : (hasText ? 'rgba(255,255,255,0.05)' : 'transparent'), padding: !hasBar ? '0px 8px' : '0px' }}>
             {/* Background Health Bar */}
             {hasBar && (
               <div 
@@ -152,7 +170,7 @@ export const ArmorUI: React.FC = () => {
                 style={{ borderRadius: borderRadius }}
               >
                 <motion.div 
-                  className={`h-full ${color} ${hasText ? 'opacity-40 mix-blend-screen' : ''}`}
+                  className={`h-full ${color} ${hasText ? 'opacity-80' : ''}`}
                   initial={false}
                   animate={{ width: `${percentage}%` }}
                   transition={{ duration: enableAnimations ? 0.3 : 0 }}
@@ -167,7 +185,7 @@ export const ArmorUI: React.FC = () => {
                 <div className={`flex items-center gap-1.5 ${textColor}`}>
                   {getIcon(slot)}
                 </div>
-                <span className={`font-mono font-bold text-[10px] text-white tracking-wide drop-shadow-sm`}>
+                  <span className={`font-mono font-black text-[10px] text-white tracking-wide drop-shadow-[0_2px_2px_rgba(0,0,0,1)] text-right w-full`}>
                   {showPct && pctStr}
                   {showDur && durStr}
                 </span>

@@ -23,24 +23,6 @@ export const WeaponUI: React.FC = () => {
     }
   }, [weapon?.durability, weapon?.maxDurability, weaponUISettings.enableAlerts, weaponUISettings.alertThreshold]);
 
-  if (!weapon || !weaponUISettings.show) return null;
-
-  const percentage = Math.max(0, Math.min(100, (weapon.durability / weapon.maxDurability) * 100));
-  
-  let color = 'bg-emerald-400';
-  let textColor = 'text-emerald-400';
-  
-  if (percentage <= 9) {
-    color = 'bg-red-500';
-    textColor = 'text-red-400';
-  } else if (percentage <= 39) {
-    color = 'bg-orange-500';
-    textColor = 'text-orange-400';
-  } else if (percentage <= 79) {
-    color = 'bg-yellow-400';
-    textColor = 'text-yellow-400';
-  }
-
   const {
     style = 'bar_percent',
     scale = 1,
@@ -54,8 +36,48 @@ export const WeaponUI: React.FC = () => {
     customPositionX = 0,
     customPositionY = 0,
     locked = true,
-    layout = 'horizontal'
+    layout = 'horizontal',
+    borderWidth = 1,
+    dynamicBorderColor = true
   } = weaponUISettings;
+
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  const x = useMotionValue(position === 'custom' ? customPositionX : 0);
+  const y = useMotionValue(position === 'custom' ? customPositionY : 0);
+
+  React.useEffect(() => {
+    if (position === 'custom') {
+      x.set(customPositionX);
+      y.set(customPositionY);
+    }
+  }, [position, customPositionX, customPositionY, x, y]);
+
+  const displayWeapon: any = weapon || (!locked ? { name: 'Mock Weapon', instanceId: '5', durability: 750, maxDurability: 1000 } : null);
+
+  if (!displayWeapon || !weaponUISettings.show) return null;
+
+  const percentage = Math.max(0, Math.min(100, (displayWeapon.durability / displayWeapon.maxDurability) * 100));
+  
+  let color = 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]';
+  let textColor = 'text-emerald-400 drop-shadow-[0_0_4px_rgba(16,185,129,0.5)]';
+  let borderColor = 'border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]';
+  
+  if (percentage <= 20) {
+    color = 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]';
+    textColor = 'text-red-400 drop-shadow-[0_0_4px_rgba(239,68,68,0.5)]';
+    borderColor = 'border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]';
+  } else if (percentage <= 40) {
+    color = 'bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.3)]';
+    textColor = 'text-orange-400 drop-shadow-[0_0_4px_rgba(249,115,22,0.5)]';
+    borderColor = 'border-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.3)]';
+  } else if (percentage <= 75) {
+    color = 'bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]';
+    textColor = 'text-yellow-400 drop-shadow-[0_0_4px_rgba(250,204,21,0.5)]';
+    borderColor = 'border-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]';
+  }
+
+  const borderColorClass = dynamicBorderColor ? borderColor : 'border-white/20';
 
   const getPositionStyles = (): React.CSSProperties => {
     if (position === 'custom') {
@@ -73,25 +95,14 @@ export const WeaponUI: React.FC = () => {
   };
 
   const isDraggable = !locked;
-  const ref = React.useRef<HTMLDivElement>(null);
 
   const pctStr = `${Math.round(percentage)}%`;
-  const durStr = `${weapon.durability} / ${weapon.maxDurability}`;
+  const durStr = `${displayWeapon.durability} / ${displayWeapon.maxDurability}`;
 
   const hasText = style !== 'bar';
   const hasBar = style === 'bar' || style.includes('bar_');
   const showPct = style === 'text_percent' || style === 'bar_percent';
   const showDur = style === 'text_durability' || style === 'bar_durability';
-
-  const x = useMotionValue(position === 'custom' ? customPositionX : 0);
-  const y = useMotionValue(position === 'custom' ? customPositionY : 0);
-
-  React.useEffect(() => {
-    if (position === 'custom') {
-      x.set(customPositionX);
-      y.set(customPositionY);
-    }
-  }, [position, customPositionX, customPositionY, x, y]);
 
   return (
     <motion.div 
@@ -109,8 +120,9 @@ export const WeaponUI: React.FC = () => {
         }
       }}
       className={`fixed z-50 flex items-center justify-center overflow-hidden shadow-2xl select-none
-        ${isDraggable ? 'pointer-events-auto cursor-grab active:cursor-grabbing border-2 border-dashed border-indigo-400' : 'pointer-events-none'}
+        ${isDraggable ? 'pointer-events-auto cursor-grab active:cursor-grabbing border-dashed border-indigo-400' : 'pointer-events-none border-solid'}
         ${isFlashing && enableAnimations ? 'animate-pulse' : ''}
+        ${!isDraggable && borderWidth > 0 ? borderColorClass : ''}
       `}
       style={{
         ...getPositionStyles(),
@@ -118,14 +130,16 @@ export const WeaponUI: React.FC = () => {
         scale,
         opacity,
         backdropFilter: hasText ? `blur(${glassStrength}px)` : 'none',
-        backgroundColor: hasText ? 'rgba(0, 0, 0, 0.4)' : 'transparent',
+        backgroundColor: hasText ? 'rgba(0, 0, 0, 0.6)' : 'transparent',
         borderRadius: `${borderRadius}px`,
-        border: isDraggable ? undefined : (hasText ? '1px solid rgba(255,255,255,0.05)' : 'none'),
+        borderWidth: isDraggable ? '2px' : (borderWidth > 0 ? `${borderWidth}px` : (hasText ? '1px' : '0px')),
+        borderColor: isDraggable ? undefined : (borderWidth > 0 ? undefined : (hasText ? 'rgba(255,255,255,0.05)' : 'transparent')),
+        padding: !hasBar ? '4px 10px' : '0px',
         width: layout === 'horizontal' 
-          ? `${width}px` 
+          ? (hasBar ? `${width}px` : 'max-content') 
           : (hasText ? `${Math.max(24, height + 16)}px` : `${height}px`),
         height: layout === 'horizontal'
-          ? (hasText ? `${Math.max(24, height + 16)}px` : `${height}px`)
+          ? (hasText ? `${Math.max(24, height + 12)}px` : `${height}px`)
           : `${width}px`,
       }}
     >
@@ -136,7 +150,7 @@ export const WeaponUI: React.FC = () => {
           style={{ borderRadius: hasText ? 0 : borderRadius }}
         >
           <motion.div 
-            className={`${layout === 'horizontal' ? 'h-full' : 'w-full'} ${color} ${hasText ? 'opacity-30 mix-blend-screen' : ''}`}
+            className={`${layout === 'horizontal' ? 'h-full' : 'w-full'} ${color} ${hasText ? 'opacity-80' : ''}`}
             initial={false}
             animate={layout === 'horizontal' ? { width: `${percentage}%` } : { height: `${percentage}%` }}
             transition={{ duration: enableAnimations ? 0.3 : 0 }}
@@ -146,10 +160,12 @@ export const WeaponUI: React.FC = () => {
 
       {/* Foreground Text */}
       {hasText && (
-        <div className={`relative z-10 flex ${layout === 'vertical' ? 'flex-col' : 'items-center'} gap-2 drop-shadow-md`}>
-          <Sword size={14} className={textColor} />
+        <div className={`relative z-10 flex w-full px-2 ${layout === 'vertical' ? 'flex-col justify-center' : 'items-center justify-between'} gap-2 drop-shadow-md`}>
+          <div className={`flex items-center gap-1.5 ${textColor}`}>
+            <Sword size={14} />
+          </div>
           <span 
-            className={`font-mono font-bold text-[12px] text-white tracking-wide drop-shadow-sm ${layout === 'vertical' ? 'writing-vertical-rl rotate-180' : ''}`}
+            className={`font-mono font-black text-[12px] text-white tracking-wide drop-shadow-[0_2px_2px_rgba(0,0,0,1)] text-right ${layout === 'vertical' ? 'writing-vertical-rl rotate-180' : ''}`}
             style={layout === 'vertical' ? { writingMode: 'vertical-rl' } : {}}
           >
             {showPct && pctStr}

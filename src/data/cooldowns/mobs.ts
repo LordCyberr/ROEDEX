@@ -7,7 +7,7 @@ export const mobCooldowns: Record<string, number> = {
 
   // Cave/Mine Mobs
   'Crystal Bat': 1800,
-  'Rock Muncher': 5400,
-  'Cave Crawler': 1800,
+  'Rock Muncher': 2700, // 45 minutes
+  'Cave Crawler': 3600, // 60 minutes
   'Ore Elemental': 5400,
 };

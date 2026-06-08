@@ -55,7 +55,7 @@ export class ResourceTracker {
     }
   }
 
-  static lastCooldownSeconds: number | null = null;
+  static lastCooldowns: Record<string, number> = {};
 
   static handleGather(payload: any, currentZone: string) {
     const store = useTrackerStore.getState();
@@ -65,9 +65,11 @@ export class ResourceTracker {
     // gather_hit_ack: { nodeIndex, damage, nodeHp, isGathered }
     // resource_cooldown: { spawnIndex, cooldownSeconds }
     
-    if (data.cooldownSeconds !== undefined) {
+    const index = data.spawnIndex !== undefined ? data.spawnIndex : data.nodeIndex;
+    if (data.cooldownSeconds !== undefined && index !== undefined) {
        // Server sent exact cooldown before the gather hit ack
-       this.lastCooldownSeconds = data.cooldownSeconds;
+       const key = `${currentZone}-${index}`;
+       this.lastCooldowns[key] = data.cooldownSeconds;
        return;
     }
 
@@ -77,12 +79,33 @@ export class ResourceTracker {
       
       // Node is dead when gathered = true
       if (data.isGathered === true && resource) {
+        if (!resource.gathered) {
+          const name = resource.resource.toLowerCase();
+          if (name.includes('ore') || name.includes('rock') || name.includes('copper') || name.includes('iron') || name.includes('gold') || name.includes('silver') || name.includes('titanium') || name.includes('crystal') || name.includes('dino bone')) {
+             store.incrementOresMined();
+             store.incrementLifetimeStat('oresMined', resource.resource, 1);
+          } else if (name.includes('tree') || name.includes('wood') || name.includes('log') || name.includes('oak') || name.includes('heart')) {
+             store.incrementTreesCut();
+             store.incrementLifetimeStat('treesCut', resource.resource, 1);
+          } else {
+             store.incrementPlantsHarvested();
+             store.incrementLifetimeStat('plantsHarvested', resource.resource, 1);
+          }
+        }
+
         // Use the exact cooldown if we got it recently, else fallback
-        const cooldown = this.lastCooldownSeconds !== null ? this.lastCooldownSeconds : getFallbackCooldown(resource.resource);
+        const exactCooldown = this.lastCooldowns[key];
+        let cooldown = exactCooldown !== undefined ? exactCooldown : getFallbackCooldown(resource.resource);
+        
+        // Force Witchbane to exactly 90 minutes regardless of server response
+        if (resource.resource.toLowerCase().includes('witchbane')) {
+           cooldown = 5400;
+        }
+
         const respawnTime = Date.now() + (cooldown * 1000);
         
-        // Reset cache
-        this.lastCooldownSeconds = null;
+        // Reset cache for this node
+        delete this.lastCooldowns[key];
   
         // Add timer
         store.addTimer({
