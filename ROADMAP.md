@@ -15,3 +15,5 @@
 - **Player Stats Overlay**: Show real-time XP/Hour and Gold/Hour.
 - **Map Integration**: Pinpoint exact coordinates on a minimap overlay.
 - **Refactoring**: Split `TrackingView.tsx` into smaller sub-components for better performance.
+
+
