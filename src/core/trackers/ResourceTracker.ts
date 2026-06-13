@@ -1,12 +1,14 @@
 import { useTrackerStore } from '../../store/trackerStore';
 import { ResourceRespawnEvent, ResourceNode } from '../../types/events';
 import { getFallbackCooldown } from '../../data/cooldowns';
+import { BobCompanion } from '../companion/BobCompanion';
 
 export class ResourceTracker {
   static sanitizeResourceName(raw: string): string {
     let clean = raw.trim();
-    if (clean.toLowerCase() === 'crystalrock') return 'Crystal';
-    if (clean.toLowerCase() === 'dinobones') return 'Dino Bone';
+    const noSpaceClean = clean.toLowerCase().replace(/\s+/g, '');
+    if (noSpaceClean === 'crystalrock') return 'Crystal';
+    if (noSpaceClean === 'dinobones' || noSpaceClean === 'dinobone') return 'Dino Bone';
     
     // Remove common suffixes case-insensitively (handles "Silverore" or "Silver ore")
     clean = clean.replace(/\s*(ore|node|flower|tree)$/i, '').trim();
@@ -50,9 +52,7 @@ export class ResourceTracker {
       const isRare = name.includes('rare') || name.includes('crystal') || name.includes('gem') || name.includes('titanium') || name.includes('goldleaf') || name.includes('moonpetal');
       
       if (isRare) {
-        import('../companion/BobCompanion').then(({ BobCompanion }) => {
-          BobCompanion.onRareResource();
-        });
+        BobCompanion.onRareResource();
         
         if (store.notificationSettings.enabled && store.notificationSettings.toasts && store.notificationSettings.rareDrop) {
           store.addNotification({ 
@@ -90,11 +90,10 @@ export class ResourceTracker {
       // Node is dead when gathered = true
       if (data.isGathered === true && resource) {
         if (!resource.gathered) {
-          const name = resource.resource.toLowerCase();
-          if (name.includes('ore') || name.includes('rock') || name.includes('copper') || name.includes('iron') || name.includes('gold') || name.includes('silver') || name.includes('titanium') || name.includes('crystal') || name.includes('dino bone')) {
+          if (resource.type === 'Ores') {
              store.incrementOresMined();
              store.incrementLifetimeStat('oresMined', resource.resource, 1);
-          } else if (name.includes('tree') || name.includes('wood') || name.includes('log') || name.includes('oak') || name.includes('heart')) {
+          } else if (resource.type === 'Trees') {
              store.incrementTreesCut();
              store.incrementLifetimeStat('treesCut', resource.resource, 1);
           } else {

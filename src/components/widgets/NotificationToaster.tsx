@@ -1,13 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
+import { useShallow } from 'zustand/react/shallow';
 import { motion, AnimatePresence, useDragControls, useMotionValue } from 'motion/react';
 import { Sparkles, Star, Info, Sword, Pickaxe, Map } from 'lucide-react';
 
 export const NotificationToaster: React.FC = () => {
-  const notifications = useTrackerStore((state) => state.notifications);
-  const removeNotification = useTrackerStore((state) => state.removeNotification);
-  const notificationSettings = useTrackerStore((state) => state.notificationSettings);
-  const updateNotificationSettings = useTrackerStore((state) => state.updateNotificationSettings);
+  // Single useShallow call — was 4 separate subscriptions
+  const { notifications, removeNotification, notificationSettings, updateNotificationSettings } = useTrackerStore(
+    useShallow((state) => ({
+      notifications: state.notifications,
+      removeNotification: state.removeNotification,
+      notificationSettings: state.notificationSettings,
+      updateNotificationSettings: state.updateNotificationSettings,
+    }))
+  );
   const { 
     position, animation, duration, width, height, scale, opacity, 
     customPositionX, customPositionY, toastShape, neonGlow 
@@ -16,17 +22,42 @@ export const NotificationToaster: React.FC = () => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
-  // Auto-remove notifications
+  // Use a ref to track timers per notification id.
+  // Bug fix: old code used [notifications, duration] as deps which restarted ALL timers
+  // whenever 'duration' setting changed. Now each notification gets its own stable timer.
+  const timersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
   useEffect(() => {
-    if (notifications.length === 0) return;
+    const currentIds = new Set(notifications.map(n => n.id));
     
-    const timeouts = notifications.map(n => {
-      if (n.id === 'placeholder') return null;
-      return setTimeout(() => removeNotification(n.id), duration);
+    // Clear timers for notifications that are gone
+    Object.keys(timersRef.current).forEach(id => {
+      if (!currentIds.has(id)) {
+        clearTimeout(timersRef.current[id]);
+        delete timersRef.current[id];
+      }
     });
 
-    return () => timeouts.forEach(t => t && clearTimeout(t));
-  }, [notifications, removeNotification, duration]);
+    // Start timers only for NEW notifications (not already tracked)
+    notifications.forEach(n => {
+      if (n.id === 'placeholder') return;
+      if (!(n.id in timersRef.current)) {
+        timersRef.current[n.id] = setTimeout(() => {
+          removeNotification(n.id);
+          delete timersRef.current[n.id];
+        }, duration);
+      }
+    });
+  // Only re-run when the count changes, not on every notification reference
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [notifications.length, removeNotification]);
+
+  // Cleanup all timers on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(timersRef.current).forEach(t => clearTimeout(t));
+    };
+  }, []);
 
   const getPositionStyles = (): React.CSSProperties => {
     if (position === 'custom') {
@@ -92,6 +123,13 @@ export const NotificationToaster: React.FC = () => {
     return 'shadow-lg border-[var(--border-subtle)]';
   };
 
+  const dragConstraints = React.useMemo(() => ({ 
+    left: 0, 
+    top: 0, 
+    right: typeof globalThis !== 'undefined' ? globalThis.innerWidth - 60 : 1000, 
+    bottom: typeof globalThis !== 'undefined' ? globalThis.innerHeight - 60 : 1000 
+  }), []);
+
   return (
     <motion.div 
       className={`fixed ${getPositionClasses()} z-[60] flex flex-col gap-2 pointer-events-none max-w-[calc(100vw-32px)]`}
@@ -100,6 +138,7 @@ export const NotificationToaster: React.FC = () => {
       dragListener={false}
       dragControls={dragControls}
       dragMomentum={false}
+      dragConstraints={dragConstraints}
       onDragEnd={() => {
         updateNotificationSettings({
           customPositionX: Math.max(0, customPositionX + x.get()),
@@ -146,7 +185,7 @@ export const NotificationToaster: React.FC = () => {
                   </span>
                 </div>
               )}
-              <span className={`text-[var(--text-primary)] font-bold leading-relaxed break-words text-sm md:text-base`}>
+              <span className={`text-[var(--text-primary)] font-bold leading-relaxed break-words text-xs md:text-sm`}>
                 {notif.message}
               </span>
             </div>

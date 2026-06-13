@@ -1,0 +1,338 @@
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { ParticleGlobe } from '../widgets/ParticleGlobe';
+import { COMPANIONS, CompanionId } from '../../data/companions';
+
+interface BootSequenceProps {
+  onComplete: (companionId: CompanionId) => void;
+  playerName?: string;
+  currentZone?: string;
+}
+
+export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerName = 'UNKNOWN_USER', currentZone = 'UNKNOWN_SECTOR' }) => {
+  const BOOT_MESSAGES = [
+    "INITIALIZING SYSTEM...",
+    "BIOMETRIC SCAN: COMPLETE",
+    `WELCOME, ${playerName.toUpperCase()}...`,
+    `CALIBRATING TRACKERS FOR ${currentZone.toUpperCase()}...`,
+    "AI CORE ONLINE."
+  ];
+
+  const [hasSelectedLanguage, setHasSelectedLanguage] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [messageIndex, setMessageIndex] = useState(0);
+  const [isReady, setIsReady] = useState(false);
+  const [displayText, setDisplayText] = useState('');
+  const [hoveredId, setHoveredId] = useState<CompanionId | null>(null);
+  const [selectedCompanion, setSelectedCompanion] = useState<CompanionId | null>(null);
+  const [isFlashing, setIsFlashing] = useState(false);
+
+  const handleSelectLanguage = (lang: string) => {
+    import('../../store/trackerStore').then(({ useTrackerStore }) => {
+      useTrackerStore.getState().setLanguage(lang as any);
+      setHasSelectedLanguage(true);
+    });
+  };
+
+  // Escape key to skip language selection
+  useEffect(() => {
+    if (hasSelectedLanguage) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleSelectLanguage('en');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [hasSelectedLanguage]);
+
+  // Typewriter effect for messages
+  useEffect(() => {
+    if (!hasSelectedLanguage) return;
+    if (messageIndex >= BOOT_MESSAGES.length) return;
+    
+    const targetText = BOOT_MESSAGES[messageIndex];
+    let currentChar = 0;
+    
+    const typeInterval = setInterval(() => {
+      setDisplayText(targetText.substring(0, currentChar + 1));
+      currentChar++;
+      if (currentChar >= targetText.length) {
+        clearInterval(typeInterval);
+      }
+    }, 30);
+
+    return () => clearInterval(typeInterval);
+  }, [messageIndex]);
+
+  // Loading progress and message swapping
+  useEffect(() => {
+    if (!hasSelectedLanguage) return;
+    let startTime = Date.now();
+    const duration = 4500; // 4.5 seconds boot
+
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const p = Math.min(100, Math.floor((elapsed / duration) * 100));
+      setProgress(p);
+
+      // Change messages based on progress
+      const msgIdx = Math.min(BOOT_MESSAGES.length - 1, Math.floor((p / 100) * BOOT_MESSAGES.length));
+      if (msgIdx !== messageIndex && p < 100) {
+        setMessageIndex(msgIdx);
+      }
+
+      if (p >= 100) {
+        setIsReady(true);
+        setMessageIndex(BOOT_MESSAGES.length - 1);
+        clearInterval(interval);
+      }
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [hasSelectedLanguage]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, scale: 1.1, filter: 'blur(10px)' }}
+      transition={{ duration: 0.8, ease: 'easeInOut' }}
+      className="fixed inset-0 z-[9999999] bg-[#050505] flex flex-col items-center justify-center overflow-hidden pointer-events-auto"
+    >
+      {/* Subtle background scanlines */}
+      <div 
+        className="absolute inset-0 opacity-10 pointer-events-none" 
+        style={{ 
+          background: 'linear-gradient(to bottom, transparent 50%, rgba(255, 255, 255, 0.1) 51%)', 
+          backgroundSize: '100% 4px' 
+        }} 
+      />
+
+      {/* Cinematic Flash Overlay */}
+      <AnimatePresence>
+        {isFlashing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="absolute inset-0 bg-white z-[999999999] pointer-events-none mix-blend-screen"
+            style={{ boxShadow: 'inset 0 0 100px white' }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Language Selection Screen */}
+      <AnimatePresence>
+        {!hasSelectedLanguage && (
+          <motion.div
+            key="language-screen"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1, filter: 'blur(10px)' }}
+            className="flex flex-col items-center gap-8 z-30"
+          >
+            <div className="absolute top-8 right-8 z-[100]">
+              <button 
+                onClick={() => handleSelectLanguage('en')}
+                className="text-[#22d3ee] font-mono tracking-widest text-sm opacity-50 hover:opacity-100 hover:scale-110 transition-all uppercase font-bold px-4 py-2"
+              >
+                Skip Step [ESC]
+              </button>
+            </div>
+
+            <div className="flex flex-col items-center gap-2 mb-8">
+              <h1 className="font-black text-6xl sm:text-8xl tracking-[0.4em] ml-[0.4em] text-[#22d3ee] drop-shadow-[0_0_30px_rgba(34,211,238,0.8)] opacity-90">
+                ROEDEX
+              </h1>
+            </div>
+
+            <h2 className="font-mono text-xl sm:text-2xl text-[#22d3ee] tracking-[0.3em] font-bold drop-shadow-[0_0_15px_rgba(34,211,238,0.5)] mt-4">
+              SELECT LANGUAGE
+            </h2>
+            <div className="grid grid-cols-2 gap-6">
+              {[
+                { code: 'en', label: 'ENGLISH' },
+                { code: 'es', label: 'ESPAÑOL' },
+                { code: 'ru', label: 'РУССКИЙ' },
+                { code: 'ko', label: '한국어' }
+              ].map(lang => (
+                <button
+                  key={lang.code}
+                  onClick={() => handleSelectLanguage(lang.code)}
+                  className="px-8 py-4 bg-[rgba(34,211,238,0.1)] border border-[#22d3ee] text-[#22d3ee] font-mono tracking-widest rounded-xl hover:bg-[#22d3ee] hover:text-[#050505] hover:scale-110 hover:shadow-[0_0_30px_rgba(34,211,238,0.8)] transition-all duration-200 font-bold cursor-pointer"
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Central Orb during boot */}
+      <AnimatePresence>
+        {hasSelectedLanguage && !isReady && (
+          <motion.div 
+            key="boot-orb"
+            initial={{ scale: 0.1, opacity: 0 }}
+            animate={{ scale: 1.5 + (progress / 200), opacity: 0.4 + (progress / 200) }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+            className="relative w-32 h-32 mb-16 flex items-center justify-center pointer-events-none"
+          >
+            {/* Holographic scanning ring 1 */}
+            <motion.div 
+              className="absolute inset-[-40px] rounded-full border border-[#22d3ee]/20 border-t-[#22d3ee]/60 border-l-[#22d3ee]/60"
+              animate={{ rotate: 360, scale: [1, 1.1, 1] }}
+              transition={{ rotate: { repeat: Infinity, duration: 3, ease: "linear" }, scale: { repeat: Infinity, duration: 2, ease: "easeInOut" } }}
+            />
+            {/* Holographic scanning ring 2 */}
+            <motion.div 
+              className="absolute inset-[-20px] rounded-full border border-dashed border-[#22d3ee]/30"
+              animate={{ rotate: -360 }}
+              transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
+            />
+            {/* Core Orb */}
+            <ParticleGlobe color={'#22d3ee'} isTalking={false} mood={'idle'} />
+            
+            {/* Data particles flowing up */}
+            <motion.div 
+              className="absolute inset-0 overflow-hidden rounded-full mask-image-radial"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              {[...Array(5)].map((_, i) => (
+                <motion.div
+                  key={`data-dot-${i}`}
+                  className="absolute w-1 h-1 bg-[#22d3ee] rounded-full"
+                  style={{ left: `${20 + i * 15}%`, top: '100%' }}
+                  animate={{ top: '-10%', opacity: [0, 1, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.5 + i * 0.2, delay: i * 0.3, ease: "linear" }}
+                />
+              ))}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Title / Instructions when Ready */}
+      <AnimatePresence>
+        {isReady && !selectedCompanion && (
+          <motion.div
+            key="ready-text"
+            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex flex-col items-center gap-4 mb-16 z-20 mt-[-4rem]"
+          >
+            <p className="font-mono text-lg sm:text-2xl uppercase tracking-[0.2em] font-bold text-[#22d3ee] drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]">
+              CHOOSE YOUR AI COMPANION
+            </p>
+            <p className="font-mono text-xs sm:text-sm text-[#22d3ee]/60 uppercase tracking-[0.3em]">
+              Hover to preview. Click to select and initialize HUD.
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Selection Screen */}
+      <AnimatePresence>
+        {isReady && (
+          <motion.div 
+            key="selection-screen"
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+            className="flex flex-wrap justify-center gap-16 sm:gap-32 md:gap-40 lg:gap-48 mb-16 z-20"
+          >
+            {Object.values(COMPANIONS).map(comp => (
+              <motion.div 
+                key={comp.id} 
+                className="flex flex-col items-center gap-10 cursor-pointer group relative z-20"
+                initial={false}
+                animate={{
+                   opacity: selectedCompanion ? (selectedCompanion === comp.id ? 1 : 0) : 1,
+                   scale: selectedCompanion ? (selectedCompanion === comp.id ? 2.5 : 0.8) : 1,
+                   y: selectedCompanion === comp.id ? -30 : (selectedCompanion ? 50 : 0)
+                }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                onHoverStart={() => !selectedCompanion && setHoveredId(comp.id as CompanionId)}
+                onHoverEnd={() => !selectedCompanion && setHoveredId(null)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (selectedCompanion) return;
+                  setSelectedCompanion(comp.id as CompanionId);
+                  setHoveredId(comp.id as CompanionId);
+                  
+                  setTimeout(() => {
+                    setIsFlashing(true);
+                  }, 800);
+                  
+                  setTimeout(() => {
+                    onComplete(comp.id as CompanionId);
+                  }, 1200);
+                }}
+                whileHover={!selectedCompanion ? { scale: 1.1 } : {}}
+                whileTap={!selectedCompanion ? { scale: 0.9 } : {}}
+              >
+                <div className="w-24 h-24 sm:w-32 sm:h-32 relative">
+                  <ParticleGlobe 
+                    color={comp.color}
+                    isTalking={hoveredId === comp.id || selectedCompanion === comp.id}
+                    mood={hoveredId === comp.id || selectedCompanion === comp.id ? 'happy' : 'dimmed'}
+                  />
+                </div>
+                <div 
+                  className={`font-mono text-sm sm:text-lg tracking-[0.3em] uppercase transition-all duration-500 mt-4 ${(hoveredId === comp.id || selectedCompanion === comp.id) ? 'opacity-100 font-black' : 'opacity-40 font-bold'}`}
+                  style={{ color: (hoveredId === comp.id || selectedCompanion === comp.id) ? comp.color : '#888888', textShadow: (hoveredId === comp.id || selectedCompanion === comp.id) ? `0 0 20px ${comp.color}, 0 0 10px ${comp.color}` : 'none' }}
+                >
+                  {comp.name}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Boot Logs */}
+      {hasSelectedLanguage && !isReady && (
+        <div className="flex flex-col items-center justify-center z-10 w-full max-w-lg px-8">
+          <div className="w-full flex justify-between items-end mb-2 font-mono text-[10px] tracking-widest text-[#22d3ee]">
+            <span className="uppercase opacity-70">SYSTEM_BOOT</span>
+            <span className="font-bold">{progress}%</span>
+          </div>
+        
+          {/* Progress Bar */}
+          <div className="w-full h-1 bg-white/10 overflow-hidden mb-8 rounded-full">
+            <motion.div 
+              className="h-full bg-[#22d3ee]"
+              style={{ width: `${progress}%` }}
+              initial={{ width: '0%' }}
+              animate={{ width: `${progress}%` }}
+              transition={{ ease: 'linear' }}
+            />
+          </div>
+
+          {/* Typing Text */}
+          <div className="h-8 flex items-center justify-center text-center">
+            <AnimatePresence mode="wait">
+              <motion.p 
+                key="loading-text"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="font-mono text-xs uppercase tracking-widest text-white/60"
+              >
+                {displayText}
+                <span className="animate-pulse">_</span>
+              </motion.p>
+            </AnimatePresence>
+          </div>
+        </div>
+      )}
+    </motion.div>
+  );
+};

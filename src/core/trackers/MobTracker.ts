@@ -1,3 +1,4 @@
+import { BobCompanion } from '../companion/BobCompanion';
 import { useTrackerStore } from '../../store/trackerStore';
 import { EnemyRespawnEvent, EnemyEntity } from '../../types/events';
 import { getFallbackCooldown } from '../../data/cooldowns';
@@ -48,11 +49,11 @@ export class MobTracker {
     const isDead = data.isDead === true || newHp <= 0;
     
     if (newHp > 0 && enemy.hp === enemy.maxHp) {
-      import('../companion/BobCompanion').then(({ BobCompanion }) => BobCompanion.onCombatStart());
+      BobCompanion.onCombatStart();
     }
     
     if (isDead && !enemy.isDead) {
-      import('../companion/BobCompanion').then(({ BobCompanion }) => BobCompanion.onCombatWin(enemy.type));
+      BobCompanion.onCombatWin(enemy.type);
     }
 
     store.updateEnemyHp(key, newHp || 0, isDead);

@@ -12,8 +12,11 @@ export interface PoppedOutWindow {
   id: string; // The tab id
   x: number;
   y: number;
-  isMinimized: boolean;
+  width?: number;
+  height?: number;
+  isMinimized?: boolean;
   zIndex?: number;
+  isLocked?: boolean;
 }
 
 export type Language = 'en' | 'es' | 'ru' | 'ko';
@@ -52,15 +55,21 @@ export interface Quest {
 }
 
 export interface UISlice {
+  isChangelogOpen: boolean;
+  setIsChangelogOpen: (open: boolean) => void;
   isDebugPanelOpen: boolean;
   toggleDebugPanel: () => void;
   debugStats: { pps: number };
   updateDebugStats: (pps: number) => void;
 
+  activeCompanion: import('../data/companions').CompanionId;
+  setActiveCompanion: (companion: import('../data/companions').CompanionId) => void;
+
   // UI State
   poppedOutWindows: Record<string, PoppedOutWindow>;
   popOutTab: (id: string, x: number, y: number) => void;
   mergeTab: (id: string) => void;
+  mergeAllTabs: () => void;
   updatePoppedOutWindow: (id: string, updates: Partial<PoppedOutWindow>) => void;
   
   language: Language;
@@ -69,17 +78,22 @@ export interface UISlice {
   activeTab: 'global' | 'favorites' | 'session' | 'settings' | 'npcs' | 'quests';
   setActiveTab: (tab: 'global' | 'favorites' | 'session' | 'settings' | 'npcs' | 'quests') => void;
   tabDimensions: Record<string, { width?: number, height?: number }>;
-  setTabDimensions: (tab: string, width?: number, height?: number) => void;
   collapsedCategories: Record<string, boolean>;
   toggleCategory: (category: string) => void;
   collapsedSidebarZones: Record<string, boolean>;
   toggleSidebarZone: (zone: string) => void;
   isMinimized: boolean;
   setIsMinimized: (isMinimized: boolean) => void;
+  globalScale: number; // Global UI Scale for 4K displays
+  minimizeHotkey: string;
+  
   layoutMode: 'vertical' | 'horizontal';
   setLayoutMode: (mode: 'vertical' | 'horizontal') => void;
   verticalGroupingMode: 'grouped' | 'flat';
   setVerticalGroupingMode: (mode: 'grouped' | 'flat') => void;
+  setTabDimensions: (tab: string, width?: number, height?: number) => void;
+  setGlobalScale: (val: number) => void;
+  setMinimizeHotkey: (key: string) => void;
   overlayPosition: { x: number, y: number };
   setOverlayPosition: (pos: { x: number, y: number }) => void;
   orbPosition: { x: number, y: number };
@@ -98,6 +112,20 @@ export interface UISlice {
   setDisplayDensity: (density: 'compact' | 'standard') => void;
   displayMode: 'session' | 'current_zone';
   setDisplayMode: (mode: 'session' | 'current_zone') => void;
+  
+  // Minimal Chest HUD
+  minimalChestHud: boolean;
+  setMinimalChestHud: (val: boolean) => void;
+  minimalChestHudLocked: boolean;
+  setMinimalChestHudLocked: (val: boolean) => void;
+  minimalChestTutorialSeen: boolean;
+  setMinimalChestTutorialSeen: (val: boolean) => void;
+  chestWidgetPositions: {
+    chest: { x: number, y: number };
+    inventory: { x: number, y: number };
+    closeZone: { x: number, y: number };
+  };
+  setChestWidgetPosition: (key: 'chest' | 'inventory' | 'closeZone', pos: { x: number, y: number }) => void;
   
   // Settings UI State
   categoryOrder: string[];
@@ -146,8 +174,20 @@ export interface UISlice {
     bobDuration: number;
     bobBubbleDistance: number;
     bobBubbleOffsetY: number;
-    bobTheme: 'default' | 'cyberpunk' | 'fantasy' | 'minimal' | 'hologram';
-    bobIcon: 'bot' | 'ghost' | 'cat' | 'wizard' | 'skull' | 'alien' | 'dog';
+    bobIcon: 'portrait' | 'bot' | 'pixel_matrix' | 'realistic_3d' | 'ghost' | 'cat' | 'wizard' | 'skull' | 'alien' | 'dog' | 'custom' | 'mini-character';
+    bobIconUrl?: string;
+    bobBubbleTheme?: 'connected' | 'floating' | 'holographic';
+    bobBubbleStyle?: 'glass' | 'pixel' | 'cyber' | 'fantasy' | 'minimal' | 'hologram';
+    bobVoiceStyle?: 'wave' | 'eq' | 'pulse';
+    v4PositionMigrated?: boolean;
+    v5PositionMigrated?: boolean;
+    v6ToastMigrated?: boolean;
+    
+    // Tutorial & Mood State
+    tutorialStep: number;
+    tutorialCompleted: boolean;
+    bobMood: 'idle' | 'happy' | 'angry' | 'talking' | 'thinking';
+    
     neonGlow: boolean;
     glowColorTheme: 'theme' | 'rarity' | 'type';
     toastShape: 'square' | 'rectangle' | 'smooth' | 'pill';
@@ -155,6 +195,7 @@ export interface UISlice {
     customPositionY: number;
     volume: number;
     animation: 'slide' | 'fade' | 'pop';
+    seenTabs?: Record<string, boolean>;
   };
   updateNotificationSettings: (settings: Partial<UISlice['notificationSettings']>) => void;
   
@@ -171,12 +212,13 @@ export interface UISlice {
     borderRadius: number;
     glassStrength: number;
     enableAnimations: boolean;
-    position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'custom';
+    position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right' | 'custom';
     customPositionX: number;
     customPositionY: number;
     layout: 'vertical' | 'horizontal';
     borderWidth: number;
     dynamicBorderColor: boolean;
+    v7WeaponPositionMigrated?: boolean;
   };
   updateWeaponUISettings: (settings: Partial<UISlice['weaponUISettings']>) => void;
 
@@ -206,6 +248,8 @@ export interface UISlice {
     showDistance: boolean;
     showCount: boolean;
     showTimer: boolean;
+    raritySortOrder: 'asc' | 'desc' | 'none';
+    maxRespawnTooltips: 5 | 10 | 15 | 20;
   };
   updateTableSettings: (settings: Partial<UISlice['tableSettings']>) => void;
 
@@ -217,8 +261,10 @@ export interface UISlice {
   toggleFavorite: (id: string) => void;
   theme: string;
   setTheme: (theme: string) => void;
-  minimizedIcon: 'pulse' | 'lightning' | 'sword' | 'pickaxe' | 'shield' | 'roedex' | 'rx';
-  setMinimizedIcon: (icon: 'pulse' | 'lightning' | 'sword' | 'pickaxe' | 'shield' | 'roedex' | 'rx') => void;
+  minimizedIcon: 'pulse' | 'lightning' | 'sword' | 'pickaxe' | 'shield' | 'roedex' | 'rx' | 'custom';
+  minimizedIconUrl?: string;
+  setMinimizedIconUrl: (url: string) => void;
+  setMinimizedIcon: (icon: 'pulse' | 'lightning' | 'sword' | 'pickaxe' | 'shield' | 'roedex' | 'rx' | 'custom') => void;
 
   notifications: OverlayNotification[];
   addNotification: (notification: Omit<OverlayNotification, 'id' | 'timestamp'>) => void;
@@ -226,6 +272,10 @@ export interface UISlice {
   bobMessages: OverlayNotification[];
   addBobMessage: (message: Omit<OverlayNotification, 'id' | 'timestamp'>) => void;
   removeBobMessage: (id: string) => void;
+  
+  // Tutorial & Mood Actions
+  setTutorialStep: (step: number) => void;
+  setBobMood: (mood: 'idle' | 'happy' | 'angry' | 'talking' | 'thinking') => void;
 }
 
 export interface SessionSlice {
@@ -233,6 +283,8 @@ export interface SessionSlice {
   setCurrentZone: (zone: string) => void;
   sessionActive: boolean;
   setSessionActive: (active: boolean) => void;
+  isChestOpen: boolean;
+  setIsChestOpen: (open: boolean) => void;
   sessionStartTime: number | null;
   setSessionStartTime: (time: number | null) => void;
   sessionRunes: number;
@@ -243,6 +295,10 @@ export interface SessionSlice {
   setChestTotalValue: (val: number | ((prev: number) => number)) => void;
   chestInventory: Record<string, number>;
   setChestInventory: (inventory: Record<string, number>) => void;
+  bankTotalValue: number;
+  setBankTotalValue: (val: number | ((prev: number) => number)) => void;
+  bankInventory: Record<string, number>;
+  setBankInventory: (inventory: Record<string, number>) => void;
   
   sessionMobsKilled: number;
   sessionTreesCut: number;

@@ -1,5 +1,6 @@
 import { useTrackerStore } from '../../store/trackerStore';
 import { bobTranslations } from '../../i18n/bobTranslations';
+import { companionTranslations } from '../../i18n/companionTranslations';
 
 export class BobCompanion {
   private static lastZone: string = '';
@@ -23,7 +24,30 @@ export class BobCompanion {
   private static getQuotes() {
     const store = useTrackerStore.getState();
     const lang = store.language || 'en';
-    return (bobTranslations as any)[lang] || bobTranslations.en;
+    const baseQuotes = (bobTranslations as any)[lang] || bobTranslations.en;
+    
+    const activeCompId = store.activeCompanion || 'bob';
+    if (activeCompId === 'bob') return baseQuotes;
+    
+    const premiumQuotes = (companionTranslations as any)[lang] || companionTranslations.en;
+    const activePremium = premiumQuotes[activeCompId];
+    
+    if (activePremium) {
+      return {
+        ...baseQuotes,
+        ...activePremium
+      };
+    }
+    return baseQuotes;
+  }
+  
+  public static getAlerts() {
+    const store = useTrackerStore.getState();
+    const lang = store.language || 'en';
+    
+    // The alerts are shared across all companions and are defined in companionTranslations
+    const premiumQuotes = (companionTranslations as any)[lang] || companionTranslations.en;
+    return premiumQuotes.alerts || companionTranslations.en.alerts;
   }
 
   private static getFrequencyMs() {
@@ -149,8 +173,8 @@ export class BobCompanion {
         const cleanName = formatInternalName(monsterName);
         if (this.lastKilledMonster === monsterName) {
           this.consecutiveKills++;
-          if (this.consecutiveKills === 3) {
-             this.sendBobMessage('chat', `You are a true ${cleanName} slayer!`);
+          if (this.consecutiveKills >= 10 && this.consecutiveKills % 10 === 0) {
+            this.sendBobMessage('chat', this.getAlerts().slayerMilestone.replace('{monster}', cleanName));
           }
         } else {
           this.lastKilledMonster = monsterName;
@@ -199,7 +223,7 @@ export class BobCompanion {
     if (quotes.levelUpReady) {
        this.triggerCategory('levelUpReady', quotes.levelUpReady, 10000, 'bobAchievement', true);
     } else {
-       this.sendBobMessage('chat', `You have enough Runes to level up! Head to the Temple!`);
+       this.sendBobMessage('chat', this.getAlerts().levelUpReady);
     }
     this.onActivity();
   }
@@ -224,7 +248,7 @@ export class BobCompanion {
       this.triggerCategory('zone', this.getQuotes().zoneCave, 60000, 'bobZone');
     } else {
       if (store.notificationSettings.bobZone) {
-         this.sendBobMessage('zone', `We've entered ${zoneName}! Keep your eyes peeled.`);
+         this.sendBobMessage('zone', this.getAlerts().zoneEnter.replace('{zone}', zoneName));
       }
     }
   }
@@ -310,5 +334,44 @@ export class BobCompanion {
       message: message,
       type: type as any
     });
+  }
+
+  static onTabOpened(_tabId: string) {
+    this.triggerCategory('idle', this.getQuotes().idle, 5000, 'bobTips');
+  }
+
+  static onAddFavorite(_npcId: string) {
+    const quotes = this.getQuotes() as any;
+    this.triggerCategory('achievement', quotes.achievement || quotes.idle, 5000, 'bobTips');
+  }
+
+  static onClearLoot() {
+    const quotes = this.getQuotes() as any;
+    this.triggerCategory('achievement', quotes.achievement || quotes.idle, 5000, 'bobTips');
+  }
+
+  static wakeUp(_reason?: string) {
+    this.onActivity();
+    this.triggerCategory('login', this.getQuotes().login, 5000, 'bobGreetings', true);
+  }
+
+  static onCheatDetected() {
+    const alerts = this.getAlerts();
+    this.sendBobMessage('chat', alerts.cheatDetected || "Cheat detected!");
+  }
+
+  static onParry() {
+    const quotes = this.getQuotes() as any;
+    this.triggerCategory('combatWin', quotes.parry || quotes.combatWin || quotes.idle, 5000, 'bobCombat');
+  }
+
+  static onChestOpen() {
+    const quotes = this.getQuotes() as any;
+    this.triggerCategory('chest', quotes.chest || quotes.achievement || quotes.idle, 5000, 'bobAchievement');
+  }
+
+  static onPriorityDrop(itemName: string, quantity: number) {
+    const alertStr = this.getAlerts().mythicDrop || "HURRAY! You finally got {qty}x {item}!";
+    this.sendBobMessage('chat', alertStr.replace('{qty}', quantity.toString()).replace('{item}', itemName));
   }
 }

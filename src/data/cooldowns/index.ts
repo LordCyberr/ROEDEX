@@ -31,6 +31,7 @@ export function getFallbackCooldown(name: string): number {
     .replace(/ore$/i, '')
     .replace(/rock$/i, '')
     .replace(/vein$/i, '')
+    .replace(/bones/i, 'bone') // Fix plural bones
     .replace(/\s+/g, '');
 
   const sanitizedName = sanitize(name);

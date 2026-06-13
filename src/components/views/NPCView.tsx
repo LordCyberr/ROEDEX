@@ -3,6 +3,7 @@ import { useTrackerStore } from '../../store/trackerStore';
 import { KNOWN_NPCS_DATA, NPCInfo } from '../../data/npcs';
 import { Users, Search, MapPin, ChevronDown, ChevronRight } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 export const NPCView: React.FC = () => {
   const { t } = useTranslation();
@@ -49,7 +50,13 @@ export const NPCView: React.FC = () => {
     };
   }, []);
   const layoutMode = useTrackerStore(state => state.layoutMode);
+  const tabDimensions = useTrackerStore(state => state.tabDimensions);
   const isHorizontal = layoutMode === 'horizontal';
+
+  const activeDimKey = isHorizontal ? `npcs_horizontal` : `npcs_vertical`;
+  const activeDim = tabDimensions[activeDimKey] || {};
+  const hasCustomHeight = activeDim.height !== undefined;
+  const compactHeightClass = !hasCustomHeight ? 'max-h-[250px]' : '';
 
   const [activeZone, setActiveZone] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -105,37 +112,63 @@ export const NPCView: React.FC = () => {
     }
   }
 
-  return (
-    <div className={`flex-1 flex flex-col p-2 overflow-hidden min-h-0 bg-[var(--bg-base)] ${isHorizontal ? 'w-[520px]' : 'w-full min-w-[150px]'}`}>
-      <div className="flex items-center justify-between mb-3 border-b border-[var(--border-subtle)] pb-2 shrink-0">
-        <div className="flex items-center gap-2">
-          <Users size={16} className="text-[#00ffcc]" />
-          <h2 className="text-sm font-bold text-[var(--text-primary)] font-[var(--font-heading)] tracking-wide">
-            {t('tabs.npcTracker')}
-          </h2>
-        </div>
-      </div>
+  // Flatten items for vertical virtualization
+  const flatItems: Array<{ type: 'header', zone: string } | { type: 'item', npc: NPCInfo, zone: string }> = [];
+  zones.forEach(zone => {
+    flatItems.push({ type: 'header', zone });
+    const isCollapsed = searchTerm.trim() !== '' ? false : (collapsedZones[zone] === undefined ? true : collapsedZones[zone]);
+    if (!isCollapsed) {
+      groupedNpcs[zone].forEach(npc => {
+        flatItems.push({ type: 'item', npc, zone });
+      });
+    }
+  });
 
-      <div className="relative mb-2 shrink-0">
-        <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-          <Search size={14} className="text-[var(--text-muted)]" />
-        </div>
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={handleSearchChange}
-          ref={inputRef}
-          onFocus={() => { isFocusedRef.current = true; }}
-          onBlur={() => { isFocusedRef.current = false; }}
-          onKeyUp={(e) => e.stopPropagation()}
-          onKeyPress={(e) => e.stopPropagation()}
-          onPointerDown={(e) => e.stopPropagation()}
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={(e) => { e.stopPropagation(); inputRef.current?.focus(); }}
-          placeholder={t('misc.searchNpcs')}
-          className="w-full bg-[var(--bg-panel)] border border-[var(--border-subtle)] focus:border-[var(--border-accent)] text-[var(--text-primary)] text-xs rounded pl-8 pr-3 py-1.5 outline-none transition-colors"
-        />
+  const parentRef = React.useRef<HTMLDivElement>(null);
+  const rowVirtualizer = useVirtualizer({
+    count: flatItems.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: (index) => flatItems[index].type === 'header' ? 24 : 36,
+  });
+
+  const renderHeader = () => (
+    <div className="flex items-center justify-between mb-1 border-b border-[var(--border-subtle)] pb-1 shrink-0">
+      <div className="flex items-center gap-1.5">
+        <Users size={14} className="text-[#00ffcc]" />
+        <h2 className="text-xs font-bold text-[var(--text-primary)] font-[var(--font-heading)] tracking-wide">
+          {t('tabs.npcTracker')}
+        </h2>
       </div>
+    </div>
+  );
+
+  const renderSearch = () => (
+    <div className="relative mb-2 shrink-0">
+      <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+        <Search size={14} className="text-[var(--text-muted)]" />
+      </div>
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={handleSearchChange}
+        ref={inputRef}
+        onFocus={() => { isFocusedRef.current = true; }}
+        onBlur={() => { isFocusedRef.current = false; }}
+        onKeyUp={(e) => e.stopPropagation()}
+        onKeyPress={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => { e.stopPropagation(); inputRef.current?.focus(); }}
+        placeholder={t('misc.searchNpcs')}
+        className="w-full bg-[var(--bg-panel)] border border-[var(--border-subtle)] focus:border-[var(--border-accent)] text-[var(--text-primary)] text-xs rounded pl-8 pr-3 py-1.5 outline-none transition-colors"
+      />
+    </div>
+  );
+
+  return (
+    <div className={`flex-1 flex flex-col p-2 overflow-hidden min-h-0 bg-[var(--bg-base)] w-full ${!isHorizontal ? 'min-w-[150px]' : ''}`}>
+      {!isHorizontal && renderHeader()}
+      {!isHorizontal && renderSearch()}
 
       {/* HORIZONTAL MODE */}
       {isHorizontal ? (
@@ -143,51 +176,80 @@ export const NPCView: React.FC = () => {
           {zones.length > 0 ? (
             <>
               {/* Sidebar Navigation */}
-              <div className="flex flex-col gap-0.5 w-[160px] shrink-0 bg-[var(--bg-card)] rounded-lg shadow-md p-1.5 border border-[var(--border-subtle)] h-fit max-h-full overflow-y-auto custom-scrollbar">
-                {zones.map(zone => {
-                  const isActive = !isSearching && (activeZone === zone || (!activeZone && zone === zones[0]));
-                  return (
-                    <button
-                      key={`nav-${zone}`}
-                      onClick={() => setActiveZone(zone)}
-                      className={`flex items-center justify-between text-[9px] font-black hover:text-white transition-colors uppercase tracking-widest px-2 py-1.5 border-b border-[var(--border-subtle)] mb-0.5 text-left leading-tight whitespace-normal ${
-                        isActive ? 'bg-[var(--bg-hover)] text-white border-b-transparent rounded' : 'text-[var(--accent-primary)]'
-                      }`}
-                    >
-                      <span>{t(zone as any)}</span>
-                      <ChevronRight size={10} className={isActive ? 'opacity-100' : 'opacity-50'} />
-                    </button>
-                  );
-                })}
+              <div className="flex flex-col w-[160px] shrink-0 bg-[var(--bg-card)] rounded-lg shadow-md border border-[var(--border-subtle)] h-fit max-h-full overflow-hidden">
+                {/* Compact Header & Search */}
+                <div className="p-1.5 border-b border-[var(--border-subtle)] bg-black/20 shrink-0">
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <Users size={12} className="text-[#00ffcc]" />
+                    <h2 className="text-[10px] font-bold text-[var(--text-primary)] uppercase tracking-widest">{t('tabs.npcTracker')}</h2>
+                  </div>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-1.5 flex items-center pointer-events-none">
+                      <Search size={10} className="text-[var(--text-muted)]" />
+                    </div>
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={handleSearchChange}
+                      ref={inputRef}
+                      onFocus={() => { isFocusedRef.current = true; }}
+                      onBlur={() => { isFocusedRef.current = false; }}
+                      onKeyUp={(e) => e.stopPropagation()}
+                      onKeyPress={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => { e.stopPropagation(); inputRef.current?.focus(); }}
+                      placeholder={t('misc.searchNpcs')}
+                      className="w-full bg-black/40 border border-white/5 focus:border-[var(--border-accent)] text-[var(--text-primary)] text-[9px] rounded pl-5 pr-2 py-1 outline-none transition-colors"
+                    />
+                  </div>
+                </div>
+                
+                {/* Zone List */}
+                <div className="flex flex-col gap-px overflow-y-auto custom-scrollbar p-1">
+                  {zones.map(zone => {
+                    const isActive = !isSearching && (activeZone === zone || (!activeZone && zone === zones[0]));
+                    return (
+                      <button
+                        key={`nav-${zone}`}
+                        onClick={() => setActiveZone(zone)}
+                        className={`flex items-center justify-between text-[9px] font-black hover:text-white transition-colors uppercase tracking-widest px-1.5 py-1.5 rounded text-left leading-tight whitespace-normal ${
+                          isActive ? 'bg-[var(--bg-hover)] text-white border border-[var(--border-accent)]' : 'text-[var(--accent-primary)] border border-transparent'
+                        }`}
+                      >
+                        <span>{t(zone as any)}</span>
+                        <ChevronRight size={10} className={isActive ? 'opacity-100' : 'opacity-0'} />
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Main Content Detail Panel */}
-              <div className="flex flex-row gap-2 overflow-x-auto custom-scrollbar flex-1 pb-2 h-full items-start">
+              <div className={`gap-2 overflow-y-auto custom-scrollbar flex-1 pb-2 h-full pr-1 ${isSearching ? 'grid grid-cols-3 items-start content-start' : 'flex flex-row items-start'}`}>
                 {horizontalZonesToRender.map(zone => (
-                  <div key={zone} id={`npc-${zone.replace(/\s+/g, '-')}`} className="flex flex-col w-[320px] max-w-full shrink-0 bg-[var(--bg-card)] rounded-lg shadow-md border border-[var(--border-subtle)] h-fit max-h-full">
+                  <div key={zone} id={`npc-${zone.replace(/\s+/g, '-')}`} className={`flex flex-col bg-[var(--bg-card)] rounded-lg shadow-md border border-[var(--border-subtle)] h-fit max-h-full ${isSearching ? 'w-full' : 'w-full min-w-[320px]'}`}>
                     {/* Zone Header */}
-                    <div className="px-2 py-1.5 bg-[var(--bg-panel)] border-b border-[var(--border-subtle)] rounded-t-lg">
+                    <div className="px-2 py-1.5 bg-[var(--bg-panel)] border-b border-[var(--border-subtle)] rounded-t-lg shrink-0">
                       <h3 className="text-[10px] font-black text-[var(--accent-primary)] uppercase tracking-widest">{t(zone as any)}</h3>
                     </div>
-                    {/* Embedded Table Header */}
-                    <div className="grid grid-cols-[45px_1fr] gap-2 px-2 py-1 bg-[var(--bg-base)] border-b border-[var(--border-subtle)] text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-wider shrink-0">
-                      <div className="truncate">{t('columns.npc')}</div>
-                      <div className="truncate">{t('columns.location')}</div>
-                    </div>
-                    {/* Card List */}
-                    <div className="flex flex-col overflow-y-auto custom-scrollbar p-1 gap-1">
+                    {/* Card List (Grid) */}
+                    <div className={`grid gap-2 overflow-y-auto custom-scrollbar p-2 ${isSearching ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'}`}>
                       {groupedNpcs[zone].map(npc => {
                         return (
                           <div 
                             key={npc.name}
-                            className="grid grid-cols-[45px_1fr] gap-2 px-2 py-1.5 items-center rounded border transition-colors bg-[var(--bg-hover)] border-transparent hover:border-[var(--border-subtle)]"
+                            className="flex flex-col gap-1 p-2 rounded-lg border transition-colors bg-[var(--bg-hover)] border-transparent hover:border-[var(--border-subtle)]"
                           >
-                            <div className="text-[10px] font-bold text-[var(--text-primary)] truncate">{npc.name}</div>
-                            <div 
-                              className="text-[9px] text-[var(--text-secondary)] truncate hover:text-clip hover:whitespace-normal transition-all"
-                              title={t(npc.location as any)}
-                            >
-                              {t(npc.location as any)}
+                            <div className="text-[11px] font-bold text-[var(--text-primary)] truncate">{npc.name}</div>
+                            <div className="flex items-center gap-1 mt-1">
+                              <MapPin size={10} className="text-[var(--text-muted)] shrink-0" />
+                              <div 
+                                className="text-[10px] text-[var(--text-secondary)] truncate hover:text-clip hover:whitespace-normal transition-all"
+                                title={t(npc.location as any)}
+                              >
+                                {t(npc.location as any)}
+                              </div>
                             </div>
                           </div>
                         );
@@ -198,8 +260,29 @@ export const NPCView: React.FC = () => {
               </div>
             </>
           ) : (
-            <div className="text-center py-4 text-xs text-[var(--text-muted)] italic w-full">
-              {t('misc.noNpcs')}
+            <div className="flex flex-col gap-0.5 w-[160px] shrink-0 bg-[var(--bg-card)] rounded-lg shadow-md border border-[var(--border-subtle)] h-fit overflow-hidden">
+               <div className="p-1.5 border-b border-[var(--border-subtle)] bg-black/20 shrink-0">
+                 <div className="flex items-center gap-1.5 mb-1.5">
+                   <Users size={12} className="text-[#00ffcc]" />
+                   <h2 className="text-[10px] font-bold text-[var(--text-primary)] uppercase tracking-widest">{t('tabs.npcTracker')}</h2>
+                 </div>
+                 <div className="relative">
+                   <div className="absolute inset-y-0 left-0 pl-1.5 flex items-center pointer-events-none">
+                     <Search size={10} className="text-[var(--text-muted)]" />
+                   </div>
+                   <input
+                     type="text"
+                     value={searchTerm}
+                     onChange={handleSearchChange}
+                     ref={inputRef}
+                     placeholder={t('misc.searchNpcs')}
+                     className="w-full bg-black/40 border border-white/5 text-[var(--text-primary)] text-[9px] rounded pl-5 pr-2 py-1 outline-none transition-colors"
+                   />
+                 </div>
+               </div>
+               <div className="text-center py-4 text-[9px] text-[var(--text-muted)] italic w-full">
+                 {t('misc.noNpcs')}
+               </div>
             </div>
           )}
         </div>
@@ -211,48 +294,61 @@ export const NPCView: React.FC = () => {
               <div className="truncate">{t('columns.npc')}</div>
               <div className="truncate">{t('columns.location')}</div>
             </div>
-          )}          <div className="flex flex-col flex-1 min-h-0 overflow-y-auto gap-2 max-h-[250px] custom-scrollbar pb-2 pr-2">
+          )}          <div ref={parentRef} className={`flex flex-col flex-1 min-h-0 overflow-y-auto custom-scrollbar pb-2 pr-2 ${compactHeightClass}`}>
             {zones.length === 0 ? (
               <div className="text-center py-4 text-xs text-[var(--text-muted)] italic w-full">
                 {t('misc.noNpcs')}
               </div>
             ) : (
-              zones.map((zone, idx) => {
-                const isCollapsed = searchTerm.trim() !== '' ? false : (collapsedZones[zone] === undefined ? true : collapsedZones[zone]);
-                return (
-                  <div key={idx} className="flex flex-col w-full">
-                    <button 
-                      onClick={() => toggleZone(zone)}
-                      className="flex items-center gap-1.5 px-1 py-1 mb-1 text-[11px] font-bold text-[var(--accent-primary)] uppercase tracking-wider hover:bg-white/5 rounded transition-colors w-full text-left"
+              <div
+                style={{
+                  height: `${rowVirtualizer.getTotalSize()}px`,
+                  width: '100%',
+                  position: 'relative',
+                }}
+              >
+                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                  const item = flatItems[virtualRow.index];
+                  const isCollapsed = searchTerm.trim() !== '' ? false : (collapsedZones[item.zone] === undefined ? true : collapsedZones[item.zone]);
+                  
+                  return (
+                    <div
+                      key={virtualRow.index}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: `${virtualRow.size}px`,
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
                     >
-                      {isCollapsed ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
-                      <MapPin size={12} />
-                      {t(zone as any)}
-                    </button>
-
-                    {!isCollapsed && (
-                      <div className="flex flex-col gap-1 pl-1">
-                        {groupedNpcs[zone].map(npc => {
-                          return (
+                      {item.type === 'header' ? (
+                        <button 
+                          onClick={() => toggleZone(item.zone)}
+                          className="flex items-center gap-1.5 px-1 py-1 mb-1 text-[11px] font-bold text-[var(--accent-primary)] uppercase tracking-wider hover:bg-white/5 rounded transition-colors w-full text-left"
+                        >
+                          {isCollapsed ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
+                          <MapPin size={12} />
+                          {t(item.zone as any)}
+                        </button>
+                      ) : (
+                        <div className="flex flex-col gap-1 pl-1 h-full justify-center">
+                          <div className="grid grid-cols-[45px_1fr] gap-2 px-2 py-1.5 items-center rounded border transition-colors bg-[var(--bg-hover)] border-transparent hover:border-[var(--border-subtle)]">
+                            <div className="text-[11px] font-bold text-[var(--text-primary)] truncate">{item.npc.name}</div>
                             <div 
-                              key={npc.name}
-                              className="grid grid-cols-[45px_1fr] gap-2 px-2 py-2 items-center rounded border transition-colors bg-[var(--bg-hover)] border-transparent hover:border-[var(--border-subtle)]"
+                              className="text-[10px] text-[var(--text-secondary)] truncate hover:text-clip hover:whitespace-normal transition-all"
+                              title={t(item.npc.location as any)}
                             >
-                              <div className="text-[11px] font-bold text-[var(--text-primary)] truncate">{npc.name}</div>
-                              <div 
-                                className="text-[10px] text-[var(--text-secondary)] truncate hover:text-clip hover:whitespace-normal transition-all"
-                                title={t(npc.location as any)}
-                              >
-                                {t(npc.location as any)}
-                              </div>
+                              {t(item.npc.location as any)}
                             </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         </>

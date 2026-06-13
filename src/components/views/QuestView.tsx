@@ -6,7 +6,14 @@ import { ChevronDown, ChevronRight, CheckCircle2, Target, Hammer, Pickaxe, Leaf,
 export const QuestView: React.FC = () => {
   const quests = useTrackerStore((state) => state.quests);
   const layoutMode = useTrackerStore((state) => state.layoutMode);
+  const tabDimensions = useTrackerStore((state) => state.tabDimensions);
   const isHorizontal = layoutMode === 'horizontal';
+  
+  const activeDimKey = isHorizontal ? `quests_horizontal` : `quests_vertical`;
+  const activeDim = tabDimensions[activeDimKey] || {};
+  const hasCustomHeight = activeDim.height !== undefined;
+  const compactHeightClass = !hasCustomHeight ? 'max-h-[250px]' : '';
+
   const [expandedQuestId, setExpandedQuestId] = React.useState<string | null>(null);
   const [selectedGiver, setSelectedGiver] = React.useState<string | null>(null);
 
@@ -132,7 +139,7 @@ export const QuestView: React.FC = () => {
   const activeGiver = selectedGiver && givers.includes(selectedGiver) ? selectedGiver : givers[0];
 
   return (
-    <div className={`flex flex-row h-full w-full bg-[var(--bg-base)] ${isHorizontal ? 'min-w-[260px]' : 'min-w-[150px]'}`}>
+    <div className={`flex flex-row h-full w-full bg-[var(--bg-base)] ${isHorizontal ? 'min-w-[260px]' : 'min-w-[150px]'} ${compactHeightClass}`}>
       {/* Left Sidebar */}
       <div className={`flex flex-col gap-1 shrink-0 bg-[var(--bg-card)] rounded-lg shadow-md p-1 border border-[var(--border-subtle)] h-fit max-h-full overflow-y-auto custom-scrollbar m-1.5 ${isHorizontal ? 'w-[130px]' : 'w-[65px]'}`}>
         {givers.map(giver => (

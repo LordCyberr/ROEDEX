@@ -50,23 +50,42 @@ class HookedWebSocket extends OriginalWebSocket {
 
 // Intercept console messages for game events not broadcasted via WebSocket
 const methods: ('log' | 'info' | 'debug')[] = ['log', 'info', 'debug'];
+let isBlacksmithOpen = false;
+
 methods.forEach(method => {
   const original = console[method];
   console[method] = function(...args: any[]) {
-    if (args.length > 0 && typeof args[0] === 'string') {
-      const msg = args[0];
-      if (msg.includes('OnMMEvent ContentChanged (ChestInventory)')) {
-        window.postMessage({
-          source: 'ROEDEX_INTERCEPTOR',
-          type: 'WS_MESSAGE',
-          data: '42' + JSON.stringify(["chest_opened", {}])
-        }, '*');
-      } else if (msg.includes('Close Invoked')) {
-        window.postMessage({
-          source: 'ROEDEX_INTERCEPTOR',
-          type: 'WS_MESSAGE',
-          data: '42' + JSON.stringify(["chest_closed", {}])
-        }, '*');
+    if (args.length > 0) {
+      // FPS OPTIMIZATION: Instead of full args.map().join() which is heavy for games that spam console.log,
+      // we only stringify the first argument if it's a string, which covers 99% of our targeted logs.
+      let fullMsg = '';
+      if (typeof args[0] === 'string') {
+         fullMsg = args[0];
+      } else {
+         try { fullMsg = String(args[0]); } catch(e) {}
+      }
+      
+      if (fullMsg) {
+        if (fullMsg.includes('[ForgeUI] case BlackSmith ENTER') || fullMsg.includes('[ForgeUI] BlackSmith: isMenuOpen=true')) {
+          isBlacksmithOpen = true;
+        }
+        
+        if (fullMsg.includes('OnMMEvent ContentChanged (ChestInventory)')) {
+          if (!isBlacksmithOpen) {
+            window.postMessage({
+              source: 'ROEDEX_INTERCEPTOR',
+              type: 'WS_MESSAGE',
+              data: '42' + JSON.stringify(["chest_opened", {}])
+            }, '*');
+          }
+        } else if (fullMsg.includes('Close Invoked')) {
+          isBlacksmithOpen = false;
+          window.postMessage({
+            source: 'ROEDEX_INTERCEPTOR',
+            type: 'WS_MESSAGE',
+            data: '42' + JSON.stringify(["chest_closed", {}])
+          }, '*');
+        }
       }
     }
     original.apply(console, args);

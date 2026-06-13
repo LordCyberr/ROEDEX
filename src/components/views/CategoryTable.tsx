@@ -1,6 +1,7 @@
 import React, { memo, useState, useEffect } from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
-import { Star, ChevronDown, ChevronRight, Clock } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
+import { ChevronDown, ChevronRight, Clock, Sword, Pickaxe, Leaf, Axe, Box, PawPrint } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 
 export interface TableRowData {
@@ -9,29 +10,14 @@ export interface TableRowData {
   dist: number;
   nearestPos?: Vector2;
   counts?: { alive: number; dead: number };
-  respawnTimeMs?: number;
+  respawnTimesMs?: number[];
 }
 
 import { Vector2 } from '../../types/events';
 import { getItemInfo } from '../../data/rarity';
 
-const calculateDistance = (p1: Vector2 | null, p2: Vector2 | undefined) => {
-  if (!p1 || !p2) return -1;
-  const dx = p1.x - p2.x;
-  const dy = p1.y - p2.y;
-  return Math.round(Math.sqrt(dx * dx + dy * dy));
-};
 
-const RealtimeDistance: React.FC<{ targetPos?: Vector2, fallbackDist: number }> = ({ targetPos, fallbackDist }) => {
-  const playerPosition = useTrackerStore(state => state.playerPosition);
-  
-  if (!targetPos) {
-    return <>{fallbackDist >= 0 ? `${fallbackDist}m` : '--'}</>;
-  }
 
-  const dist = calculateDistance(playerPosition, targetPos);
-  return <>{dist >= 0 ? `${dist}m` : '--'}</>;
-};
 
 // ── Rarity Colors ──────────────────────────────────────────────
 export const getRarityColor = (name: string) => {
@@ -51,11 +37,11 @@ export const getRarityColor = (name: string) => {
 export const GlobalTableHeader: React.FC = () => {
   const tableSettings = useTrackerStore((state) => state.tableSettings);
   const { t } = useTranslation();
-  
+
   let gridCols = '1fr';
-  if (tableSettings.showDistance) gridCols += ' 24px';
-  if (tableSettings.showCount) gridCols += ' 38px';
-  if (tableSettings.showTimer) gridCols += ' 24px';
+  if (tableSettings.showDistance) gridCols += ' 26px';
+  if (tableSettings.showCount) gridCols += ' 32px';
+  if (tableSettings.showTimer) gridCols += ' 28px';
 
   return (
     <div className={`grid gap-1 items-center px-1.5 py-0.5 text-[8.5px] font-bold text-[var(--text-muted)] border-b border-[var(--border-subtle)] uppercase tracking-wider bg-[var(--bg-panel)] font-[var(--font-heading)]`} style={{ gridTemplateColumns: gridCols }}>
@@ -76,13 +62,22 @@ export const GlobalTableHeader: React.FC = () => {
 };
 
 // ── Timer Formatting ───────────────────────────────────────────
-const formatCountdown = (targetMs: number, now: number): string => {
+const formatCountdown = (targetMs: number, now: number, forceMMSS: boolean = false): string => {
   const diff = targetMs - now;
   if (diff <= 0) return '0:00';
   const totalSecs = Math.floor(diff / 1000);
-  const m = Math.floor(totalSecs / 60);
+  const totalM = Math.floor(totalSecs / 60);
   const s = totalSecs % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
+  
+  if (!forceMMSS) {
+    const h = Math.floor(totalSecs / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    if (h > 0) {
+      return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+  }
+  
+  return `${totalM}:${s.toString().padStart(2, '0')}`;
 };
 
 const getTimerColor = (targetMs: number, now: number): string => {
@@ -94,60 +89,138 @@ const getTimerColor = (targetMs: number, now: number): string => {
   return 'text-[#ff9900]'; // Orange
 };
 
-const TimerDisplay = memo(({ targetMs, textSmall }: { targetMs: number, textSmall: string }) => {
+import { Tooltip } from '../ui/Tooltip';
+
+const TimerDisplay = memo(({ targetMsArray, textSmall }: { targetMsArray: number[], textSmall: string }) => {
   const [now, setNow] = useState(Date.now());
-  
+  const maxTooltips = useTrackerStore(state => state.tableSettings.maxRespawnTooltips) || 5;
+  const tutorialStep = useTrackerStore(state => state.notificationSettings.tutorialStep);
+
   useEffect(() => {
-    if (targetMs <= now) return;
+    // Only update if there's at least one active timer
+    const hasActive = targetMsArray.some(t => t > Date.now());
+    if (!hasActive) return;
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
-  }, [targetMs, now]);
+  }, [targetMsArray]);
 
-  const timerStr = formatCountdown(targetMs, now);
+  // Sort ascending and filter out past timers
+  let validTimers = targetMsArray.filter(t => t > now).sort((a, b) => a - b);
+  
+  if (tutorialStep === 6) {
+    // Inject fake timers for tutorial so the spotlight has a target and the tooltip looks populated
+    validTimers = [now + 35000, now + 125000, now + 185000, now + 245000, now + 420000];
+  }
+
+  if (validTimers.length === 0) return <div id="tutorial-timer-row" className={`text-right ${textSmall} text-[var(--text-muted)]`}>--</div>;
+
+  const targetMs = validTimers[0];
+  const timerStr = formatCountdown(targetMs, now, true);
   const timerColor = getTimerColor(targetMs, now);
+  
+  const tooltipContent = (
+    <div className="flex flex-col gap-0.5 w-fit min-w-[60px]">
+      <div className="text-[9px] text-[var(--text-muted)] border-b border-[var(--border-subtle)] pb-0.5 mb-0.5 font-bold tracking-widest uppercase text-center leading-tight">
+        Respawns
+      </div>
+      {validTimers.slice(0, maxTooltips).map((t, idx) => (
+        <div key={idx} className="flex justify-between items-center text-[10px] font-mono gap-3">
+          <span className="text-[var(--text-secondary)]">#{idx + 1}</span>
+          <span className={getTimerColor(t, now)}>{formatCountdown(t, now)}</span>
+        </div>
+      ))}
+      {validTimers.length > maxTooltips && (
+        <div className="text-center text-[8px] text-[var(--text-muted)] italic mt-0.5">
+          + {validTimers.length - maxTooltips} more
+        </div>
+      )}
+    </div>
+  );
 
   return (
-    <div className={`text-right ${textSmall} ${timerColor}`}>
-      {timerStr}
-    </div>
+    <Tooltip content={tooltipContent}>
+      <div id="tutorial-timer-row" className={`text-right ${textSmall} ${timerColor} cursor-help`}>
+        {timerStr}
+      </div>
+    </Tooltip>
   );
 });
 
+
+const getCategoryIcon = (categoryId: string | undefined, isCompact: boolean, isFav: boolean, toggleFav: () => void) => {
+  if (!categoryId) return null;
+  const sz = isCompact ? 10 : 12;
+  const cls = `shrink-0 transition-all cursor-pointer ${isFav ? 'text-yellow-400 fill-yellow-400 scale-110 drop-shadow-md' : 'text-[var(--text-muted)] opacity-70 hover:text-white hover:opacity-100'}`;
+  const fill = isFav ? "currentColor" : "none";
+  const id = categoryId.toLowerCase();
+
+  const iconProps = { size: sz, className: cls, fill, onClick: (e: React.MouseEvent) => { e.stopPropagation(); toggleFav(); } };
+
+  const parts = id.split('_');
+  const cat = parts[parts.length - 1];
+
+  if (cat.includes('mob') || cat.includes('hostile')) return <Sword {...iconProps} />;
+  if (cat.includes('neutral')) return <PawPrint {...iconProps} />;
+  if ((cat.includes('tree') || cat.includes('wood'))) return <Axe {...iconProps} />;
+  if ((cat.includes('ore') || cat.includes('rock') || cat.includes('vein'))) return <Pickaxe {...iconProps} />;
+  if ((cat.includes('plant') || cat.includes('herb'))) return <Leaf {...iconProps} />;
+  return <Box {...iconProps} />;
+};
+
 // ── Single Data Row ────────────────────────────────────────────
-const DataRow = memo(({ row }: { row: TableRowData }) => {
-  const toggleFavorite = useTrackerStore((state) => state.toggleFavorite);
-  const isFav = useTrackerStore((state) => state.favorites.includes(row.name));
-  const density = useTrackerStore((state) => state.displayDensity);
-  const tableSettings = useTrackerStore((state) => state.tableSettings);
+const DataRow = memo(({ row, categoryId }: { row: TableRowData, categoryId?: string }) => {
+  // Single useShallow call instead of 4 separate subscriptions — 4x fewer listeners
+  const { toggleFavorite, isFav, density, tableSettings } = useTrackerStore(useShallow((state) => ({
+    toggleFavorite: state.toggleFavorite,
+    isFav: state.favorites.includes(row.name),
+    density: state.displayDensity,
+    tableSettings: state.tableSettings,
+  })));
 
   const alive = row.counts?.alive ?? 0;
   const dead = row.counts?.dead ?? 0;
 
-  const hasTimer = !!row.respawnTimeMs && row.respawnTimeMs > Date.now();
+  const hasTimer = !!row.respawnTimesMs && row.respawnTimesMs.some(t => t > Date.now());
 
-  const py = density === 'compact' ? 'py-0' : 'py-1';
-  const textBase = density === 'compact' ? 'text-[9.5px]' : 'text-[11px]';
-  const textSmall = density === 'compact' ? 'text-[8.5px]' : 'text-[10px]';
+  const isCompact = density === 'compact';
+  const textSmall = isCompact ? 'text-[8.5px]' : 'text-[10px]';
 
   let gridCols = '1fr';
-  if (tableSettings.showDistance) gridCols += ' 24px';
-  if (tableSettings.showCount) gridCols += ' 38px';
-  if (tableSettings.showTimer) gridCols += ' 24px';
+  if (tableSettings.showDistance) gridCols += ' 26px';
+  if (tableSettings.showCount) gridCols += ' 32px';
+  if (tableSettings.showTimer) gridCols += ' 28px';
+
+  let rowClasses = 'grid gap-1 items-center font-mono leading-[1.2] transition-all ';
+  if (isCompact) {
+    rowClasses += 'px-1.5 py-0 text-[9.5px] hover:bg-[var(--bg-hover)] border-b border-[var(--border-subtle)]';
+  } else {
+    rowClasses += 'px-1.5 py-1 mb-0.5 text-[10px] rounded-md bg-[var(--bg-panel)] border border-[var(--border-subtle)] hover:border-[var(--text-muted)] hover:shadow-sm hover:bg-[var(--bg-hover)]';
+  }
 
   return (
-    <div className={`grid gap-1 items-center px-1.5 ${py} hover:bg-[var(--bg-hover)] ${textBase} font-mono leading-[1.2]`} style={{ gridTemplateColumns: gridCols }}>
-      <div className="flex items-center gap-1 min-w-0">
-        <Star
-          size={10}
-          strokeWidth={isFav ? 0 : 2}
-          className={`cursor-pointer shrink-0 transition-colors ${isFav ? 'text-yellow-400 fill-yellow-400' : 'text-[var(--text-muted)] hover:text-[var(--text-muted)]'}`}
-          onClick={(e) => { e.stopPropagation(); toggleFavorite(row.name); }}
-        />
-        <span className={`truncate ${getRarityColor(row.name)}`} title={row.name}>
+    <div 
+      id={`row-${row.name.replace(/\s+/g, '-')}`}
+      data-category={categoryId} 
+      className={rowClasses} 
+      style={{ gridTemplateColumns: gridCols }}
+    >
+      <div className="flex items-center gap-1.5 min-w-0">
+        {getCategoryIcon(categoryId, isCompact, isFav, () => {
+          if (!isFav) {
+            import('../../core/companion/BobCompanion').then(({ BobCompanion }) => BobCompanion.onAddFavorite(row.name));
+          }
+          toggleFavorite(row.name);
+        })}
+        <span className={`truncate flex-1 min-w-0 ${getRarityColor(row.name)} ${isCompact ? '' : 'font-semibold drop-shadow-sm'}`} title={row.name}>
           {row.name}
         </span>
       </div>
-      {tableSettings.showDistance && <div className="text-right text-[var(--text-muted)]"><RealtimeDistance targetPos={row.nearestPos} fallbackDist={row.dist} /></div>}
+      {tableSettings.showDistance && (
+        <div className="text-right text-[var(--text-muted)]">
+          {/* Use pre-calculated throttled distance — NO per-row playerPosition subscription */}
+          {row.dist >= 0 ? `${row.dist}m` : '--'}
+        </div>
+      )}
       {tableSettings.showCount && (
         <div className="text-right">
           <span className={alive > 0 ? 'text-[#00ff55]' : 'text-[var(--text-muted)]'}>{alive}</span>
@@ -157,7 +230,7 @@ const DataRow = memo(({ row }: { row: TableRowData }) => {
       )}
       {tableSettings.showTimer && (
         hasTimer ? (
-          <TimerDisplay targetMs={row.respawnTimeMs!} textSmall={textSmall} />
+          <TimerDisplay targetMsArray={row.respawnTimesMs!} textSmall={textSmall} />
         ) : (
           <div className={`text-right ${textSmall} text-[var(--text-muted)]`}>--</div>
         )
@@ -167,12 +240,12 @@ const DataRow = memo(({ row }: { row: TableRowData }) => {
 });
 
 // ── Shared Category List ─────────────────────────
-const CategoryList: React.FC<{ data: TableRowData[]; collapsed: boolean }> = ({ data, collapsed }) => {
+const CategoryList: React.FC<{ data: TableRowData[]; collapsed: boolean; categoryId?: string }> = ({ data, collapsed, categoryId }) => {
   if (collapsed) return null;
   return (
     <>
       {data.map((row) => (
-        <DataRow key={row.id} row={row} />
+        <DataRow key={row.id} row={row} categoryId={categoryId} />
       ))}
     </>
   );
@@ -180,9 +253,11 @@ const CategoryList: React.FC<{ data: TableRowData[]; collapsed: boolean }> = ({ 
 
 // ── Category Section (vertical flat mode) ──────────────────────
 export const CategorySection: React.FC<{ categoryId: string; title: string; data: TableRowData[]; align?: 'left' | 'center' }> = ({ categoryId, title, data, align = 'center' }) => {
-  const toggleCategory = useTrackerStore((state) => state.toggleCategory);
-  const collapsed = useTrackerStore((state) => state.collapsedCategories[categoryId]);
-  const density = useTrackerStore((state) => state.displayDensity);
+  const { toggleCategory, collapsed, density } = useTrackerStore(useShallow((state) => ({
+    toggleCategory: state.toggleCategory,
+    collapsed: state.collapsedCategories[categoryId],
+    density: state.displayDensity,
+  })));
 
   if (data.length === 0) return null;
 
@@ -195,22 +270,24 @@ export const CategorySection: React.FC<{ categoryId: string; title: string; data
       <button
         onClick={() => toggleCategory(categoryId)}
         title={`Toggle ${title}`}
-        className={`flex items-center ${align === 'left' ? 'justify-start pl-4 pr-4 mx-4' : 'justify-center mx-6'} gap-1 my-0.5 ${py} ${textSz} font-bold text-[var(--text-secondary)] uppercase tracking-[0.15em] select-none hover:text-white hover:bg-[var(--bg-hover)] transition-colors border border-[var(--border-subtle)] rounded-full bg-black/30 shadow-none font-[var(--font-heading)]`}
+        className={`flex items-center ${align === 'left' ? 'justify-start pl-4 pr-4 mx-4' : 'justify-center mx-6'} gap-1 my-0.5 ${py} ${textSz} font-bold text-[var(--text-secondary)] uppercase tracking-[0.15em] select-none hover:text-white hover:bg-[var(--bg-hover)] transition-colors border border-[var(--border-subtle)] rounded-full bg-black/30 shadow-none font-[var(--font-heading)] min-w-0 overflow-hidden`}
       >
-        {collapsed ? <ChevronRight size={10} strokeWidth={3} /> : <ChevronDown size={10} strokeWidth={3} />}
-        {title}
+        <div className="shrink-0">{collapsed ? <ChevronRight size={10} strokeWidth={3} /> : <ChevronDown size={10} strokeWidth={3} />}</div>
+        <span className="truncate block whitespace-nowrap overflow-hidden text-ellipsis">{title}</span>
       </button>
 
-      {!collapsed && <CategoryList data={data} collapsed={collapsed} />}
+      {!collapsed && <CategoryList data={data} collapsed={collapsed} categoryId={categoryId} />}
     </div>
   );
 };
 
 // ── Category Card (horizontal card mode) ───────────────────────
 export const CategoryCard: React.FC<{ categoryId: string; title: string; data: TableRowData[]; showHeader?: boolean }> = ({ categoryId, title, data, showHeader = false }) => {
-  const toggleCategory = useTrackerStore((state) => state.toggleCategory);
-  const collapsed = useTrackerStore((state) => state.collapsedCategories[categoryId]);
-  const density = useTrackerStore((state) => state.displayDensity);
+  const { toggleCategory, collapsed, density } = useTrackerStore(useShallow((state) => ({
+    toggleCategory: state.toggleCategory,
+    collapsed: state.collapsedCategories[categoryId],
+    density: state.displayDensity,
+  })));
 
   if (data.length === 0) return null;
 
@@ -218,7 +295,7 @@ export const CategoryCard: React.FC<{ categoryId: string; title: string; data: T
   const textSz = density === 'compact' ? 'text-[8.5px]' : 'text-[10px]';
 
   return (
-    <div className={`flex flex-col bg-[var(--bg-card)] rounded-2xl overflow-hidden shrink-0 shadow-md border border-[var(--border-subtle)] w-fit min-w-fit h-fit max-h-full`}>
+    <div className={`flex flex-col bg-[var(--bg-card)] rounded-lg overflow-hidden shrink-0 shadow-md border border-[var(--border-subtle)] w-fit min-w-fit h-fit max-h-full`}>
       <button
         onClick={() => toggleCategory(categoryId)}
         title={`Toggle ${title}`}
@@ -234,7 +311,7 @@ export const CategoryCard: React.FC<{ categoryId: string; title: string; data: T
         <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
           {showHeader && <GlobalTableHeader />}
           <div className="flex flex-col flex-1 min-h-0 overflow-y-auto custom-scrollbar">
-            <CategoryList data={data} collapsed={collapsed} />
+            <CategoryList data={data} collapsed={collapsed} categoryId={categoryId} />
           </div>
         </div>
       )}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Header } from '../layout/Header';
 import { useTrackerStore } from '../../store/trackerStore';
+import { useShallow } from 'zustand/react/shallow';
 import { TrackingView } from '../views/TrackingView';
 import { LootView } from '../views/LootView';
 
@@ -11,25 +12,55 @@ import { WeaponUI } from '../widgets/WeaponUI';
 import { ArmorUI } from '../widgets/ArmorUI';
 import { NotificationToaster } from '../widgets/NotificationToaster';
 import { BobOverlay } from '../widgets/BobOverlay';
+import { BobTutorialOverlay } from './BobTutorialOverlay';
 import { EfficiencyHUD } from '../widgets/EfficiencyHUD';
 import { DebugPanel } from '../widgets/DebugPanel';
 import { MinimizedOrb } from './MinimizedOrb';
 import { PoppedOutWindowComponent } from './PoppedOutWindowComponent';
+import { ErrorBoundary } from '../widgets/ErrorBoundary';
+import { ChangelogModal } from '../ui/ChangelogModal';
 import { motion, useMotionValue, useDragControls } from 'motion/react';
+import { MinimalChestHUD } from '../views/MinimalChestHUD';
+import { BlackoutTutorial } from './BlackoutTutorial';
 export const OverlayContainer: React.FC = () => {
-  const activeTab = useTrackerStore((state) => state.activeTab);
-  const isMinimized = useTrackerStore((state) => state.isMinimized);
-  const layoutMode = useTrackerStore((state) => state.layoutMode);
-  const poppedOutWindows = useTrackerStore((state) => state.poppedOutWindows);
-  const mergeTab = useTrackerStore((state) => state.mergeTab);
-  const overlayPosition = useTrackerStore((state) => state.overlayPosition);
-  const setOverlayPosition = useTrackerStore((state) => state.setOverlayPosition);
-  const activeOpacity = useTrackerStore((state) => state.activeOpacity);
-  const idleOpacity = useTrackerStore((state) => state.idleOpacity);
-  const isUILocked = useTrackerStore((state) => state.isUILocked);
-  const tabDimensions = useTrackerStore((state) => state.tabDimensions);
-  const setTabDimensions = useTrackerStore((state) => state.setTabDimensions);
-  
+  const {
+    activeTab, isMinimized, layoutMode, poppedOutWindows,
+    mergeTab, overlayPosition, setOverlayPosition,
+    activeOpacity, idleOpacity, isUILocked, globalScale,
+    tabDimensions, theme, tutorialStep, tutorialCompleted, currentZone
+  } = useTrackerStore(useShallow((state) => ({
+    activeTab: state.activeTab,
+    isMinimized: state.isMinimized,
+    layoutMode: state.layoutMode,
+    poppedOutWindows: state.poppedOutWindows,
+    mergeTab: state.mergeTab,
+    overlayPosition: state.overlayPosition,
+    setOverlayPosition: state.setOverlayPosition,
+    activeOpacity: state.activeOpacity,
+    idleOpacity: state.idleOpacity,
+    isUILocked: state.isUILocked,
+    tabDimensions: state.tabDimensions,
+    theme: state.theme,
+    globalScale: state.globalScale,
+    tutorialStep: state.notificationSettings.tutorialStep,
+    tutorialCompleted: state.notificationSettings.tutorialCompleted,
+    currentZone: state.currentZone
+  })));
+
+  const isGameLoaded = !!currentZone && currentZone !== 'Unknown';
+  const [isOverlayReady, setIsOverlayReady] = React.useState(false);
+
+  React.useEffect(() => {
+    if (isGameLoaded) {
+      const timer = setTimeout(() => {
+        setIsOverlayReady(true);
+      }, 10000); // 10 seconds delay
+      return () => clearTimeout(timer);
+    } else {
+      setIsOverlayReady(false);
+    }
+  }, [isGameLoaded]);
+
   const [isHovered, setIsHovered] = React.useState(false);
   
   const isHorizontal = layoutMode === 'horizontal';
@@ -60,6 +91,26 @@ export const OverlayContainer: React.FC = () => {
     x.set(safeX);
     y.set(safeY);
   }, [overlayPosition.x, overlayPosition.y, x, y]);
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+        let tabId = '';
+        if (e.key === '1') tabId = 'global';
+        else if (e.key === '2') tabId = 'session';
+        else if (e.key === '3') tabId = 'npcs';
+        else if (e.key === '4') tabId = 'quests';
+        
+        if (tabId) {
+          e.preventDefault();
+          useTrackerStore.getState().popOutTab(tabId, window.innerWidth / 2 - 150, window.innerHeight / 2 - 200);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   React.useEffect(() => {
     const handleResize = () => {
@@ -100,102 +151,180 @@ export const OverlayContainer: React.FC = () => {
       );
     }
 
-    switch (activeTab) {
-      case 'global':
-      case 'favorites':
-        return <TrackingView forcedTab={activeTab} />;
-      case 'session': return <LootView />;
-      case 'npcs':
-        return <NPCView />;
-      case 'quests':
-        return <QuestView />;
-      case 'settings': return <SettingsView />;
-      default: return null;
-    }
+    const renderView = () => {
+      switch (activeTab) {
+        case 'global':
+        case 'favorites':
+          return <TrackingView forcedTab={activeTab} />;
+        case 'session': return <LootView />;
+        case 'npcs':
+          return <NPCView />;
+        case 'quests':
+          return <QuestView />;
+        case 'settings': return <SettingsView />;
+        default: return null;
+      }
+    };
+    
+    return <ErrorBoundary>{renderView()}</ErrorBoundary>;
   };
 
   const overlayRef = React.useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
+  // ResizeObserver removed in favor of onUp saving to prevent React render loops
+
+  const activeDimKey = isHorizontal ? `${activeTab}_horizontal` : `${activeTab}_vertical`;
+  const activeDim = tabDimensions[activeDimKey] || {};
+  const currentWidth = activeDim.width ? `${activeDim.width}px` : undefined;
+  const currentHeight = activeDim.height ? `${activeDim.height}px` : undefined;
+
+  const handleResizeDown = (e: React.PointerEvent, dir: string) => {
+    e.stopPropagation();
+    e.preventDefault();
     const el = overlayRef.current;
     if (!el) return;
     
-    let isInitialMount = true;
-    const observer = new ResizeObserver(() => {
-      if (isInitialMount) {
-        isInitialMount = false;
-        return;
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startW = el.getBoundingClientRect().width;
+    const startH = el.getBoundingClientRect().height;
+    const startOverlayX = x.get();
+    const startOverlayY = y.get();
+    
+    const minW = isHorizontal ? 400 : 180;
+    const minH = isHorizontal ? 150 : 200;
+    const maxW = window.innerWidth - 16;
+    const maxH = window.innerHeight * 0.85;
+    
+    const onMove = (me: PointerEvent) => {
+      let newW = startW;
+      let newH = startH;
+      let newX = startOverlayX;
+      let newY = startOverlayY;
+      
+      if (dir.includes('e')) {
+        newW = Math.max(minW, Math.min(maxW, startW + (me.clientX - startX)));
+      } else if (dir.includes('w')) {
+        newW = Math.max(minW, Math.min(maxW, startW - (me.clientX - startX)));
+        newX = startOverlayX + (startW - newW);
       }
+      
+      if (dir.includes('s')) {
+        newH = Math.max(minH, Math.min(maxH, startH + (me.clientY - startY)));
+      } else if (dir.includes('n')) {
+        newH = Math.max(minH, Math.min(maxH, startH - (me.clientY - startY)));
+        newY = startOverlayY + (startH - newH);
+      }
+      
+      if (dir.includes('e') || dir.includes('w')) el.style.width = `${newW}px`;
+      if (dir.includes('s') || dir.includes('n')) el.style.height = `${newH}px`;
+      if (dir.includes('w')) x.set(newX);
+      if (dir.includes('n')) y.set(newY);
+    };
+    
+    const onUp = () => {
       const w = el.style.width;
       const h = el.style.height;
+      const finalW = (w && w.endsWith('px')) ? parseInt(w) : undefined;
+      const finalH = (h && h.endsWith('px')) ? parseInt(h) : undefined;
       
-      const newWidth = (!isHorizontal && w.endsWith('px')) ? parseInt(w) : undefined;
-      const newHeight = (isHorizontal && h.endsWith('px')) ? parseInt(h) : undefined;
+      const currentDimObj = useTrackerStore.getState().tabDimensions[activeDimKey] || {};
       
-      if (w.endsWith('px') || h.endsWith('px')) {
-        setTabDimensions(activeTab, newWidth, newHeight);
+      const saveW = (dir.includes('e') || dir.includes('w')) ? finalW : currentDimObj.width;
+      const saveH = (dir.includes('s') || dir.includes('n')) ? finalH : currentDimObj.height;
+      
+      if (saveW || saveH) {
+        useTrackerStore.getState().setTabDimensions(activeDimKey, saveW, saveH);
       }
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [activeTab, setTabDimensions, isHorizontal]);
-
-  const activeDim = tabDimensions[activeTab] || {};
-  const currentWidth = activeDim.width ? `${activeDim.width}px` : (isHorizontal ? 'auto' : undefined);
-  const currentHeight = activeDim.height ? `${activeDim.height}px` : (isHorizontal ? undefined : 'auto');
+      useTrackerStore.getState().setOverlayPosition({ x: x.get(), y: y.get() });
+      
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+    };
+    
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  };
 
   return (
-    <div ref={containerRef} className="fixed inset-0 pointer-events-none z-50 overflow-hidden text-[var(--text-primary)] font-[var(--font-body)]" data-theme={useTrackerStore(s => s.theme)}>
-      {isMinimized ? (
-        <MinimizedOrb />
-      ) : (
-        <motion.div 
-          ref={overlayRef}
-          style={{ 
-            x, y, 
-            opacity: isHovered ? activeOpacity : idleOpacity,
-            resize: isHorizontal ? 'vertical' : 'horizontal',
-            height: currentHeight,
-            width: currentWidth
-          }}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          drag
-          dragControls={dragControls}
-          dragListener={false}
-          dragConstraints={containerRef}
-          dragElastic={0}
-          dragMomentum={false}
-          onDragEnd={() => {
-            setOverlayPosition({ x: x.get(), y: y.get() });
-          }}
-          className={`
-            absolute top-0 left-0 ${isUILocked ? 'pointer-events-none' : 'pointer-events-auto'} shadow-[0_8px_30px_rgba(0,0,0,0.8)] border-[var(--border-accent)] flex transition-opacity duration-300 overflow-hidden rounded-xl border
-            bg-[var(--bg-base)]
-            ${isHorizontal 
-              ? 'h-auto max-h-[90vh] min-h-[100px] w-fit max-w-[calc(100vw-1rem)] flex-col' 
-              : `${activeTab === 'session' ? 'h-[350px]' : 'h-auto'} max-h-[90vh] min-h-[100px] w-fit max-w-[400px] min-w-[180px] flex-col`
-            }
-          `}
-        >
-          <Header onPointerDown={(e) => dragControls.start(e)} />
-          
-          <div className={`flex-1 overflow-hidden ${isHorizontal ? 'overflow-x-auto custom-scrollbar flex p-2 gap-1.5' : 'overflow-y-auto custom-scrollbar p-1'}`}>
-            {renderContent()}
-          </div>
-        </motion.div>
-      )}
+    <div ref={containerRef} className="fixed inset-0 pointer-events-none z-50 overflow-hidden text-[var(--text-primary)] font-[var(--font-body)]" data-theme={theme}>
+      <div 
+        className={`w-full h-full transition-opacity duration-1000 ${(!isGameLoaded || !isOverlayReady) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+      >
+        {isGameLoaded && (
+          <>
+            {isMinimized ? (
+              <MinimizedOrb />
+            ) : (
+              <motion.div 
+                ref={overlayRef}
+                style={{ 
+                  x, y, 
+                  opacity: tutorialStep > 0 ? 1.0 : (isHovered ? activeOpacity : idleOpacity),
+                  width: currentWidth ? currentWidth : undefined,
+                  height: currentHeight ? currentHeight : undefined,
+                  zoom: globalScale || 1
+                }}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                drag={!isUILocked}
+                dragControls={dragControls}
+                dragListener={false}
+                dragConstraints={containerRef}
+                dragElastic={0}
+                dragMomentum={false}
+                onDragEnd={() => {
+                  setOverlayPosition({ x: x.get(), y: y.get() });
+                }}
+                className={`
+                  absolute top-0 left-0 ${isUILocked ? 'pointer-events-none' : 'pointer-events-auto'} shadow-[0_8px_30px_rgba(0,0,0,0.8)] border-[var(--border-accent)] flex transition-opacity duration-300 overflow-hidden rounded-xl border
+                  bg-[var(--bg-base)]
+                  ${isHorizontal 
+                    ? 'h-fit min-h-fit max-h-[85vh] w-fit min-w-[400px] max-w-[calc(100vw-1rem)] flex-col' 
+                    : `h-fit min-h-fit max-h-[85vh] ${(activeTab === 'global' || activeTab === 'favorites') ? 'w-fit' : 'w-[260px]'} max-w-[360px] min-w-[180px] flex-col`
+                  }
+                `}
+              >
+                <Header onPointerDown={(e) => dragControls.start(e)} />
+                
+                <div className={`flex-1 overflow-hidden ${isHorizontal ? 'overflow-x-auto custom-scrollbar flex p-2 gap-1.5' : 'overflow-y-auto custom-scrollbar p-1'}`}>
+                  {renderContent()}
+                </div>
+
+                {/* 8-Way Custom Resize Handles */}
+                <div onPointerDown={(e) => handleResizeDown(e, 'n')} className="absolute top-0 left-4 right-4 h-1.5 cursor-n-resize z-[100]" />
+                <div onPointerDown={(e) => handleResizeDown(e, 's')} className="absolute bottom-0 left-4 right-4 h-2 cursor-s-resize z-[100]" />
+                <div onPointerDown={(e) => handleResizeDown(e, 'w')} className="absolute top-4 bottom-4 left-0 w-1.5 cursor-w-resize z-[100]" />
+                <div onPointerDown={(e) => handleResizeDown(e, 'e')} className="absolute top-4 bottom-4 right-0 w-2 cursor-e-resize z-[100]" />
+                <div onPointerDown={(e) => handleResizeDown(e, 'nw')} className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize z-[100]" />
+                <div onPointerDown={(e) => handleResizeDown(e, 'ne')} className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize z-[100]" />
+                <div onPointerDown={(e) => handleResizeDown(e, 'sw')} className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize z-[100]" />
+                <div onPointerDown={(e) => handleResizeDown(e, 'se')} className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize z-[100]" />
+              </motion.div>
+            )}
+            
+            {Object.values(poppedOutWindows).map(win => (
+              <ErrorBoundary key={win.id}>
+                <PoppedOutWindowComponent window={win} />
+              </ErrorBoundary>
+            ))}
+            
+            <ErrorBoundary><WeaponUI /></ErrorBoundary>
+            <ErrorBoundary><ArmorUI /></ErrorBoundary>
+            <ErrorBoundary><EfficiencyHUD /></ErrorBoundary>
+            <ErrorBoundary><DebugPanel /></ErrorBoundary>
+            <ErrorBoundary><MinimalChestHUD /></ErrorBoundary>
+            <ErrorBoundary><BlackoutTutorial /></ErrorBoundary>
+            {(tutorialCompleted || tutorialStep > 0) && (
+              <ErrorBoundary><BobOverlay constraintsRef={containerRef} /></ErrorBoundary>
+            )}
+          </>
+        )}
+      </div>
       
-      {Object.values(poppedOutWindows).map(win => (
-        <PoppedOutWindowComponent key={win.id} window={win} />
-      ))}
-      
-      <WeaponUI />
-      <ArmorUI />
-      <NotificationToaster />
-      <EfficiencyHUD />
-      <DebugPanel />
-      <BobOverlay constraintsRef={containerRef} />
+      <ErrorBoundary><NotificationToaster /></ErrorBoundary>
+      <ErrorBoundary><BobTutorialOverlay /></ErrorBoundary>
+      <ErrorBoundary><ChangelogModal /></ErrorBoundary>
     </div>
   );
 };

@@ -15,6 +15,7 @@ function initOverlay() {
 
   rootContainer = document.createElement('div');
   rootContainer.id = overlayId;
+  rootContainer.classList.add('antialiased'); // Enables font-smoothing for sharper text
   
   // Ensure it overlays the game canvas perfectly
   rootContainer.style.position = 'fixed';

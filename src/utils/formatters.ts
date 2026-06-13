@@ -1,7 +1,31 @@
+const nameMap: Record<string, string> = {
+  'crystalrock': 'Crystal Rock',
+  'dinobones': 'Dino Bone',
+  'enchantedbark': 'Enchanted Bark',
+  'elasticcore': 'Elastic Core',
+  'pureessence': 'Pure Essence',
+  'wolfpelt': 'Wolf Pelt',
+  'silverleaf': 'Silverleaf',
+  'blackoak': 'Blackoak',
+  'moonpetal': 'Moonpetal',
+  'ironwood': 'Ironwood',
+  'bronzewood': 'Bronzewood',
+  'godwood': 'Godwood',
+  'dreadwood': 'Dreadwood',
+  'cinderheart': 'Cinderheart',
+  'shadowleaf': 'Shadowleaf',
+  'goldleaf': 'Goldleaf',
+  'mourninglily': 'Mourning Lily',
+  'mistweed': 'Mistweed',
+  'bloodroot': 'Bloodroot',
+};
+
 export const formatInternalName = (raw: string) => {
   let clean = raw.trim();
-  if (clean.toLowerCase() === 'crystalrock') return 'Crystal';
-  if (clean.toLowerCase() === 'dinobones') return 'Dino Bone';
+  
+  if (nameMap[clean.toLowerCase()]) {
+    return nameMap[clean.toLowerCase()];
+  }
   
   // Strip common suffixes case-insensitively
   clean = clean.replace(/\s*(ore|node|flower|tree|ai)$/i, '').trim();

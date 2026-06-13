@@ -35,9 +35,9 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "bob_avatar.png",
         "icon128.png",
-        "logo.png"
+        "logo.png",
+        "assets/*"
       ],
       "matches": [
         "*://embervault.ruyui.com/*"

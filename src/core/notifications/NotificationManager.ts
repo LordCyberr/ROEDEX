@@ -52,16 +52,20 @@ export class NotificationManager {
 
   static greetUser(username?: string) {
     if (this.hasGreeted) return;
-    this.hasGreeted = true;
 
     const store = useTrackerStore.getState();
     if (!store.notificationSettings.enabled || !store.notificationSettings.toasts) return;
+    
+    // Do not show greet toast if the boot sequence (tutorialStep 0) is still running
+    if (!store.notificationSettings.tutorialCompleted && store.notificationSettings.tutorialStep === 0) return;
+
+    this.hasGreeted = true;
 
     // Use a generic system greeting
     store.addNotification({
       type: 'info',
       title: 'System',
-      message: username ? `Welcome back, ${username}!` : `Welcome to ROEDEX!`
+      message: username ? `Welcome, ${username}!` : `Welcome to ROEDEX!`
     });
   }
 }

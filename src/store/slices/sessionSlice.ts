@@ -20,6 +20,8 @@ export const createSessionSlice: StateCreator<TrackerState, [], [], SessionSlice
   },
   sessionActive: false,
   setSessionActive: (active: boolean) => set({ sessionActive: active }),
+  isChestOpen: false,
+  setIsChestOpen: (open: boolean) => set({ isChestOpen: open }),
   sessionStartTime: null,
   setSessionStartTime: (time: number | null) => set({ sessionStartTime: time }),
   sessionRunes: 0,
@@ -42,7 +44,13 @@ export const createSessionSlice: StateCreator<TrackerState, [], [], SessionSlice
   })),
   chestInventory: {},
   setChestInventory: (inventory) => set({ chestInventory: inventory }),
-  
+  bankTotalValue: 0,
+  setBankTotalValue: (val: number | ((prev: number) => number)) => set((state) => ({
+    bankTotalValue: typeof val === 'function' ? val(state.bankTotalValue) : val
+  })),
+  bankInventory: {},
+  setBankInventory: (inventory) => set({ bankInventory: inventory }),
+
   sessionMobsKilled: 0,
   sessionTreesCut: 0,
   sessionOresMined: 0,

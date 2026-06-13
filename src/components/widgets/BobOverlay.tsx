@@ -1,46 +1,87 @@
 import React, { useEffect, useState } from 'react';
 import { motion, useMotionValue } from 'motion/react';
-import { Bot, AlertTriangle, PartyPopper, Ghost, Cat, Wand2, Skull, Smile, Dog } from 'lucide-react';
 import { useTrackerStore } from '../../store/trackerStore';
+import { useShallow } from 'zustand/react/shallow';
+import { ParticleGlobe } from './ParticleGlobe';
+import { BobCompanion } from '../../core/companion/BobCompanion';
+import { COMPANIONS } from '../../data/companions';
 
 export const BobOverlay: React.FC<{ constraintsRef?: React.RefObject<HTMLDivElement | null> }> = ({ constraintsRef }) => {
-  const [expression, setExpression] = useState<'idle' | 'happy' | 'scared' | 'talking'>('idle');
+  const [expression, setExpression] = useState<'happy' | 'alert' | 'mining' | 'combat' | 'idle' | 'talking' | 'chop' | 'running'>('idle');
   const [currentMessage, setCurrentMessage] = useState<string | null>(null);
+  const [isAsleep, setIsAsleep] = useState(true);
   
-  const bobMessages = useTrackerStore((state) => state.bobMessages);
-  const notificationSettings = useTrackerStore((state) => state.notificationSettings);
-  const bobPosition = useTrackerStore((state) => state.bobPosition);
-  const setBobPosition = useTrackerStore((state) => state.setBobPosition);
-  const isUILocked = useTrackerStore((state) => state.isUILocked);
+  const { bobMessages, notificationSettings, bobPosition, setBobPosition, isUILocked, playerName, activeCompanion } = useTrackerStore(
+    useShallow((state) => ({
+      bobMessages: state.bobMessages,
+      notificationSettings: state.notificationSettings,
+      bobPosition: state.bobPosition,
+      setBobPosition: state.setBobPosition,
+      isUILocked: state.isUILocked,
+      playerName: state.playerProfile?.name,
+      activeCompanion: state.activeCompanion
+    }))
+  );
+
+  const companion = COMPANIONS[activeCompanion || 'bob'] || COMPANIONS['bob'];
 
   const x = useMotionValue(bobPosition.x);
   const y = useMotionValue(bobPosition.y);
 
-  const [isRight, setIsRight] = useState(bobPosition.x > (typeof window !== 'undefined' ? window.innerWidth / 2 : 500));
-  const [isTop, setIsTop] = useState(bobPosition.y < (typeof window !== 'undefined' ? window.innerHeight / 2 : 500));
+  const getBubblePosition = (bx: number, by: number): 'left' | 'right' | 'top' | 'bottom' => {
+    if (typeof window === 'undefined') return 'right';
+    const winW = window.innerWidth;
+    const winH = window.innerHeight;
+    
+    // Bottom: bottom 20%
+    if (by > winH * 0.8) return 'top';
+    
+    // Extreme top center: top 15%, middle third
+    if (by < winH * 0.15 && bx > winW * 0.33 && bx < winW * 0.66) return 'bottom';
+    
+    // Right half
+    if (bx > winW / 2) return 'left';
+    
+    // Left half
+    return 'right';
+  };
+
+  const [bubblePosition, setBubblePosition] = useState<'left' | 'right' | 'top' | 'bottom'>(
+    getBubblePosition(bobPosition.x, bobPosition.y)
+  );
+  const [isShaking, setIsShaking] = useState(false);
+  const [displayedMessage, setDisplayedMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    let currentRight = bobPosition.x > window.innerWidth / 2;
-    let currentTop = bobPosition.y < window.innerHeight / 2;
+    if (currentMessage) {
+      setDisplayedMessage(currentMessage);
+    }
+  }, [currentMessage]);
 
+  const handleWakeUp = () => {
+    if (!isAsleep) return;
+    setIsAsleep(false);
+    BobCompanion.wakeUp(playerName);
+  };
+
+  useEffect(() => {
     const unsubX = x.on('change', (latestX) => {
-      const newRight = latestX > window.innerWidth / 2;
-      if (currentRight !== newRight) {
-        currentRight = newRight;
-        setIsRight(newRight);
-      }
+      setBubblePosition(getBubblePosition(latestX, y.get()));
     });
 
     const unsubY = y.on('change', (latestY) => {
-      const newTop = latestY < window.innerHeight / 2;
-      if (currentTop !== newTop) {
-        currentTop = newTop;
-        setIsTop(newTop);
-      }
+      setBubblePosition(getBubblePosition(x.get(), latestY));
     });
+
+    const handleResize = () => {
+      setBubblePosition(getBubblePosition(x.get(), y.get()));
+    };
+    window.addEventListener('resize', handleResize);
+
     return () => {
       unsubX();
       unsubY();
+      window.removeEventListener('resize', handleResize);
     };
   }, [x, y, bobPosition.x, bobPosition.y]);
 
@@ -51,19 +92,40 @@ export const BobOverlay: React.FC<{ constraintsRef?: React.RefObject<HTMLDivElem
   }, [bobPosition.x, bobPosition.y, x, y]);
 
   useEffect(() => {
+    if (isShaking) {
+      setExpression('alert');
+      const timer = setTimeout(() => setIsShaking(false), 2000);
+      return () => clearTimeout(timer);
+    }
+    
     // Find the latest Bob message
     if (bobMessages.length > 0) {
       const latest = bobMessages[bobMessages.length - 1];
       setCurrentMessage(latest.message);
       
-      // Determine expression based on message content
-      const msg = latest.message.toLowerCase();
-      if (msg.includes('slayer') || msg.includes('found') || msg.includes('wow')) {
-        setExpression('happy');
-      } else if (msg.includes('broke') || msg.includes('durability') || msg.includes('accidentally') || msg.includes('die')) {
-        setExpression('scared');
+      // Auto-wake if a message comes in while sleeping
+      if (isAsleep && latest.id !== 'placeholder_bob') {
+        setIsAsleep(false);
+      }
+      
+      // Determine expression based on message content or explicit emotion
+      if (latest.emotion) {
+        setExpression(latest.emotion);
       } else {
-        setExpression('talking');
+        const msg = latest.message.toLowerCase();
+        if (msg.includes('slayer') || msg.includes('found') || msg.includes('wow') || msg.includes('level up') || msg.includes('rare')) {
+          setExpression('happy');
+        } else if (msg.includes('broke') || msg.includes('durability') || msg.includes('die') || msg.includes('dead') || msg.includes('danger')) {
+          setExpression('alert');
+        } else if (msg.includes('combat') || msg.includes('hit') || msg.includes('kill') || msg.includes('sword') || msg.includes('slash')) {
+          setExpression('combat');
+        } else if (msg.includes('mine') || msg.includes('ore') || msg.includes('pickaxe') || msg.includes('rock') || msg.includes('stone')) {
+          setExpression('mining');
+        } else if (msg.includes('chop') || msg.includes('wood') || msg.includes('tree') || msg.includes('log') || msg.includes('axe')) {
+          setExpression('chop');
+        } else {
+          setExpression('talking');
+        }
       }
 
       if (latest.id === 'placeholder_bob') return;
@@ -79,36 +141,47 @@ export const BobOverlay: React.FC<{ constraintsRef?: React.RefObject<HTMLDivElem
       setCurrentMessage(null);
       setExpression('idle');
     }
-  }, [bobMessages, notificationSettings.bobDuration]);
+  }, [bobMessages, notificationSettings.bobDuration, isShaking]);
 
   if (!notificationSettings.bobMode || !notificationSettings.enabled) return null;
 
-  const getIcon = () => {
-    switch(notificationSettings.bobIcon) {
-      case 'ghost': return Ghost;
-      case 'cat': return Cat;
-      case 'wizard': return Wand2;
-      case 'skull': return Skull;
-      case 'alien': return Smile;
-      case 'dog': return Dog;
-      default: return Bot;
+  const getFaceMood = (): string => {
+    if (isAsleep) return 'sleeping';
+    if (isShaking) return 'thinking';
+    if (notificationSettings.tutorialStep > 0) {
+      return notificationSettings.bobMood || 'idle';
+    }
+    
+    switch(expression) {
+      case 'happy': return 'happy';
+      case 'alert': return 'angry';
+      case 'talking': return 'talking';
+      case 'mining':
+      case 'combat':
+      case 'chop':
+      case 'running': return 'talking';
+      default: return 'idle';
     }
   };
-  const BobIcon = getIcon();
 
   const renderFace = () => {
     return (
       <div className="relative w-full h-full flex items-center justify-center text-indigo-400">
-        <BobIcon size={28} className={expression === 'talking' ? 'animate-pulse' : ''} />
-        <div className="absolute -bottom-1 -right-1 bg-black/80 rounded-full p-0.5">
-          {expression === 'happy' && <PartyPopper size={14} className="text-yellow-400" />}
-          {expression === 'scared' && <AlertTriangle size={14} className="text-red-400" />}
-          {expression === 'talking' && <BobIcon size={14} className="text-indigo-400" />}
-          {expression === 'idle' && <div className="w-3.5 h-3.5 rounded-full bg-green-500/50"></div>}
-        </div>
+        {/* Solid dark core to occlude the chat bubble passing behind it */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-[#0a0f19] shadow-[0_0_15px_12px_#0a0f19]" />
+        <ParticleGlobe 
+          mood={getFaceMood()} 
+          isTalking={!!currentMessage} 
+          color={companion.color} 
+        />
       </div>
     );
   };
+
+  const faceMood = getFaceMood();
+  let currentOrbColor = companion.color;
+  if (faceMood === 'angry') currentOrbColor = '#ff2222';
+  else if (faceMood === 'sleeping') currentOrbColor = '#334455';
 
   return (
     <motion.div
@@ -117,55 +190,77 @@ export const BobOverlay: React.FC<{ constraintsRef?: React.RefObject<HTMLDivElem
         y, 
         transformOrigin: 'bottom left'
       }}
+      animate={isShaking ? { rotate: [-15, 15, -15, 15, -10, 10, -5, 5, 0] } : {}}
+      transition={{ duration: 0.5 }}
       drag
       dragMomentum={false}
       dragConstraints={constraintsRef}
       dragElastic={0}
+      onDrag={(_, info) => {
+        if (Math.abs(info.velocity.x) > 600 || Math.abs(info.velocity.y) > 600) {
+          setIsShaking(true);
+        }
+      }}
       onDragEnd={() => {
         setBobPosition({ x: x.get(), y: y.get() });
       }}
-      className={`fixed top-0 left-0 z-[70] ${isUILocked ? 'pointer-events-none' : 'pointer-events-auto'}`}
+      className={`fixed top-0 left-0 w-16 h-16 ${notificationSettings.tutorialStep > 0 ? 'z-[9999999]' : 'z-[70]'} ${isUILocked ? 'pointer-events-none' : 'pointer-events-auto'}`}
     >
-      <div className="relative flex items-center justify-center w-14 h-14">
-        <div 
-          className="w-14 h-14 absolute inset-0 rounded-full bg-black/60 border-2 border-indigo-500/50 flex items-center justify-center backdrop-blur-md shadow-[0_0_15px_rgba(99,102,241,0.2)] hover:border-indigo-400 transition-all hover:scale-105 cursor-grab active:cursor-grabbing"
-        style={{ transform: `scale(${notificationSettings.bobIconScale || 1.0})`, transformOrigin: `${isTop ? 'top' : 'bottom'} ${isRight ? 'right' : 'left'}`, touchAction: 'none' }}
+      <motion.div
+        className="absolute inset-0 z-20"
+        style={{ transform: `scale(${notificationSettings.bobIconScale || 1.0})` }}
       >
-        {renderFace()}
-      </div>
-      {currentMessage && (() => {
-        let themeClasses = 'bg-white text-black border-indigo-200 shadow-lg border';
-        if (notificationSettings.bobTheme === 'cyberpunk') {
-          themeClasses = 'bg-yellow-400 text-black border-pink-500 font-mono shadow-[0_0_10px_rgba(236,72,153,0.8)] border-2';
-        } else if (notificationSettings.bobTheme === 'fantasy') {
-          themeClasses = 'bg-[#2d1b11] text-[#fcd34d] border-[#b45309] shadow-[0_4px_15px_rgba(0,0,0,0.8)] border-2 font-serif';
-        } else if (notificationSettings.bobTheme === 'minimal') {
-          themeClasses = 'bg-black/80 text-white border-white/10 backdrop-blur-md shadow-lg border';
-        } else if (notificationSettings.bobTheme === 'hologram') {
-          themeClasses = 'bg-cyan-900/40 text-cyan-200 border-cyan-400 backdrop-blur shadow-[0_0_15px_rgba(34,211,238,0.5)] border';
-        }
+        <div 
+          className="w-full h-full flex items-center justify-center cursor-pointer overflow-visible rounded-none"
+          style={{ background: 'transparent', touchAction: 'none' }}
+          onDoubleClick={handleWakeUp}
+        >
+          {renderFace()}
+        </div>
+      </motion.div>
 
-        return (
-          <motion.div 
-            onPointerDown={(e) => e.stopPropagation()}
-            initial={{ opacity: 0, x: isRight ? 10 : -10, scale: 0.9 * (notificationSettings.bobTextScale || 1.0) }}
-            animate={{ opacity: 1, x: 0, scale: 1 * (notificationSettings.bobTextScale || 1.0) }}
-            style={{ 
-              transformOrigin: `${isTop ? 'top' : 'bottom'} ${isRight ? 'right' : 'left'}`,
-              [isRight ? 'right' : 'left']: `calc(100% + ${notificationSettings.bobBubbleDistance ?? 16}px)`,
-              [isTop ? 'top' : 'bottom']: `${notificationSettings.bobBubbleOffsetY ?? 0}px`
-            }}
-            className={`absolute px-4 py-2 w-max max-w-[300px] cursor-default ${themeClasses}
-              ${isTop && isRight ? 'rounded-2xl rounded-tr-sm' : ''}
-              ${isTop && !isRight ? 'rounded-2xl rounded-tl-sm' : ''}
-              ${!isTop && isRight ? 'rounded-2xl rounded-br-sm' : ''}
-              ${!isTop && !isRight ? 'rounded-2xl rounded-bl-sm' : ''}
+      <div 
+        className={`absolute w-max max-w-[350px] min-h-[48px] flex items-center justify-center transition-all duration-300 ease-out z-10
+          ${currentMessage ? (notificationSettings.bobBubbleTheme === 'floating' ? 'rounded-[16px] backdrop-blur-md bg-[rgba(20,25,35,0.9)] shadow-xl border-[1px]' : notificationSettings.bobBubbleTheme === 'holographic' ? 'rounded-[8px] backdrop-blur-sm bg-cyan-900/40 border-[1px] shadow-[0_0_15px_rgba(34,211,238,0.3)]' : 'rounded-[24px] backdrop-blur-xl border-[2px] bg-[rgba(10,15,25,0.85)]') : 'bg-transparent border-transparent pointer-events-none rounded-[24px]'}
+        `}
+        style={{
+          borderColor: currentMessage ? (notificationSettings.bobBubbleTheme === 'holographic' ? '#22d3ee' : currentOrbColor) : 'transparent',
+          boxShadow: currentMessage ? (notificationSettings.bobBubbleTheme === 'holographic' ? `0 0 15px #22d3ee80, inset 0 0 10px #22d3ee40` : `0 0 20px ${currentOrbColor}40, inset 0 0 10px ${currentOrbColor}20`) : 'none',
+          opacity: currentMessage ? 1 : 0,
+          left: bubblePosition === 'right' ? '100%' : bubblePosition === 'left' ? 'auto' : '50%',
+          right: bubblePosition === 'left' ? '100%' : 'auto',
+          top: bubblePosition === 'bottom' ? '100%' : bubblePosition === 'top' ? 'auto' : '50%',
+          bottom: bubblePosition === 'top' ? '100%' : 'auto',
+          transform: bubblePosition === 'left' ? `translate(calc(50px + ${-(notificationSettings.bobBubbleDistance ?? 16)}px), calc(-50% + ${notificationSettings.bobBubbleOffsetY ?? 0}px))` 
+                   : bubblePosition === 'right' ? `translate(calc(-50px + ${notificationSettings.bobBubbleDistance ?? 16}px), calc(-50% + ${notificationSettings.bobBubbleOffsetY ?? 0}px))`
+                   : bubblePosition === 'top' ? `translate(calc(-50%), calc(50px + ${-(notificationSettings.bobBubbleDistance ?? 16)}px))`
+                   : `translate(calc(-50%), calc(-50px + ${notificationSettings.bobBubbleDistance ?? 16}px))`,
+          clipPath: currentMessage 
+            ? 'inset(0% 0% 0% 0%)' 
+            : bubblePosition === 'left' ? 'inset(0% 56px 0% calc(100% - 56px))' 
+            : bubblePosition === 'right' ? 'inset(0% calc(100% - 56px) 0% 56px)' 
+            : bubblePosition === 'top' ? 'inset(calc(100% - 56px) 0% 56px 0%)' 
+            : 'inset(56px 0% calc(100% - 56px) 0%)'
+        }}
+      >
+        {/* Scanline effect */}
+        {displayedMessage && (
+          <div className="absolute inset-0 pointer-events-none opacity-20 overflow-hidden rounded-inherit" 
+            style={{ background: 'linear-gradient(to bottom, transparent 50%, rgba(255, 255, 255, 0.1) 51%)', backgroundSize: '100% 4px' }} 
+          />
+        )}
+
+        {/* The Text */}
+        {displayedMessage && (
+          <div 
+            className={`relative z-10 text-[13px] font-bold tracking-wide leading-relaxed whitespace-pre-wrap break-words max-w-[320px] sm:max-w-[400px] drop-shadow-md py-3 text-center
+              ${notificationSettings.bobBubbleTheme === 'connected' || !notificationSettings.bobBubbleTheme ? (bubblePosition === 'left' ? 'pl-6 pr-[90px]' : bubblePosition === 'right' ? 'pr-6 pl-[90px]' : bubblePosition === 'top' ? 'px-6 pt-3 pb-[90px]' : 'px-6 pb-3 pt-[90px]') : 'px-6'}
             `}
+            style={{ color: notificationSettings.bobBubbleTheme === 'holographic' ? '#a5f3fc' : 'var(--text-primary)' }}
           >
-            <p className="text-[11px] font-bold leading-tight whitespace-normal">{currentMessage}</p>
-          </motion.div>
-        );
-      })()}
+            {displayedMessage}
+          </div>
+        )}
       </div>
     </motion.div>
   );

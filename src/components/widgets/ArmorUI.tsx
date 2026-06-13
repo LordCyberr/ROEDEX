@@ -1,12 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
+import { useShallow } from 'zustand/react/shallow';
 import { motion, useMotionValue } from 'motion/react';
-import { Shield, Shirt, Footprints, HardHat, Hand } from 'lucide-react';
+import { Shield, Shirt, Footprints, HardHat, Hand, Lock, Unlock } from 'lucide-react';
 
 export const ArmorUI: React.FC = () => {
-  const armor = useTrackerStore((state) => state.armor);
-  const settings = useTrackerStore((state) => state.armorUISettings);
-  const updateSettings = useTrackerStore((state) => state.updateArmorUISettings);
+  const { armor, settings, updateSettings } = useTrackerStore(useShallow((state) => ({
+    armor: state.armor,
+    settings: state.armorUISettings,
+    updateSettings: state.updateArmorUISettings,
+  })));
   
   const [isFlashing, setIsFlashing] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -68,7 +71,16 @@ export const ArmorUI: React.FC = () => {
     };
   }
 
+  const dragConstraints = React.useMemo(() => ({ 
+    left: 0, 
+    top: 0, 
+    right: typeof globalThis !== 'undefined' ? globalThis.innerWidth - 60 : 1000, 
+    bottom: typeof globalThis !== 'undefined' ? globalThis.innerHeight - 60 : 1000 
+  }), []);
+
   if (!settings.show || Object.keys(displayArmor).length === 0) return null;
+
+  const isDraggable = !locked;
 
   const getPositionStyles = (): React.CSSProperties => {
     if (position === 'custom') {
@@ -84,8 +96,6 @@ export const ArmorUI: React.FC = () => {
     
     return pos;
   };
-
-  const isDraggable = !locked;
 
   const hasText = style !== 'bar';
   const hasBar = style === 'bar' || style.includes('bar_');
@@ -108,6 +118,7 @@ export const ArmorUI: React.FC = () => {
       ref={ref}
       drag={isDraggable}
       dragMomentum={false}
+      dragConstraints={dragConstraints}
       dragElastic={0}
       onDragEnd={() => {
         if (!locked) {
@@ -135,6 +146,15 @@ export const ArmorUI: React.FC = () => {
         padding: hasText && !isDraggable ? '6px' : undefined
       }}
     >
+      {/* Lock/Unlock Icon Overlay */}
+      <button 
+        onClick={() => updateSettings({ locked: !locked })}
+        className="absolute -top-6 right-0 p-1 pointer-events-auto text-[var(--text-muted)] opacity-30 hover:opacity-100 transition-opacity bg-black/40 rounded-full"
+        title={locked ? "Unlock Position" : "Lock Position"}
+      >
+        {locked ? <Lock size={12} /> : <Unlock size={12} />}
+      </button>
+
       {Object.entries(displayArmor).map(([slot, item]: [string, any]) => {
         if (!item) return null;
         

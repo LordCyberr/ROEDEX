@@ -1,19 +1,26 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
+import { useShallow } from 'zustand/react/shallow';
 import { motion, useMotionValue } from 'motion/react';
-// We'll use the Zap icon (Lightning) to represent connection and the overlay
 import { Zap, Activity, Sword, Pickaxe, Shield } from 'lucide-react'; 
 
 export const MinimizedOrb: React.FC = () => {
-  const connected = useTrackerStore((state) => state.connected);
-  const notifications = useTrackerStore((state) => state.notifications);
-  const setIsMinimized = useTrackerStore((state) => state.setIsMinimized);
-  const orbSize = useTrackerStore((state) => state.orbSize || 56);
-  const orbBorderThickness = useTrackerStore((state) => state.orbBorderThickness || 2);
-  const orbPosition = useTrackerStore((state) => state.orbPosition || { x: 16, y: 16 });
-  const setOrbPosition = useTrackerStore((state) => state.setOrbPosition);
-  const minimizedIcon = useTrackerStore((state) => state.minimizedIcon);
-  
+  const {
+    connected, notifications, setIsMinimized,
+    orbSize, orbBorderThickness, orbPosition, setOrbPosition,
+    minimizedIcon, minimizedIconUrl, isUILocked,
+  } = useTrackerStore(useShallow((state) => ({
+    connected: state.connected,
+    notifications: state.notifications,
+    setIsMinimized: state.setIsMinimized,
+    orbSize: state.orbSize || 56,
+    orbBorderThickness: state.orbBorderThickness || 2,
+    orbPosition: state.orbPosition || { x: 16, y: 16 },
+    setOrbPosition: state.setOrbPosition,
+    minimizedIcon: state.minimizedIcon,
+    minimizedIconUrl: state.minimizedIconUrl,
+    isUILocked: state.isUILocked,
+  })));
   const [pulse, setPulse] = useState(false);
   const dragRef = useRef<HTMLDivElement>(null);
 
@@ -25,8 +32,8 @@ export const MinimizedOrb: React.FC = () => {
     let safeX = orbPosition.x;
     let safeY = orbPosition.y;
 
-    const screenW = window.innerWidth;
-    const screenH = window.innerHeight;
+    const screenW = globalThis.innerWidth;
+    const screenH = globalThis.innerHeight;
 
     if (safeX < 0) safeX = 0;
     if (safeX > screenW - orbSize) safeX = screenW - orbSize;
@@ -43,8 +50,8 @@ export const MinimizedOrb: React.FC = () => {
         let currX = x.get();
         let currY = y.get();
         
-        const screenW = window.innerWidth;
-        const screenH = window.innerHeight;
+        const screenW = globalThis.innerWidth;
+        const screenH = globalThis.innerHeight;
 
         if (currX < 0) currX = 0;
         if (currX > screenW - orbSize) currX = screenW - orbSize;
@@ -80,16 +87,24 @@ export const MinimizedOrb: React.FC = () => {
   
   const iconSize = Math.round(orbSize * 0.42);
 
+  const dragConstraints = React.useMemo(() => ({ 
+    left: 0, 
+    top: 0, 
+    right: typeof globalThis !== 'undefined' ? globalThis.innerWidth - orbSize : 1000, 
+    bottom: typeof globalThis !== 'undefined' ? globalThis.innerHeight - orbSize : 1000 
+  }), [orbSize]);
+
   return (
     <motion.div 
       ref={dragRef}
       style={{ x, y }}
-      drag 
+      drag={!isUILocked}
       dragMomentum={false}
+      dragConstraints={dragConstraints}
       onDragEnd={() => {
         setOrbPosition({ x: x.get(), y: y.get() });
       }}
-      className="fixed top-0 left-0 z-50 pointer-events-auto"
+      className={`fixed top-0 left-0 z-50 ${isUILocked ? 'pointer-events-none' : 'pointer-events-auto'}`}
     >
       {/* Background Pulse Ring */}
       <div 
@@ -98,6 +113,7 @@ export const MinimizedOrb: React.FC = () => {
       />
 
       <div 
+        id="tutorial-minimized-orb"
         style={{ width: orbSize, height: orbSize, borderWidth: orbBorderThickness }}
         className={`
         group relative flex items-center justify-center rounded-full cursor-pointer
@@ -115,6 +131,7 @@ export const MinimizedOrb: React.FC = () => {
         {minimizedIcon === 'shield' && <Shield size={iconSize} className={iconColor} strokeWidth={2} fill="currentColor" />}
         {minimizedIcon === 'roedex' && <span className={`font-black tracking-widest ${iconColor}`} style={{ fontSize: iconSize * 0.4, marginTop: 1 }}>ROEDEX</span>}
         {minimizedIcon === 'rx' && <span className={`font-black italic ${iconColor}`} style={{ fontSize: iconSize * 0.7, marginTop: 1 }}>RX</span>}
+        {minimizedIcon === 'custom' && minimizedIconUrl && <img src={minimizedIconUrl} alt="orb" style={{ width: iconSize, height: iconSize, objectFit: 'cover', borderRadius: '50%' }} />}
 
         <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 px-2 py-1 bg-black/90 border border-[var(--border-subtle)] text-[var(--text-primary)] text-[10px] rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[100] font-bold tracking-wider uppercase shadow-xl">
           Double tap to open

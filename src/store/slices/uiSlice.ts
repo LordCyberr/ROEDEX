@@ -3,11 +3,16 @@ import { TrackerState, UISlice } from '../storeTypes';
 import { OverlayNotification } from '../../types/events';
 
 export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) => ({
+  isChangelogOpen: false,
+  setIsChangelogOpen: (open) => set({ isChangelogOpen: open }),
   isDebugPanelOpen: false,
   toggleDebugPanel: () => set((state) => ({ isDebugPanelOpen: !state.isDebugPanelOpen })),
   debugStats: { pps: 0 },
   updateDebugStats: (pps: number) => set({ debugStats: { pps } }),
   
+  activeCompanion: 'bob',
+  setActiveCompanion: (companion) => set({ activeCompanion: companion }),
+
   poppedOutWindows: {},
   popOutTab: (id: string, x: number, y: number) => set((state) => ({
     poppedOutWindows: {
@@ -20,6 +25,7 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
     delete newWindows[id];
     return { poppedOutWindows: newWindows };
   }),
+  mergeAllTabs: () => set({ poppedOutWindows: {} }),
   updatePoppedOutWindow: (id, updates) => set((state) => {
     const win = state.poppedOutWindows[id];
     if (!win) return state;
@@ -36,7 +42,14 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
 
   activeTab: 'global',
   setActiveTab: (tab) => set({ activeTab: tab }),
-  tabDimensions: {},
+  tabDimensions: {
+    // We only need default widths for vertical mode. 
+    // Horizontal height is now natively handled by the smart max-h-[250px] scroll containers!
+    'session_vertical': { width: 300 },
+    'settings_vertical': { width: 340 },
+    'npcs_vertical': { width: 300 },
+    'quests_vertical': { width: 300 },
+  },
   setTabDimensions: (tab, width, height) => set((state) => ({
     tabDimensions: { ...state.tabDimensions, [tab]: { width, height } }
   })),
@@ -60,11 +73,11 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
   setLayoutMode: (mode) => set({ layoutMode: mode }),
   verticalGroupingMode: 'grouped',
   setVerticalGroupingMode: (mode) => set({ verticalGroupingMode: mode }),
-  overlayPosition: { x: 50, y: 50 },
+  overlayPosition: { x: 20, y: 80 },
   setOverlayPosition: (pos) => set({ overlayPosition: pos }),
-  orbPosition: { x: 16, y: 16 },
+  orbPosition: { x: typeof window !== 'undefined' ? window.innerWidth / 2 - 70 : 500, y: 16 },
   setOrbPosition: (pos) => set({ orbPosition: pos }),
-  bobPosition: { x: 20, y: 200 },
+  bobPosition: { x: typeof window !== 'undefined' ? window.innerWidth - 80 : 800, y: 220 },
   setBobPosition: (pos) => set({ bobPosition: pos }),
   developerMode: false,
   setDeveloperMode: (dev: boolean) => set({ developerMode: dev }),
@@ -72,11 +85,33 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
   setAutoMinimizeOnChest: (val: boolean) => set({ autoMinimizeOnChest: val }),
   isUILocked: false,
   setIsUILocked: (locked: boolean) => set({ isUILocked: locked }),
+  globalScale: 1.0,
+  setGlobalScale: (val: number) => set({ globalScale: val }),
+  minimizeHotkey: 'Ctrl+Shift+M',
+  setMinimizeHotkey: (key: string) => set({ minimizeHotkey: key }),
   
-  displayDensity: 'compact',
+  displayDensity: 'standard',
   setDisplayDensity: (density) => set({ displayDensity: density }),
   displayMode: 'session',
   setDisplayMode: (mode) => set({ displayMode: mode }),
+  
+  minimalChestHud: false,
+  setMinimalChestHud: (val) => set({ minimalChestHud: val }),
+  minimalChestHudLocked: false,
+  setMinimalChestHudLocked: (val) => set({ minimalChestHudLocked: val }),
+  minimalChestTutorialSeen: false,
+  setMinimalChestTutorialSeen: (val) => set({ minimalChestTutorialSeen: val }),
+  chestWidgetPositions: {
+    chest: { x: 50, y: 50 },
+    inventory: { x: 50, y: 100 },
+    closeZone: { x: 50, y: 150 }
+  },
+  setChestWidgetPosition: (key, pos) => set((state) => ({
+    chestWidgetPositions: {
+      ...state.chestWidgetPositions,
+      [key]: pos
+    }
+  })),
   
   categoryOrder: ['mobsForest', 'mobsCave', 'ores', 'trees', 'plants'],
   setCategoryOrder: (order: string[]) => set({ categoryOrder: order }),
@@ -102,12 +137,13 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
     position: 'top-center',
     duration: 5000,
     opacity: 1.0,
-    scale: 1.5,
+    scale: 0.9,
     width: 280,
     height: 60,
     compactMode: false,
     bobMode: true,
     bobIconScale: 1.0,
+    bobIcon: 'bot',
     bobTextScale: 1.0,
     bobFrequency: 'normal',
     bobGreetings: true,
@@ -125,7 +161,12 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
     bobBubbleDistance: 16,
     bobBubbleOffsetY: 0,
     bobTheme: 'default',
-    bobIcon: 'bot',
+    bobBubbleTheme: 'connected',
+    bobBubbleStyle: 'glass',
+    bobVoiceStyle: 'wave',
+    tutorialStep: 0,
+    tutorialCompleted: false,
+    bobMood: 'idle',
     neonGlow: true,
     glowColorTheme: 'theme',
     toastShape: 'rectangle',
@@ -151,7 +192,7 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
     borderRadius: 8,
     glassStrength: 10,
     enableAnimations: true,
-    position: 'bottom-right',
+    position: 'bottom-center',
     customPositionX: 0,
     customPositionY: 0,
     layout: 'horizontal',
@@ -189,7 +230,9 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
   tableSettings: {
     showDistance: true,
     showCount: true,
-    showTimer: true
+    showTimer: true,
+    raritySortOrder: 'desc',
+    maxRespawnTooltips: 5
   },
   updateTableSettings: (settings) => set((state) => ({
     tableSettings: { ...state.tableSettings, ...settings }
@@ -207,7 +250,9 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
   })),
   theme: 'default',
   setTheme: (theme: string) => set({ theme }),
-  minimizedIcon: 'pulse',
+  minimizedIcon: 'rx',
+  minimizedIconUrl: '',
+  setMinimizedIconUrl: (url) => set({ minimizedIconUrl: url }),
   setMinimizedIcon: (icon) => set({ minimizedIcon: icon }),
 
   notifications: [],
@@ -224,5 +269,12 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
   })),
   removeBobMessage: (id: string) => set((state) => ({
     bobMessages: state.bobMessages.filter(n => n.id !== id)
+  })),
+
+  setTutorialStep: (step) => set((state) => ({
+    notificationSettings: { ...state.notificationSettings, tutorialStep: step }
+  })),
+  setBobMood: (mood) => set((state) => ({
+    notificationSettings: { ...state.notificationSettings, bobMood: mood }
   }))
 });

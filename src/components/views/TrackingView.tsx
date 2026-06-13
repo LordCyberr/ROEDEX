@@ -14,6 +14,14 @@ const calculateDistance = (p1: Vector2 | null, p2: Vector2) => {
 };
 
 import { formatInternalName as formatDisplayName } from '../../utils/formatters';
+import { getItemInfo } from '../../data/rarity';
+
+const rarityWeights: Record<string, number> = {
+  'common': 1,
+  'uncommon': 2,
+  'rare': 3,
+  'mythic': 4
+};
 
 const getCategoryName = (type: string, isResource: boolean): string => {
   const t = type.toLowerCase();
@@ -43,7 +51,8 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
     favorites, layoutMode, displayMode, currentZone,
     collapsedCategories, toggleCategory,
     collapsedSidebarZones, toggleSidebarZone,
-    verticalGroupingMode
+    verticalGroupingMode, tableSettings,
+    tutorialStep, tutorialCompleted
   } = useTrackerStore(useShallow((state) => ({
     enemies: state.enemies,
     resources: state.resources,
@@ -58,7 +67,10 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
     collapsedCategories: state.collapsedCategories,
     toggleCategory: state.toggleCategory,
     collapsedSidebarZones: state.collapsedSidebarZones,
-    toggleSidebarZone: state.toggleSidebarZone
+    toggleSidebarZone: state.toggleSidebarZone,
+    tableSettings: state.tableSettings,
+    tutorialStep: state.notificationSettings.tutorialStep,
+    tutorialCompleted: state.notificationSettings.tutorialCompleted
   })));
   
   const effectiveTab = forcedTab || activeTab;
@@ -121,9 +133,8 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
       }
 
       if (respawnTimeMs && respawnTimeMs > now) {
-        if (!row.respawnTimeMs || respawnTimeMs < row.respawnTimeMs) {
-          row.respawnTimeMs = respawnTimeMs;
-        }
+        if (!row.respawnTimesMs) row.respawnTimesMs = [];
+        row.respawnTimesMs.push(respawnTimeMs);
       }
     };
 
@@ -146,7 +157,7 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
       if (effectiveTab === 'favorites' && !isFavorite(name)) return;
       if (displayMode === 'current_zone' && zone !== currentZone) return;
 
-      const dist = calculateDistance(throttledPlayerPosition, pos);
+      const dist = tableSettings.showDistance ? calculateDistance(throttledPlayerPosition, pos) : -1;
       const category = getCategoryName(typeRaw, isResource);
       addOrUpdate(zone, category, name, dist, pos, isAlive, isTimerInjection, respawnTimeMs);
     };
@@ -172,6 +183,19 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
     });
 
     const sortByDist = (a: TableRowData, b: TableRowData) => {
+      if (a.dist === -1 && b.dist === -1) {
+        if (tableSettings.raritySortOrder && tableSettings.raritySortOrder !== 'none') {
+          const infoA = getItemInfo(a.name);
+          const infoB = getItemInfo(b.name);
+          const wA = infoA ? rarityWeights[infoA.rarity] || 0 : 0;
+          const wB = infoB ? rarityWeights[infoB.rarity] || 0 : 0;
+          
+          if (wA !== wB) {
+            return tableSettings.raritySortOrder === 'desc' ? wB - wA : wA - wB;
+          }
+        }
+        return a.name.localeCompare(b.name);
+      }
       if (a.dist === -1) return 1;
       if (b.dist === -1) return -1;
       return a.dist - b.dist;
@@ -204,7 +228,7 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
     });
 
     return sortedGroups;
-  }, [enemies, resources, timers, throttledPlayerPosition, effectiveTab, favorites, displayMode, currentZone]);
+  }, [enemies, resources, timers, throttledPlayerPosition, effectiveTab, favorites, displayMode, currentZone, tableSettings.showDistance, tableSettings.raritySortOrder, tutorialStep, tutorialCompleted]);
 
   if (effectiveTab !== 'global' && effectiveTab !== 'favorites') return null;
 
@@ -244,10 +268,10 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
               <button
                 onClick={() => toggleSidebarZone(zone)}
                 title={`Toggle ${zone}`}
-                className="flex items-center justify-start gap-1 py-1 px-3 mx-1.5 my-1 text-[11px] font-black text-yellow-400 uppercase tracking-[0.2em] select-none hover:text-yellow-300 hover:bg-[var(--bg-hover)] transition-all border border-[var(--border-accent)] rounded-full font-[var(--font-heading)] bg-[var(--bg-panel)] shadow-md"
+                className="flex items-center justify-start gap-1 py-1 px-3 mx-1.5 my-1 text-[11px] font-black text-yellow-400 uppercase tracking-[0.2em] select-none hover:text-yellow-300 hover:bg-[var(--bg-hover)] transition-all border border-[var(--border-accent)] rounded-full font-[var(--font-heading)] bg-[var(--bg-panel)] shadow-md min-w-0 overflow-hidden"
               >
-                {isZoneCollapsed ? <ChevronRight size={13} strokeWidth={3} /> : <ChevronDown size={13} strokeWidth={3} />}
-                {zone}
+                <div className="shrink-0">{isZoneCollapsed ? <ChevronRight size={13} strokeWidth={3} /> : <ChevronDown size={13} strokeWidth={3} />}</div>
+                <span className="truncate block whitespace-nowrap overflow-hidden text-ellipsis">{zone}</span>
               </button>
               
               {/* Categories in Zone */}
@@ -269,7 +293,7 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
 
   // ── HORIZONTAL MODE: card-based layout with sidebar ──
   return (
-    <div className="flex flex-row gap-1.5 h-full items-start">
+    <div className="flex flex-row gap-1.5 h-full items-start w-max min-w-full">
       {/* Sidebar Navigation */}
       {visibleCategories.length > 0 && (
         <div className="flex flex-col gap-2 w-[130px] shrink-0 bg-[var(--bg-card)] rounded-lg shadow-md p-1 border border-[var(--border-subtle)] h-fit">
@@ -286,10 +310,10 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
                 <button 
                   onClick={() => toggleSidebarZone(zone)}
                   title={`Toggle ${zone}`}
-                  className="flex items-center justify-between text-[9px] font-black text-yellow-400 hover:text-yellow-300 transition-colors uppercase tracking-widest px-2 py-1 border-b border-[var(--border-subtle)] mb-0.5"
+                  className="flex items-center justify-between text-[9px] font-black text-yellow-400 hover:text-yellow-300 transition-colors uppercase tracking-widest px-2 py-1 border-b border-[var(--border-subtle)] mb-0.5 min-w-0 overflow-hidden gap-1"
                 >
-                  {zone}
-                  {isZoneCollapsed ? <ChevronRight size={10} strokeWidth={3} /> : <ChevronDown size={10} strokeWidth={3} />}
+                  <span className="truncate block whitespace-nowrap overflow-hidden text-ellipsis">{zone}</span>
+                  <div className="shrink-0">{isZoneCollapsed ? <ChevronRight size={10} strokeWidth={3} /> : <ChevronDown size={10} strokeWidth={3} />}</div>
                 </button>
                 {!isZoneCollapsed && cats.map(cat => {
                 const isExpanded = !collapsedCategories[cat.id];
@@ -298,14 +322,14 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
                     key={cat.id}
                     onClick={() => toggleCategory(cat.id)}
                     title={`Toggle ${cat.category}`}
-                    className={`flex items-center justify-between text-left pl-5 pr-2 py-1 rounded transition-colors text-[10px] font-[var(--font-heading)] font-bold uppercase tracking-wider ${
+                    className={`flex items-center justify-between text-left pl-5 pr-2 py-1 rounded transition-colors text-[10px] font-[var(--font-heading)] font-bold uppercase tracking-wider min-w-0 overflow-hidden gap-1 ${
                       isExpanded 
                         ? 'bg-[var(--bg-hover)] text-[var(--text-primary)] border border-[var(--border-accent)]' 
                         : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-panel)] border border-transparent'
                     }`}
                   >
-                    <span className="truncate">{cat.category}</span>
-                    {isExpanded && <div className="w-1.5 h-1.5 rounded-full bg-[#00ff55] shadow-[0_0_5px_#00ff55] shrink-0 ml-1" />}
+                    <span className="truncate block whitespace-nowrap overflow-hidden text-ellipsis">{cat.category}</span>
+                    {isExpanded && <div className="w-1.5 h-1.5 rounded-full bg-[#00ff55] shadow-[0_0_5px_#00ff55] shrink-0" />}
                   </button>
                 )
               })}

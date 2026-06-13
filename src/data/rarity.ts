@@ -21,6 +21,8 @@ export const RARITY_DB: Record<string, ItemInfo> = {
   'copperore': { id: 'copperore', rarity: 'common', source: 'ore' },
   'ironore': { id: 'ironore', rarity: 'common', source: 'ore' },
   'silverore': { id: 'silverore', rarity: 'common', source: 'ore' },
+  'spidersilk': { id: 'spidersilk', rarity: 'common', source: 'monster' },
+  'wolfpelt': { id: 'wolfpelt', rarity: 'common', source: 'monster' },
 
   // --- UNCOMMON (Blue) ---
   'mourninglily': { id: 'mourninglily', rarity: 'uncommon', source: 'plant' },
@@ -42,6 +44,8 @@ export const RARITY_DB: Record<string, ItemInfo> = {
   'witchbane': { id: 'witchbane', rarity: 'mythic', source: 'plant' },
   'godwood': { id: 'godwood', rarity: 'mythic', source: 'tree' },
   'woodengolem': { id: 'woodengolem', rarity: 'mythic', source: 'monster' },
+  'livingwoodcore': { id: 'livingwoodcore', rarity: 'mythic', source: 'monster' },
+  'primordialcore': { id: 'primordialcore', rarity: 'mythic', source: 'monster' },
   'oreelemental': { id: 'oreelemental', rarity: 'mythic', source: 'monster' },
   'crystalrock': { id: 'crystalrock', rarity: 'mythic', source: 'ore' },
   'dinobones': { id: 'dinobones', rarity: 'mythic', source: 'ore' }
@@ -56,7 +60,7 @@ export function getItemInfo(itemName: string): ItemInfo | null {
   // Fallbacks for when only partial strings or drops match
   
   // Mythic
-  if (normalized.includes('golem') || normalized.includes('elemental') || normalized.includes('enchantedbark') || normalized.includes('ambersap') || normalized.includes('geode')) return { id: normalized, rarity: 'mythic', source: 'monster' };
+  if (normalized.includes('golem') || normalized.includes('elemental') || normalized.includes('ambersap') || normalized.includes('geode')) return { id: normalized, rarity: 'mythic', source: 'monster' };
   if (normalized.includes('witchbane')) return { id: normalized, rarity: 'mythic', source: 'plant' };
   if (normalized.includes('godwood')) return { id: normalized, rarity: 'mythic', source: 'tree' };
   if (normalized.includes('crystalrock') || normalized.includes('dinobone')) return { id: normalized, rarity: 'mythic', source: 'ore' };
@@ -68,12 +72,12 @@ export function getItemInfo(itemName: string): ItemInfo | null {
 
   // Uncommon
   if (normalized.includes('mushroom') || normalized.includes('rockmuncher') || normalized.includes('spore') || normalized.includes('fungal') || normalized.includes('graniteteeth')) return { id: normalized, rarity: 'uncommon', source: 'monster' };
-  if (normalized.includes('mourninglily') || normalized.includes('moonpetal')) return { id: normalized, rarity: 'uncommon', source: 'plant' };
+  if (normalized.includes('mourninglily') || normalized.includes('moonpetal') || normalized.includes('enchantedbark')) return { id: normalized, rarity: 'uncommon', source: 'plant' };
   if (normalized.includes('cinderheart') || normalized.includes('dreadwood')) return { id: normalized, rarity: 'uncommon', source: 'tree' };
   if (normalized.includes('gold') || normalized.includes('titanium')) return { id: normalized, rarity: 'uncommon', source: 'ore' };
 
   // Common
-  if (normalized.includes('slime') || normalized.includes('bat') || normalized.includes('gel') || normalized.includes('echocrystal') || normalized.includes('sonicwing')) return { id: normalized, rarity: 'common', source: 'monster' };
+  if (normalized.includes('slime') || normalized.includes('bat') || normalized.includes('gel') || normalized.includes('echocrystal') || normalized.includes('sonicwing') || normalized.includes('elasticcore') || normalized.includes('pureessence')) return { id: normalized, rarity: 'common', source: 'monster' };
   if (normalized.includes('bloodroot') || normalized.includes('silverleaf') || normalized.includes('mistweed')) return { id: normalized, rarity: 'common', source: 'plant' };
   if (normalized.includes('blackoak') || normalized.includes('ironwood') || normalized.includes('bronzewood')) return { id: normalized, rarity: 'common', source: 'tree' };
   if (normalized.includes('copper') || normalized.includes('iron') || normalized.includes('silver')) return { id: normalized, rarity: 'common', source: 'ore' };

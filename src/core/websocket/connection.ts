@@ -1,10 +1,16 @@
 import { parsePacket } from '../parser';
 import { useTrackerStore } from '../../store/trackerStore';
 
+let packetInterval: ReturnType<typeof setInterval> | null = null;
+let messageListener: ((event: MessageEvent) => void) | null = null;
+
 export function connectWebSocket() {
   console.log('[ROEDEX] Content Script listening for Interceptor data...');
   let packetCount = 0;
   
+  // Clear any existing connections to prevent duplicates
+  disconnectWebSocket();
+
   // Always minimize on reload/restart
   setTimeout(() => {
     const state = useTrackerStore.getState();
@@ -14,7 +20,7 @@ export function connectWebSocket() {
     });
   }, 100);
   
-  window.addEventListener('message', (event) => {
+  messageListener = (event: MessageEvent) => {
     // Only accept messages from the interceptor
     if (event.data?.source !== 'ROEDEX_INTERCEPTOR') return;
 
@@ -22,6 +28,13 @@ export function connectWebSocket() {
       const state = useTrackerStore.getState();
       state.setConnected(true);
       state.setIsMinimized(true);
+      
+      state.addNotification({
+        type: 'info',
+        title: 'System Online',
+        message: 'Connected to ROEDEX Tracker'
+      });
+
       Object.keys(state.poppedOutWindows).forEach(id => {
         state.updatePoppedOutWindow(id, { isMinimized: true });
       });
@@ -46,16 +59,28 @@ export function connectWebSocket() {
 
       parsePacket(rawMessage);
     }
-  });
+  };
+
+  window.addEventListener('message', messageListener);
 
   // Track Packets Per Second
-  setInterval(() => {
+  packetInterval = setInterval(() => {
     useTrackerStore.getState().updateDebugStats(packetCount);
     packetCount = 0;
   }, 1000);
 }
 
 export function disconnectWebSocket() {
+  if (messageListener) {
+    window.removeEventListener('message', messageListener);
+    messageListener = null;
+  }
+  
+  if (packetInterval) {
+    clearInterval(packetInterval);
+    packetInterval = null;
+  }
+
   const state = useTrackerStore.getState();
   state.setConnected(false);
   state.setIsMinimized(true);

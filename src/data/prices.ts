@@ -67,6 +67,21 @@ export const RESELL_VALUES: Record<string, number> = {
   'minor energy potion': 330,
   'energy potion': 716,
 
+  // Crafted Armors & Weapons & Meals
+  'gold gauntlets': 3931,
+  'gold scale mail': 3558,
+  'guardian’s meal': 448,
+  'silver plate armor': 2300,
+  'gold short sword': 1920,
+  'reinforced dino gambeson': 18300,
+  'copper gauntlets': 479,
+  'crystal plate greaves': 19629,
+  'dino boots': 19650,
+  'titanium boots': 5247,
+  'titanium axe': 3344,
+  'gold sabatons': 3388,
+  'dino greathelm': 28320,
+
   // Aliases for when game uses combined names or different spellings in logs
   'stone fragments': 30,
   'granite teeth': 35, // Image: Granith Teeth, Log: graniteteeth
@@ -106,23 +121,55 @@ export const RESELL_VALUES: Record<string, number> = {
   'ambersap': 140,
   'enchantedbark': 120,
   'glowingspores': 15,
+  'goldgauntlets': 3931,
+  'goldscalemail': 3558,
+  'guardiansmeal': 448,
+  'silverplatearmor': 2300,
+  'goldshortsword': 1920,
+  'reinforceddinogambeson': 18300,
+  'coppergauntlets': 479,
+  'crystalplategreaves': 19629,
+  'dinoboots': 19650,
+  'titaniumboots': 5247,
+  'titaniumaxe': 3344,
+  'goldsabatons': 3388,
+  'dinogreathelm': 28320,
   'runes': 1,
   'rune': 1,
+  'livingwoodc': 1600,
+  'mineralshards': 120,
+  'magichammer': 0,
+  'crystaldust': 35,
+  'sonicwing': 35,
+  'stonefragments': 30,
+  'graniteteeth': 35,
+  'crystal': 480,
 };
+
+// Pre-compute a fully normalized dictionary where keys have no spaces/special chars
+const NORMALIZED_RESELL_VALUES: Record<string, number> = {};
+for (const [key, value] of Object.entries(RESELL_VALUES)) {
+  const superKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+  NORMALIZED_RESELL_VALUES[superKey] = value;
+}
 
 export const getResellValue = (name: string, qty: number) => {
   const normalized = name.toLowerCase().replace(/\s+/g, '').trim();
+  const superNormalized = name.toLowerCase().replace(/[^a-z0-9]/g, '');
   
   // Try exact match first
   let val = RESELL_VALUES[name.toLowerCase().trim()];
   
+  // Try fallback matches using the pre-computed dictionary
   if (val === undefined) {
-    // Try without spaces (to match log names like "slimegel")
-    val = RESELL_VALUES[normalized];
+    val = NORMALIZED_RESELL_VALUES[normalized];
+  }
+  if (val === undefined) {
+    val = NORMALIZED_RESELL_VALUES[superNormalized];
   }
   
   if (val === undefined) {
-    val = 10; // Default fallback
+    val = 0; // Default fallback for unknown items
   }
 
   return val * qty;

@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
+import { useShallow } from 'zustand/react/shallow';
 import { motion, useMotionValue } from 'motion/react';
-import { Sword } from 'lucide-react';
+import { Sword, Lock, Unlock, Axe, Pickaxe } from 'lucide-react';
 
 export const WeaponUI: React.FC = () => {
-  const weapon = useTrackerStore((state) => state.weapon);
-  const weaponUISettings = useTrackerStore((state) => state.weaponUISettings);
-  const updateWeaponUISettings = useTrackerStore((state) => state.updateWeaponUISettings);
-  
+  const { weapon, weaponUISettings, updateWeaponUISettings } = useTrackerStore(useShallow((state) => ({
+    weapon: state.weapon,
+    weaponUISettings: state.weaponUISettings,
+    updateWeaponUISettings: state.updateWeaponUISettings,
+  })));
   const [isFlashing, setIsFlashing] = useState(false);
 
   useEffect(() => {
@@ -53,9 +55,18 @@ export const WeaponUI: React.FC = () => {
     }
   }, [position, customPositionX, customPositionY, x, y]);
 
+  const dragConstraints = React.useMemo(() => ({ 
+    left: 0, 
+    top: 0, 
+    right: typeof globalThis !== 'undefined' ? globalThis.innerWidth - 60 : 1000, 
+    bottom: typeof globalThis !== 'undefined' ? globalThis.innerHeight - 60 : 1000 
+  }), []);
+
   const displayWeapon: any = weapon || (!locked ? { name: 'Mock Weapon', instanceId: '5', durability: 750, maxDurability: 1000 } : null);
 
   if (!displayWeapon || !weaponUISettings.show) return null;
+
+  const isDraggable = !locked;
 
   const percentage = Math.max(0, Math.min(100, (displayWeapon.durability / displayWeapon.maxDurability) * 100));
   
@@ -86,15 +97,20 @@ export const WeaponUI: React.FC = () => {
     const margin = 16;
     const pos: React.CSSProperties = {};
     if (position.includes('top')) pos.top = margin;
-    else pos.bottom = margin;
+    else pos.bottom = position === 'bottom-center' ? 120 : margin;
     
-    if (position.includes('left')) pos.left = margin;
-    else pos.right = margin;
+    if (position.includes('left')) {
+      pos.left = margin;
+    } else if (position.includes('right')) {
+      pos.right = margin;
+    } else if (position.includes('center')) {
+      pos.left = 0;
+      pos.right = 0;
+      pos.margin = '0 auto';
+    }
     
     return pos;
   };
-
-  const isDraggable = !locked;
 
   const pctStr = `${Math.round(percentage)}%`;
   const durStr = `${displayWeapon.durability} / ${displayWeapon.maxDurability}`;
@@ -109,6 +125,7 @@ export const WeaponUI: React.FC = () => {
       ref={ref}
       drag={isDraggable}
       dragMomentum={false}
+      dragConstraints={dragConstraints}
       dragElastic={0}
       onDragEnd={() => {
         if (!locked) {
@@ -143,6 +160,15 @@ export const WeaponUI: React.FC = () => {
           : `${width}px`,
       }}
     >
+      {/* Lock/Unlock Icon Overlay */}
+      <button 
+        onClick={() => updateWeaponUISettings({ locked: !locked })}
+        className="absolute -top-6 right-0 p-1 pointer-events-auto text-[var(--text-muted)] opacity-30 hover:opacity-100 transition-opacity bg-black/40 rounded-full"
+        title={locked ? "Unlock Position" : "Lock Position"}
+      >
+        {locked ? <Lock size={12} /> : <Unlock size={12} />}
+      </button>
+
       {/* Background Health Bar */}
       {hasBar && (
         <div 
@@ -162,7 +188,12 @@ export const WeaponUI: React.FC = () => {
       {hasText && (
         <div className={`relative z-10 flex w-full px-2 ${layout === 'vertical' ? 'flex-col justify-center' : 'items-center justify-between'} gap-2 drop-shadow-md`}>
           <div className={`flex items-center gap-1.5 ${textColor}`}>
-            <Sword size={14} />
+            {(() => {
+              const nameLower = (displayWeapon.name || '').toLowerCase();
+              if (nameLower.includes('pickaxe') || nameLower.includes('pick')) return <Pickaxe size={14} />;
+              if (nameLower.includes('axe') || nameLower.includes('hatchet')) return <Axe size={14} />;
+              return <Sword size={14} />;
+            })()}
           </div>
           <span 
             className={`font-mono font-black text-[12px] text-white tracking-wide drop-shadow-[0_2px_2px_rgba(0,0,0,1)] text-right ${layout === 'vertical' ? 'writing-vertical-rl rotate-180' : ''}`}

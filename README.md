@@ -1,44 +1,77 @@
-# ROEDEX Overlay for Roots of Embervault ⚔️
-
-Welcome to **ROEDEX**, the premium tracking overlay and companion system for Roots of Embervault! This extension intercepts live game data directly from your browser to give you a real-time, highly polished, and interactive overlay.
-
-## ✨ Features
-- **Live Tracking:** Real-time stats on your mining, woodcutting, fishing, combat, and loot.
-- **Bob the Companion:** A helpful, interactive AI companion ("Bob") who reacts to your achievements, warns you about combat, and drops fun interactions!
-- **Modern UI:** Sleek Glassmorphism and dark-mode styling with intuitive category tables.
-- **Zero Privacy Invation:** All data is processed 100% locally on your machine. No servers, no tracking, total privacy.
-
----
-
-## 🚀 How to Install
-
-If you want to use the stable, compiled version of ROEDEX, follow these simple steps:
-
-### Step 1: Extract the Zip File
-1. Download the latest `roedex-v1.01.zip` from the **Releases** section on the right.
-2. Right-click the `.zip` file and select **"Extract All..."** to unzip it into a normal folder. *(Important: You cannot install it while it is still a zipped file!)*
-
-### Step 2: Open your Browser's Extensions Page
-1. Open Chrome, Brave, or Edge.
-2. Type `chrome://extensions/` into your URL address bar and press Enter.
-
-### Step 3: Enable Developer Mode
-1. Look in the **top-right corner** of the Extensions page.
-2. Toggle the switch that says **"Developer mode"** to the ON position.
-
-### Step 4: Load the Extension
-1. Look in the **top-left corner** of the page and click the **"Load unpacked"** button.
-2. A file browser window will open. Find the `roedex-v1.01` folder that you extracted in Step 1.
-3. Select that folder. *(Make sure you are selecting the folder that contains the `manifest.json` file).*
-
-### Step 5: Play!
-You're done! Open the [Roots of Embervault](https://embervault.ruyui.com) game, and the ROEDEX overlay will automatically appear. Enjoy your new companion and live tracking!
+<div align="center">
+  <img src="public/logo.png" alt="ROEDEX Logo" width="128" />
+  <h1>ROEDEX Overlay v0.0.1</h1>
+  <p><strong>The Ultimate Real-Time Tracking Suite for Roots of Embervault</strong></p>
+  
+  <p>
+    <img src="https://img.shields.io/badge/version-v0.0.1-blue.svg?style=for-the-badge" alt="Version" />
+    <img src="https://img.shields.io/badge/chrome-extension-success.svg?style=for-the-badge" alt="Chrome Extension" />
+    <img src="https://img.shields.io/badge/react-19.0.0-61dafb.svg?style=for-the-badge" alt="React" />
+    <img src="https://img.shields.io/badge/typescript-5.7-blue.svg?style=for-the-badge" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge" alt="License" />
+  </p>
+</div>
 
 ---
 
-## 🛠️ For Developers
-If you want to build the project from source:
-1. Clone this repository: `git clone https://github.com/Nikhilv379/ROEDEX.git`
-2. Install dependencies: `npm install`
-3. Build the extension: `npm run build`
-4. The compiled code will be in the `dist` folder, which you can load into Chrome just like the instructions above!
+## 🌟 Overview
+
+**ROEDEX** is an incredibly advanced, non-intrusive, and beautifully designed overlay extension. By tracking live WebSocket traffic on the client side, ROEDEX provides players with real-time game statistics, spawn timers, and loot efficiencies without ever injecting malicious code or modifying the game client itself. 
+
+Built on **Manifest V3**, React, and Tailwind CSS, it features a deeply customizable UI that seamlessly floats over your gameplay.
+
+---
+
+## ✨ Key Features
+
+- 🟢 **Live Session Tracking**: Calculate your gold per hour, XP per hour, and raw loot efficiency entirely in real-time.
+- 🦊 **"Bob" AI Companion**: A highly interactive, customizable pixel-matrix companion that guides you through the overlay and reacts to game events.
+- 🗺️ **Distance & Spawns**: Tracks the exact distance of NPCs, resources, and enemies. Calculates exact respawn intervals for highly-contested resources.
+- ⚔️ **Quests & Combat Tracking**: View active quests and track weapon/armor durability dynamically.
+- 🌐 **Multi-Language Support**: Fully localized in **English, Spanish, Russian, and Korean**, including pinpoint MMO-style location guides.
+- 🎨 **Glassmorphism UI**: Featuring Obsidian Gold, Hologram, and Ruby Glass themes with draggable, detachable, and minimizable windows.
+
+---
+
+## 🚀 Installation (Web Store)
+
+Once approved on the Google Chrome Web Store:
+1. Navigate to the ROEDEX Chrome Extension Page.
+2. Click **Add to Chrome**.
+3. Pin the extension to your toolbar.
+4. Navigate to the game website and click the ROEDEX icon to initialize!
+
+---
+
+## 🛠️ Installation (Developer Mode)
+
+If you are cloning this repository to build from the source code:
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/Nikhilv379/ROEDEX.git
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Build the production extension:
+   ```bash
+   npm run build
+   ```
+4. Navigate to `chrome://extensions/` in your browser.
+5. Enable **Developer Mode** in the top right corner.
+6. Click **Load Unpacked** and select the newly generated `dist` folder.
+
+---
+
+## 🤝 Support & Contributions
+
+If ROEDEX has helped you track that ultra-rare drop, consider giving the repository a ⭐! 
+
+We welcome pull requests. Please follow standard TypeScript and React best practices when submitting new features or bug fixes. Ensure you test your WebSocket parsing logic carefully to prevent memory leaks!
+
+---
+<div align="center">
+  <p><i>Crafted with ❤️ for the gaming community.</i></p>
+</div>
