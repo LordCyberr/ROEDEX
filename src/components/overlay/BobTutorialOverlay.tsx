@@ -146,8 +146,8 @@ export const BobTutorialOverlay: React.FC = () => {
       const store = useTrackerStore.getState();
       store.setIsMinimized(false);
       store.setActiveTab('global');
-      // Position it beautifully in the upper-middle of the screen
-      store.setOverlayPosition({ x: window.innerWidth / 2 - 250, y: window.innerHeight / 2 - 200 });
+      // Position it beautifully on the left side below the health bar
+      store.setOverlayPosition({ x: 20, y: 150 });
     }
   }, [tutorialStep]);
 
