@@ -12,7 +12,7 @@ export const CHANGELOG_DATA: ChangelogEntry[] = [
     date: '2026-06-13',
     title: 'Initial Stable Release',
     features: [
-      'Introduced an AI Companion featuring four unique characters (Bob, Ava, Rex, Luna) with dynamic personalities and interactive CRT matrix face animations.',
+      'Introduced an AI Companion featuring four unique characters (Bob, Kaya, Lia, and Crash) with dynamic personalities and interactive CRT matrix face animations.',
       'Real-time WebSocket Tracking Engine for resources, NPCs, and entities with exact distance metrics.',
       'Session Tracking for continuous loot discovery and run efficiency calculations.',
       'Dedicated Quests Tab to seamlessly track all active and completed NPC quests.',
