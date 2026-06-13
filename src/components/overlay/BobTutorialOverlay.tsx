@@ -19,14 +19,7 @@ const steps: TutorialStep[] = [
   {
     id: 'tutorial-gather-flowers',
     text: "See that flower highlighted? Look at its name, distance, and how many are alive. Pick the exact same flower twice so we can track its respawn!",
-    actionRequired: true,
-    checkCompletion: (s) => {
-      const counts: Record<string, number> = {};
-      Object.values(s.timers).forEach((t: any) => {
-        counts[t.name] = (counts[t.name] || 0) + 1;
-      });
-      return Object.values(counts).some((c: number) => c >= 2);
-    }
+    actionRequired: false
   },
   { 
     id: 'tutorial-global-tab', 
