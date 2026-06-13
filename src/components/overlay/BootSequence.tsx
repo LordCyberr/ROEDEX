@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ParticleGlobe } from '../widgets/ParticleGlobe';
 import { COMPANIONS, CompanionId } from '../../data/companions';
@@ -13,13 +13,23 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
   const displayPlayerName = (playerName || 'UNKNOWN_USER').toUpperCase();
   const displayZone = (currentZone || 'UNKNOWN_SECTOR').toUpperCase();
 
-  const BOOT_MESSAGES = [
+  const bootMessagesRef = useRef([
     "INITIALIZING SYSTEM...",
     "BIOMETRIC SCAN: COMPLETE",
     `WELCOME, ${displayPlayerName}...`,
     `CALIBRATING TRACKERS FOR ${displayZone}...`,
     "AI CORE ONLINE."
-  ];
+  ]);
+  
+  useEffect(() => {
+    bootMessagesRef.current = [
+      "INITIALIZING SYSTEM...",
+      "BIOMETRIC SCAN: COMPLETE",
+      `WELCOME, ${displayPlayerName}...`,
+      `CALIBRATING TRACKERS FOR ${displayZone}...`,
+      "AI CORE ONLINE."
+    ];
+  }, [displayPlayerName, displayZone]);
 
   const [hasSelectedLanguage, setHasSelectedLanguage] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -52,21 +62,28 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
   // Typewriter effect for messages
   useEffect(() => {
     if (!hasSelectedLanguage) return;
-    if (messageIndex >= BOOT_MESSAGES.length) return;
     
-    const targetText = BOOT_MESSAGES[messageIndex];
     let currentChar = 0;
     
     const typeInterval = setInterval(() => {
+      const msgs = bootMessagesRef.current;
+      if (messageIndex >= msgs.length) {
+        clearInterval(typeInterval);
+        return;
+      }
+      
+      const targetText = msgs[messageIndex];
       setDisplayText(targetText.substring(0, currentChar + 1));
-      currentChar++;
-      if (currentChar >= targetText.length) {
+      
+      if (currentChar < targetText.length) {
+        currentChar++;
+      } else {
         clearInterval(typeInterval);
       }
     }, 30);
 
     return () => clearInterval(typeInterval);
-  }, [messageIndex]);
+  }, [messageIndex, hasSelectedLanguage]);
 
   // Loading progress and message swapping
   useEffect(() => {
@@ -80,14 +97,15 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
       setProgress(p);
 
       // Change messages based on progress
-      const msgIdx = Math.min(BOOT_MESSAGES.length - 1, Math.floor((p / 100) * BOOT_MESSAGES.length));
+      const msgs = bootMessagesRef.current;
+      const msgIdx = Math.min(msgs.length - 1, Math.floor((p / 100) * msgs.length));
       if (msgIdx !== messageIndex && p < 100) {
         setMessageIndex(msgIdx);
       }
 
       if (p >= 100) {
         setIsReady(true);
-        setMessageIndex(BOOT_MESSAGES.length - 1);
+        setMessageIndex(msgs.length - 1);
         clearInterval(interval);
       }
     }, 50);

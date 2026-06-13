@@ -63,6 +63,22 @@ export function parsePacket(rawMessage: string) {
     BobCompanion.onCheatDetected();
   }
 
+  if (payload && typeof payload === 'object') {
+    const possibleName = payload.playerName || payload.username || payload.heroName || (payload.player && payload.player.name) || (payload.data && (payload.data.playerName || payload.data.username || payload.data.heroName || (payload.data.player && payload.data.player.name)));
+    if (possibleName && typeof possibleName === 'string') {
+      const currentProfileName = useTrackerStore.getState().playerProfile?.name;
+      if (!currentProfileName || currentProfileName === 'UNKNOWN_USER' || currentProfileName === 'Unknown') {
+        if (possibleName !== 'tool' && possibleName !== 'weapon' && possibleName.toLowerCase() !== 'unknown') {
+          if (!payload.weaponDurability && !payload.itemId && !payload.itemName) {
+             useTrackerStore.getState().setPlayerProfile({ name: possibleName });
+             BobCompanion.greetUser(possibleName);
+             NotificationManager.greetUser(possibleName);
+          }
+        }
+      }
+    }
+  }
+
   try {    // Activity tracker for Bob — throttled to once per 5s to prevent CPU thrash
     const nowMs = Date.now();
     if (nowMs - lastBobActivityTime > 5000) {
@@ -211,7 +227,13 @@ export function parsePacket(rawMessage: string) {
           }
           
           if (d.name || d.playerName) {
-             profileUpdate.name = d.name || d.playerName;
+             const newName = d.name || d.playerName;
+             const currentName = storeState.playerProfile?.name;
+             if (!currentName || currentName === 'UNKNOWN_USER' || currentName === 'Unknown') {
+                if (newName !== 'tool' && newName !== 'weapon' && newName.toLowerCase() !== 'unknown') {
+                   profileUpdate.name = newName;
+                }
+             }
           }
           
           if (d.exp !== undefined || d.Exp !== undefined || d.runes !== undefined || d.experience !== undefined) {

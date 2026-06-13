@@ -4,8 +4,6 @@ import { useTrackerStore } from '../../store/trackerStore';
 import { useShallow } from 'zustand/react/shallow';
 import { BootSequence } from './BootSequence';
 import { COMPANIONS } from '../../data/companions';
-import { bobTranslations } from '../../i18n/bobTranslations';
-import { companionTranslations } from '../../i18n/companionTranslations';
 import { WelcomeSplash } from './WelcomeSplash';
 
 type TutorialStep = {
@@ -95,16 +93,14 @@ export const BobTutorialOverlay: React.FC = () => {
     tutorialCompleted, 
     setTutorialStep, 
     setBobMood,
-    bobPosition,
-    language
+    bobPosition
   } = useTrackerStore(
     useShallow((state) => ({
       tutorialStep: state.notificationSettings.tutorialStep,
       tutorialCompleted: state.notificationSettings.tutorialCompleted,
       setTutorialStep: state.setTutorialStep,
       setBobMood: state.setBobMood,
-      bobPosition: state.bobPosition,
-      language: state.language || 'en'
+      bobPosition: state.bobPosition
     }))
   );
   
@@ -386,17 +382,7 @@ export const BobTutorialOverlay: React.FC = () => {
             <div className="absolute inset-0 pointer-events-none opacity-20 rounded-3xl overflow-hidden" style={{ background: 'linear-gradient(to bottom, transparent 50%, rgba(255, 255, 255, 0.1) 51%)', backgroundSize: '100% 4px' }} />
             
             <div className="relative z-10 text-[13px] font-bold tracking-wide leading-relaxed drop-shadow-md mb-4 text-center" style={{ color: 'var(--text-primary)' }}>
-              {(() => {
-                 const compId = activeCompanion || 'bob';
-                 let tutorialArr;
-                 if (compId === 'bob') {
-                   tutorialArr = (bobTranslations as any)[language]?.tourGuide || bobTranslations.en.tourGuide;
-                 } else {
-                   const premiumQuotes = (companionTranslations as any)[language] || companionTranslations.en;
-                   tutorialArr = premiumQuotes[compId]?.tutorial || companionTranslations.en.kaya.tutorial;
-                 }
-                 return tutorialArr[tutorialStep - 1] || currentStepData?.text;
-              })()}
+              {currentStepData?.text}
               {currentStepData?.id === 'tutorial-quest' && (
                 <div className="mt-3 p-2 bg-black/40 rounded border border-white/10 text-center font-mono tracking-widest text-[10px]" style={{ color: companionColor }}>
                   MOBS KILLED: {kills} / 3
