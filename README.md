@@ -49,7 +49,7 @@ If you are cloning this repository to build from the source code:
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/Nikhilv379/ROEDEX.git
+   git clone https://github.com/LordCyberr/ROEDEX.git
    ```
 2. Install dependencies:
    ```bash
@@ -67,9 +67,14 @@ If you are cloning this repository to build from the source code:
 
 ## 🤝 Support & Contributions
 
-If ROEDEX has helped you track that ultra-rare drop, consider giving the repository a ⭐! 
+ROEDEX is an open-source project maintained by the community. Developing and updating this tool requires countless late-night coding sessions. If ROEDEX has helped you track that ultra-rare drop or level up faster, consider giving the repository a ⭐! 
 
-We welcome pull requests. Please follow standard TypeScript and React best practices when submitting new features or bug fixes. Ensure you test your WebSocket parsing logic carefully to prevent memory leaks!
+If you would like to support ongoing development, server costs, and future updates, you can do so via the crypto addresses below. Contributions are strictly optional but immensely appreciated:
+- **Abstract Chain**: `0xeb6C0506F624239dAa704c375d0494B14ea81322`
+- **Global Wallet (EVM)**: `0x364aC821eEf0D90678F0B6df44b700d3Df14D89a`
+- **Solana**: `GzRU5v4Tyqx7iGrc7Saed943gMnbMuEDwrpC9vZWyreq`
+
+We also welcome pull requests! Please follow standard TypeScript and React best practices when submitting new features or bug fixes. Ensure you test your WebSocket parsing logic carefully to prevent memory leaks!
 
 ---
 <div align="center">
