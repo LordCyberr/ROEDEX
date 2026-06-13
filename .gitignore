@@ -5,3 +5,6 @@ dist/
 *.zip
 old_reference/
 stable/
+
+# Local References Archive
+reference_old/
