@@ -1,7 +1,7 @@
 <div align="center">
   <img src="public/logo.png" alt="ROEDEX Logo" width="128" />
-  <h1>ROEDEX Overlay v0.0.1</h1>
-  <p><strong>The Ultimate Real-Time Tracking Suite for Roots of Embervault</strong></p>
+  <h1>ROEDEX Tracker and Companion Tool</h1>
+  <p><strong>The Ultimate Real-Time Tracker & Companion Suite for Roots of Embervault</strong></p>
   
   <p>
     <img src="https://img.shields.io/badge/version-v0.0.1-blue.svg?style=for-the-badge" alt="Version" />
@@ -25,7 +25,7 @@ Built on **Manifest V3**, React, and Tailwind CSS, it features a deeply customiz
 ## ✨ Key Features
 
 - 🟢 **Live Session Tracking**: Calculate your gold per hour, XP per hour, and raw loot efficiency entirely in real-time.
-- 🦊 **"Bob" AI Companion**: A highly interactive, customizable pixel-matrix companion that guides you through the overlay and reacts to game events.
+- 🤖 **4 Unique AI Companions**: Choose between Bob, Ava, Rex, and Luna! Highly interactive, customizable pixel-matrix companions that guide you through the overlay and react to your live game events.
 - 🗺️ **Distance & Spawns**: Tracks the exact distance of NPCs, resources, and enemies. Calculates exact respawn intervals for highly-contested resources.
 - ⚔️ **Quests & Combat Tracking**: View active quests and track weapon/armor durability dynamically.
 - 🌐 **Multi-Language Support**: Fully localized in **English, Spanish, Russian, and Korean**, including pinpoint MMO-style location guides.
