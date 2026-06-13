@@ -10,11 +10,14 @@ interface BootSequenceProps {
 }
 
 export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerName = 'UNKNOWN_USER', currentZone = 'UNKNOWN_SECTOR' }) => {
+  const displayPlayerName = (playerName || 'UNKNOWN_USER').toUpperCase();
+  const displayZone = (currentZone || 'UNKNOWN_SECTOR').toUpperCase();
+
   const BOOT_MESSAGES = [
     "INITIALIZING SYSTEM...",
     "BIOMETRIC SCAN: COMPLETE",
-    `WELCOME, ${playerName.toUpperCase()}...`,
-    `CALIBRATING TRACKERS FOR ${currentZone.toUpperCase()}...`,
+    `WELCOME, ${displayPlayerName}...`,
+    `CALIBRATING TRACKERS FOR ${displayZone}...`,
     "AI CORE ONLINE."
   ];
 
