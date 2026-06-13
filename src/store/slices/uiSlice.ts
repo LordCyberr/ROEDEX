@@ -276,5 +276,7 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
   })),
   setBobMood: (mood) => set((state) => ({
     notificationSettings: { ...state.notificationSettings, bobMood: mood }
-  }))
+  })),
+  hoveredTimerId: null,
+  setHoveredTimerId: (id) => set({ hoveredTimerId: id })
 });

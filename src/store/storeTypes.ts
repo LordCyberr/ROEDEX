@@ -276,6 +276,8 @@ export interface UISlice {
   // Tutorial & Mood Actions
   setTutorialStep: (step: number) => void;
   setBobMood: (mood: 'idle' | 'happy' | 'angry' | 'talking' | 'thinking') => void;
+  hoveredTimerId: string | null;
+  setHoveredTimerId: (id: string | null) => void;
 }
 
 export interface SessionSlice {

@@ -12,6 +12,7 @@ type TutorialStep = {
   id: string;
   text: string;
   actionRequired?: boolean;
+  allowGameInteraction?: boolean;
   checkCompletion?: (state: any) => boolean;
 };
 
@@ -19,7 +20,15 @@ const steps: TutorialStep[] = [
   {
     id: 'tutorial-gather-flowers',
     text: "See that flower highlighted? Look at its name, distance, and how many are alive. Pick the exact same flower twice so we can track its respawn!",
-    actionRequired: false
+    actionRequired: true,
+    allowGameInteraction: true,
+    checkCompletion: (s) => {
+      const counts: Record<string, number> = {};
+      Object.values(s.timers).forEach((t: any) => {
+        counts[t.name] = (counts[t.name] || 0) + 1;
+      });
+      return Object.values(counts).some((c: number) => c >= 2);
+    }
   },
   { 
     id: 'tutorial-global-tab', 
@@ -27,7 +36,9 @@ const steps: TutorialStep[] = [
   },
   { 
     id: 'tutorial-timer-row', 
-    text: "Now hover your mouse over the timer! It will show you the exact respawn queue so you know when it's coming back. (Click Next)" 
+    text: "Now hover your mouse over the timer! It will show you the exact respawn queue so you know when it's coming back.",
+    actionRequired: true,
+    checkCompletion: (s) => s.hoveredTimerId === 'tutorial-timer-row'
   },
   { 
     id: 'tutorial-session-tab', 
@@ -304,10 +315,10 @@ export const BobTutorialOverlay: React.FC = () => {
       {/* Dimmer built with 4 divs to leave a completely click-through hole in the center */}
       {targetRect && (
         <>
-          <div className="absolute top-0 left-0 right-0 pointer-events-auto bg-black/75 transition-all duration-500" style={{ height: sTop }} />
-          <div className="absolute bottom-0 left-0 right-0 pointer-events-auto bg-black/75 transition-all duration-500" style={{ top: sTop + sHeight }} />
-          <div className="absolute pointer-events-auto bg-black/75 transition-all duration-500" style={{ top: sTop, height: sHeight, left: 0, width: sLeft }} />
-          <div className="absolute pointer-events-auto bg-black/75 transition-all duration-500" style={{ top: sTop, height: sHeight, left: sLeft + sWidth, right: 0 }} />
+          <div className={`absolute top-0 left-0 right-0 ${currentStepData?.allowGameInteraction ? 'pointer-events-none bg-black/20' : 'pointer-events-auto bg-black/75'} transition-all duration-500`} style={{ height: sTop }} />
+          <div className={`absolute bottom-0 left-0 right-0 ${currentStepData?.allowGameInteraction ? 'pointer-events-none bg-black/20' : 'pointer-events-auto bg-black/75'} transition-all duration-500`} style={{ top: sTop + sHeight }} />
+          <div className={`absolute ${currentStepData?.allowGameInteraction ? 'pointer-events-none bg-black/20' : 'pointer-events-auto bg-black/75'} transition-all duration-500`} style={{ top: sTop, height: sHeight, left: 0, width: sLeft }} />
+          <div className={`absolute ${currentStepData?.allowGameInteraction ? 'pointer-events-none bg-black/20' : 'pointer-events-auto bg-black/75'} transition-all duration-500`} style={{ top: sTop, height: sHeight, left: sLeft + sWidth, right: 0 }} />
         </>
       )}
 

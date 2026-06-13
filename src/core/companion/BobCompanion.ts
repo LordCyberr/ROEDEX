@@ -82,6 +82,7 @@ export class BobCompanion {
   private static fireRandomIdleMessage() {
     const store = useTrackerStore.getState();
     if (!store.notificationSettings.bobMode) return;
+    if (store.notificationSettings.tutorialStep > 0 && !store.notificationSettings.tutorialCompleted) return;
     
     // 1% chance for ultra rare
     if (Math.random() < 0.01 && store.notificationSettings.bobSecret) {
@@ -294,6 +295,7 @@ export class BobCompanion {
   private static triggerCategory(categoryKey: string, lines: string[], cooldownMs: number, settingKey: string, bypassCooldownCheck = false) {
     const store = useTrackerStore.getState();
     if (!store.notificationSettings.enabled || !store.notificationSettings.toasts) return;
+    if (store.notificationSettings.tutorialStep > 0 && !store.notificationSettings.tutorialCompleted) return;
     
     // Check if Bob is enabled globally and for this category
     if (!store.notificationSettings.bobMode) return;

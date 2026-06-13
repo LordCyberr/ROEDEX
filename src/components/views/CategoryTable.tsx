@@ -139,7 +139,12 @@ const TimerDisplay = memo(({ targetMsArray, textSmall }: { targetMsArray: number
 
   return (
     <Tooltip content={tooltipContent}>
-      <div id="tutorial-timer-row" className={`text-right ${textSmall} ${timerColor} cursor-help`}>
+      <div 
+        id="tutorial-timer-row" 
+        className={`text-right ${textSmall} ${timerColor} cursor-help`}
+        onMouseEnter={() => useTrackerStore.getState().setHoveredTimerId('tutorial-timer-row')}
+        onMouseLeave={() => useTrackerStore.getState().setHoveredTimerId(null)}
+      >
         {timerStr}
       </div>
     </Tooltip>
