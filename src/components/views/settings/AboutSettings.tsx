@@ -3,7 +3,6 @@ import { useTrackerStore } from '../../../store/trackerStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { Heart, Copy, CheckCircle2 } from 'lucide-react';
-import { Tooltip } from '../../ui/Tooltip';
 
 export const AboutSettings: React.FC = () => {
   const store = useTrackerStore(useShallow(state => ({
@@ -137,18 +136,9 @@ export const AboutSettings: React.FC = () => {
           </h4>
         </div>
         <div className="flex flex-col gap-2">
-          {/* PLACEHOLDER CREDITS - Users can easily edit these in AboutSettings.tsx */}
           <div className="flex justify-between items-center bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-subtle)]">
-            <span className="text-[11px] text-[var(--text-primary)] font-bold">[Your Name/Alias]</span>
-            <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">Lead Developer</span>
-          </div>
-          <div className="flex justify-between items-center bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-subtle)]">
-            <span className="text-[11px] text-[var(--text-primary)] font-bold">[Contributor Name]</span>
-            <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">UI/UX Design</span>
-          </div>
-          <div className="flex justify-between items-center bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-subtle)]">
-            <span className="text-[11px] text-[var(--text-primary)] font-bold">[Contributor Name]</span>
-            <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">Localization</span>
+            <span className="text-[11px] text-[var(--text-primary)] font-bold">MrSnorch</span>
+            <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">Guidance & Contributions</span>
           </div>
         </div>
       </div>
