@@ -137,7 +137,7 @@ export const translations = {
       'title': 'WELCOME TO ROEDEX',
       'subtitle': 'Your ultimate real-time companion for Curse of Aros. ROEDEX seamlessly tracks your progress without interrupting your gameplay.',
       'feature1Title': 'Real-time Loot & XP Tracking',
-      'feature1Desc': 'Automatically calculates your Gold & XP per hour based on real in-game actions.',
+      'feature1Desc': 'Automatically calculates your Runestones & XP per hour based on real in-game actions.',
       'feature2Title': 'Spawn Timers',
       'feature2Desc': 'Know exactly when bosses and resources will respawn across all zones.',
       'feature3Title': 'Smart Overlay System',

@@ -173,7 +173,7 @@ export const bobTranslations = {
     tourGuide: {
       global: "Welcome to the Global Tab! Here you can see every mob, tree, and plant in your zone. It even shows the exact distance from where you are right now!",
       favorites: "This is your Favorites Tab! Star any entity in the Global Tab, and it'll show up here. Perfect for tracking rare spawns or specific resources.",
-      session: "Ah, the Loot Tracker! You can clear your loot history here, or start a Time Attack to see how much gold and XP you make per hour.",
+      session: "Ah, the Loot Tracker! You can clear your loot history here, or start a Time Attack to see how many runestones and XP you make per hour.",
       settings: "The Settings menu! This is where you can change how ROEDEX looks, tweak the overlay, and customize my personality!",
       npcs: "Welcome to the NPCs tab! You can check the locations of merchants, trainers, and other helpful folks in the area.",
       quests: "The Quests tab! Need to figure out where to go or what to gather for your active quests? I'll keep track of it all right here."

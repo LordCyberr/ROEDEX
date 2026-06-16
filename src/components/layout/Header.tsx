@@ -53,8 +53,10 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
       let text = '';
       if (tabId === 'global') text = "This is the Global Tab. It tracks every mob, resource, and item across the entire current zone.";
       if (tabId === 'favorites') text = "Your Favorites Tab. Any item you bookmark with the star icon will appear here for easy tracking.";
-      if (tabId === 'session') text = "The Session Tab tracks your current farming run, including gold per hour, XP, and items gathered.";
+      if (tabId === 'session') text = "The Session Tab tracks your current farming run, including runestones per hour, XP, and items gathered.";
       if (tabId === 'npcs') text = "The NPC Tab shows the locations of all vendors, quest givers, and important characters.";
+      if (tabId === 'tracking') text = "This is your main dashboard. We automatically detect your character's level, weapon durability, and map position. It updates the moment you swing a sword or take a step.";
+      if (tabId === 'loot') text = "The Loot Tab shows everything you've collected. The Session tab is for this current run, while Profile and Chest track your entire history.";
       if (tabId === 'settings') text = "The Settings Tab. Customize my appearance, notifications, and tweak how data is displayed.";
       
       if (text) {
