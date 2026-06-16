@@ -53,32 +53,32 @@ const BootSequenceToast = ({ notif, animConfig, width, height, opacity, isTop, t
       exit={animConfig.exit}
       transition={{ type: "spring", stiffness: 300, damping: 25 }}
       style={{ 
-        minWidth: width ? `${width * 1.2}px` : '320px',
+        minWidth: width ? `${width * 1.1}px` : '300px',
         width: 'auto',
         maxWidth: 'calc(100vw - 32px)', 
-        minHeight: height ? `${height * 1.2}px` : '80px',
+        minHeight: height ? `${height * 1.1}px` : '70px',
         opacity,
         transformOrigin: isTop ? 'top center' : 'bottom center'
       }}
-      className={`flex flex-col justify-center backdrop-blur-xl px-10 py-6 pointer-events-auto bg-[var(--bg-panel)] border-2 border-[#22d3ee]/50 ${toastShape} shadow-[0_0_30px_rgba(34,211,238,0.4)] relative overflow-hidden`}
+      className={`flex flex-col justify-center backdrop-blur-xl px-8 py-5 pointer-events-auto bg-[var(--bg-panel)] border-2 border-[#22d3ee]/50 ${toastShape} shadow-[0_0_25px_rgba(34,211,238,0.4)] relative overflow-hidden`}
     >
       <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-[#22d3ee] to-transparent animate-pulse" />
-      <div className="flex items-center gap-3 mb-4 justify-center w-full">
-        <span className="text-[#22d3ee] font-mono text-xl md:text-2xl tracking-[0.2em] uppercase font-bold drop-shadow-[0_0_10px_rgba(34,211,238,0.8)] whitespace-nowrap">
+      <div className="flex items-center gap-2 mb-3 justify-center w-full">
+        <span className="text-[#22d3ee] font-mono text-lg md:text-xl tracking-[0.2em] uppercase font-bold drop-shadow-[0_0_10px_rgba(34,211,238,0.8)] whitespace-nowrap">
           &gt;_  {displayText}<span className="animate-pulse">_</span>
         </span>
       </div>
-      <div className="flex items-center justify-between w-full px-4 mt-2">
-        <span className="text-[#22d3ee]/80 font-mono text-sm md:text-base tracking-widest uppercase whitespace-nowrap">
+      <div className="flex items-center justify-between w-full px-3 mt-1">
+        <span className="text-[#22d3ee]/80 font-mono text-xs md:text-sm tracking-widest uppercase whitespace-nowrap">
           {subTexts[subTextIndex]}
         </span>
-        <div className="flex gap-2 ml-6">
+        <div className="flex gap-1.5 ml-5">
           {Array.from({ length: dotsCount }).map((_, i) => (
             <div 
               key={i} 
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
                 i <= cycleIndex 
-                  ? 'bg-[#22d3ee] shadow-[0_0_12px_#22d3ee] scale-125' 
+                  ? 'bg-[#22d3ee] shadow-[0_0_10px_#22d3ee] scale-110' 
                   : 'bg-[#22d3ee]/20'
               }`} 
             />
@@ -98,14 +98,14 @@ const SystemOnlineToast = ({ notif, animConfig, width, height, opacity, isTop, t
       exit={{ opacity: 0, scaleY: 0.05, scaleX: 1.5, filter: 'blur(10px)', transition: { duration: 0.3 } }}
       transition={{ type: "spring", stiffness: 400, damping: 20 }}
       style={{ 
-        minWidth: width ? `${width * 1.2}px` : '320px',
+        minWidth: width ? `${width * 1.1}px` : '300px',
         width: 'auto',
         maxWidth: 'calc(100vw - 32px)', 
-        minHeight: height ? `${height * 1.2}px` : '80px',
+        minHeight: height ? `${height * 1.1}px` : '70px',
         opacity,
         transformOrigin: isTop ? 'top center' : 'bottom center'
       }}
-      className={`flex items-center justify-center backdrop-blur-xl px-10 py-6 pointer-events-auto bg-[var(--bg-panel)] border-2 border-green-500/60 ${toastShape} shadow-[0_0_35px_rgba(34,197,94,0.5)] relative overflow-hidden`}
+      className={`flex items-center justify-center backdrop-blur-xl px-8 py-5 pointer-events-auto bg-[var(--bg-panel)] border-2 border-green-500/60 ${toastShape} shadow-[0_0_30px_rgba(34,197,94,0.5)] relative overflow-hidden`}
     >
       <motion.div 
         initial={{ opacity: 1 }}
@@ -115,14 +115,14 @@ const SystemOnlineToast = ({ notif, animConfig, width, height, opacity, isTop, t
       />
       <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-green-400 to-transparent shadow-[0_0_15px_#4ade80]" />
       
-      <div className="flex flex-col items-center justify-center w-full gap-2 text-center relative z-20">
-        <div className="flex items-center justify-center gap-3 mb-2">
-          <CheckCircle2 size={28} className="text-green-400 drop-shadow-[0_0_12px_rgba(74,222,128,0.8)]" />
-          <span className="text-[18px] md:text-[22px] font-black text-green-400 tracking-[0.2em] uppercase drop-shadow-[0_0_15px_rgba(74,222,128,0.6)] whitespace-nowrap">
+      <div className="flex flex-col items-center justify-center w-full gap-1.5 text-center relative z-20">
+        <div className="flex items-center justify-center gap-2 mb-1.5">
+          <CheckCircle2 size={24} className="text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.8)]" />
+          <span className="text-[16px] md:text-[20px] font-black text-green-400 tracking-[0.2em] uppercase drop-shadow-[0_0_12px_rgba(74,222,128,0.6)] whitespace-nowrap">
             {notif.title}
           </span>
         </div>
-        <span className="text-white/90 font-mono font-bold tracking-wider text-sm md:text-base uppercase drop-shadow-lg whitespace-nowrap">
+        <span className="text-white/90 font-mono font-bold tracking-wider text-xs md:text-sm uppercase drop-shadow-lg whitespace-nowrap">
           {notif.message}
         </span>
       </div>
