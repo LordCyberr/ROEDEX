@@ -68,6 +68,7 @@ If you are cloning this repository to build from the source code:
 ## 🏆 Credits & Acknowledgements
 
 ROEDEX wouldn't be possible without the incredible contributions from our community and developers:
+- **Lord Cyber** - Lead Developer & Creator
 - **MrSnorch** - For his guidance and contributions to the project.
 
 ---

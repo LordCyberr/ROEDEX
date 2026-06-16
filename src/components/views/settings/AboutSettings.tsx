@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTrackerStore } from '../../../store/trackerStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '../../../hooks/useTranslation';
-import { Heart, Copy, CheckCircle2 } from 'lucide-react';
+import { Heart, Copy, CheckCircle2, Youtube, Twitter } from 'lucide-react';
 
 export const AboutSettings: React.FC = () => {
   const store = useTrackerStore(useShallow(state => ({
@@ -126,6 +126,29 @@ export const AboutSettings: React.FC = () => {
           </div>
         )}
       </div>
+      {/* Socials Section */}
+      <div className="p-1">
+        <div className="grid grid-cols-2 gap-2">
+          <a
+            href="https://youtube.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-panel)] text-[10px] font-bold text-[var(--text-primary)] hover:border-red-500 hover:text-red-500 hover:bg-red-500/10 transition-all group"
+          >
+            <Youtube size={14} className="text-[var(--text-muted)] group-hover:text-red-500 transition-colors" />
+            YouTube
+          </a>
+          <a
+            href="https://twitter.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-panel)] text-[10px] font-bold text-[var(--text-primary)] hover:border-blue-400 hover:text-blue-400 hover:bg-blue-400/10 transition-all group"
+          >
+            <Twitter size={14} className="text-[var(--text-muted)] group-hover:text-blue-400 transition-colors" />
+            Twitter
+          </a>
+        </div>
+      </div>
 
       {/* Credits Section */}
       <div className="p-4 mt-2 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-2xl">
@@ -136,6 +159,10 @@ export const AboutSettings: React.FC = () => {
           </h4>
         </div>
         <div className="flex flex-col gap-2">
+          <div className="flex justify-between items-center bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-subtle)]">
+            <span className="text-[11px] text-[var(--text-primary)] font-bold">Lord Cyber</span>
+            <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">Lead Developer & Creator</span>
+          </div>
           <div className="flex justify-between items-center bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-subtle)]">
             <span className="text-[11px] text-[var(--text-primary)] font-bold">MrSnorch</span>
             <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">Guidance & Contributions</span>
