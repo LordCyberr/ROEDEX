@@ -65,11 +65,12 @@ export class NotificationManager {
 
     this.hasGreeted = true;
 
-    // Send the initializing boot sequence toast immediately
+    // Send the First boot sequence toast
     store.addNotification({
       type: 'boot-sequence',
-      title: 'INITIALIZING SYSTEM...'
-    } as any);
+      title: 'SYSTEM BOOT',
+      message: 'Initializing ROEDEX interface...'
+    });
 
     // Wait 5 seconds, then send the connection established / welcome toast
     setTimeout(() => {

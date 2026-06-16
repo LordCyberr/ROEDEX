@@ -5,6 +5,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { BootSequence } from './BootSequence';
 import { COMPANIONS } from '../../data/companions';
 import { WelcomeSplash } from './WelcomeSplash';
+import { BobCompanion } from '../../core/companion/BobCompanion';
+import { NotificationManager } from '../../core/notifications/NotificationManager';
 
 type TutorialStep = {
   id: string;
@@ -345,6 +347,9 @@ export const CompanionGuideOverlay: React.FC = () => {
     if (currentStep >= steps.length) {
       currentState.setTutorialStep(0);
       currentState.updateNotificationSettings({ tutorialCompleted: true });
+      // Trigger the greeting sequence now that the tutorial is finished
+      BobCompanion.greetUser(currentState.sessionPlayerName || currentState.playerProfile?.name || undefined);
+      NotificationManager.greetUser(currentState.sessionPlayerName || currentState.playerProfile?.name || undefined);
     } else {
       currentState.setTutorialStep(currentStep + 1);
     }
@@ -362,6 +367,9 @@ export const CompanionGuideOverlay: React.FC = () => {
     const currentState = useTrackerStore.getState();
     currentState.setTutorialStep(0);
     currentState.updateNotificationSettings({ tutorialCompleted: true });
+    // Trigger the greeting sequence now that the tutorial is skipped
+    BobCompanion.greetUser(currentState.sessionPlayerName || currentState.playerProfile?.name || undefined);
+    NotificationManager.greetUser(currentState.sessionPlayerName || currentState.playerProfile?.name || undefined);
   };
 
   const renderContent = () => {
