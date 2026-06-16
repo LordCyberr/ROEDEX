@@ -1,5 +1,7 @@
 import { parsePacket } from '../parser';
 import { useTrackerStore } from '../../store/trackerStore';
+import { NotificationManager } from '../notifications/NotificationManager';
+import { BobCompanion } from '../companion/BobCompanion';
 
 let packetInterval: ReturnType<typeof setInterval> | null = null;
 let messageListener: ((event: MessageEvent) => void) | null = null;
@@ -33,6 +35,10 @@ export function connectWebSocket() {
       Object.keys(state.poppedOutWindows).forEach(id => {
         state.updatePoppedOutWindow(id, { isMinimized: true });
       });
+
+      // Reset greeting flags so the next player packet triggers the boot sequence
+      BobCompanion.resetGreeting();
+      NotificationManager.resetGreeting();
     } 
     else if (event.data.type === 'WS_CLOSE') {
       const state = useTrackerStore.getState();

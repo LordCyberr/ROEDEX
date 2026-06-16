@@ -15,17 +15,17 @@ const RARE_RESOURCES = [
 export function handlePlayerEvent(eventName: string, payload: any, store: any) {
   switch (eventName) {
     case 'user_online': {
-      if (payload && payload.username) {
+       if (payload && payload.username) {
            const state = useTrackerStore.getState();
-           if (!state.sessionPlayerName) {
-               if (payload.username !== 'tool' && payload.username !== 'weapon' && payload.username.toLowerCase() !== 'unknown') {
+           if (payload.username !== 'tool' && payload.username !== 'weapon' && payload.username.toLowerCase() !== 'unknown') {
+               if (!state.sessionPlayerName) {
                   state.setSessionPlayerName(payload.username);
                   state.setPlayerProfile({ name: payload.username });
-                  BobCompanion.greetUser(payload.username);
-                  NotificationManager.greetUser(payload.username);
                }
+               BobCompanion.greetUser(payload.username);
+               NotificationManager.greetUser(payload.username);
            }
-      }
+       }
       break;
     }
     case 'spawn_state': {
@@ -131,11 +131,13 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any) {
         if (d.name || d.playerName) {
            const newName = d.name || d.playerName;
            const state = useTrackerStore.getState();
-           if (!state.sessionPlayerName) {
-              if (newName !== 'tool' && newName !== 'weapon' && newName.toLowerCase() !== 'unknown') {
+           if (newName !== 'tool' && newName !== 'weapon' && newName.toLowerCase() !== 'unknown') {
+              if (!state.sessionPlayerName) {
                  state.setSessionPlayerName(newName);
                  profileUpdate.name = newName;
               }
+              BobCompanion.greetUser(newName);
+              NotificationManager.greetUser(newName);
            }
         }
         

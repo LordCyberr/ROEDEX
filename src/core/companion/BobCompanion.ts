@@ -9,6 +9,10 @@ export class BobCompanion {
   private static warnedTools: Set<string> = new Set();
   private static hasGreeted: boolean = false;
   
+  static resetGreeting() {
+    this.hasGreeted = false;
+  }
+
   // Cooldowns
   private static lastMessageTimes: Record<string, number> = {};
   private static lastMessageContent: Set<string> = new Set();

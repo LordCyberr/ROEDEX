@@ -50,6 +50,10 @@ export class NotificationManager {
 
   private static hasGreeted: boolean = false;
 
+  static resetGreeting() {
+    this.hasGreeted = false;
+  }
+
   static greetUser(username?: string) {
     if (this.hasGreeted) return;
 
