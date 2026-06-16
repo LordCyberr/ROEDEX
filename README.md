@@ -65,6 +65,16 @@ If you are cloning this repository to build from the source code:
 
 ---
 
+## 🏆 Credits & Acknowledgements
+
+ROEDEX wouldn't be possible without the incredible contributions from our community and developers:
+- **[Your Name/Alias]** - Lead Developer & Creator
+- **[Contributor Name]** - UI/UX Design & Testing
+- **[Contributor Name]** - Translations & Localization
+- *Add more contributors here!*
+
+---
+
 ## 🤝 Support & Contributions
 
 ROEDEX is an open-source project maintained by the community. Developing and updating this tool requires countless late-night coding sessions. If ROEDEX has helped you track that ultra-rare drop or level up faster, consider giving the repository a ⭐! 

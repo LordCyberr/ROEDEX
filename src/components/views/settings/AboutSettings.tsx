@@ -98,21 +98,22 @@ export const AboutSettings: React.FC = () => {
             <div className="grid grid-cols-1 gap-2">
               {wallets.map(w => (
                 <div key={w.name} className="flex flex-col gap-1.5 bg-[var(--bg-card)] p-3 rounded-xl border border-[var(--border-subtle)] group/wallet hover:border-[var(--accent-primary)] hover:shadow-md transition-all">
-                  <span className="text-[10px] font-bold text-[var(--text-primary)] tracking-wider uppercase opacity-90">
-                    {w.name}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <code className="flex-1 text-[11px] text-[var(--text-secondary)] font-mono truncate select-all bg-black/40 p-2 rounded-md border border-white/5">
-                      {w.address}
-                    </code>
-                    <Tooltip content="Copy Address">
-                      <button 
-                        onClick={() => handleCopy(w.name, w.address)}
-                        className="p-2 rounded-md bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-white hover:bg-[var(--accent-primary)] transition-all shadow-sm"
-                      >
-                        {copiedKey === w.name ? <CheckCircle2 size={14} className="text-white" /> : <Copy size={14} />}
-                      </button>
-                    </Tooltip>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-[var(--text-primary)] uppercase tracking-wider">{w.name}</span>
+                    <button
+                      onClick={() => handleCopy(w.name, w.address)}
+                      className="p-1.5 rounded-lg bg-[var(--bg-panel)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-hover)] transition-all group-hover/wallet:text-[var(--accent-primary)]"
+                      title="Copy Address"
+                    >
+                      {copiedKey === w.name ? (
+                        <CheckCircle2 size={12} className="text-green-400" />
+                      ) : (
+                        <Copy size={12} />
+                      )}
+                    </button>
+                  </div>
+                  <div className="text-[9px] font-mono text-[var(--text-muted)] truncate w-[180px] sm:w-[250px]">
+                    {w.address}
                   </div>
                 </div>
               ))}
@@ -125,6 +126,31 @@ export const AboutSettings: React.FC = () => {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Credits Section */}
+      <div className="p-4 mt-2 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-2xl">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="text-[var(--accent-primary)]">🏆</div>
+          <h4 className="text-[12px] font-black text-[var(--text-primary)] tracking-wide uppercase">
+            Credits & Acknowledgements
+          </h4>
+        </div>
+        <div className="flex flex-col gap-2">
+          {/* PLACEHOLDER CREDITS - Users can easily edit these in AboutSettings.tsx */}
+          <div className="flex justify-between items-center bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-subtle)]">
+            <span className="text-[11px] text-[var(--text-primary)] font-bold">[Your Name/Alias]</span>
+            <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">Lead Developer</span>
+          </div>
+          <div className="flex justify-between items-center bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-subtle)]">
+            <span className="text-[11px] text-[var(--text-primary)] font-bold">[Contributor Name]</span>
+            <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">UI/UX Design</span>
+          </div>
+          <div className="flex justify-between items-center bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-subtle)]">
+            <span className="text-[11px] text-[var(--text-primary)] font-bold">[Contributor Name]</span>
+            <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">Localization</span>
+          </div>
+        </div>
       </div>
     </div>
   );
