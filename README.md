@@ -77,10 +77,16 @@ ROEDEX wouldn't be possible without the incredible contributions from our commun
 
 ROEDEX is an open-source project maintained by the community. Developing and updating this tool requires countless late-night coding sessions. If ROEDEX has helped you track that ultra-rare drop or level up faster, consider giving the repository a ⭐! 
 
-If you would like to support ongoing development, server costs, and future updates, you can do so via the crypto addresses below. Contributions are strictly optional but immensely appreciated:
+If you would like to support ongoing development, server costs, and future updates, contributions are strictly optional but immensely appreciated:
+
+<details>
+<summary><b>🪙 Click to show Crypto Donation Addresses</b></summary>
+
 - **Abstract Chain**: `0xeb6C0506F624239dAa704c375d0494B14ea81322`
 - **Global Wallet (EVM)**: `0x364aC821eEf0D90678F0B6df44b700d3Df14D89a`
 - **Solana**: `GzRU5v4Tyqx7iGrc7Saed943gMnbMuEDwrpC9vZWyreq`
+
+</details>
 
 We also welcome pull requests! Please follow standard TypeScript and React best practices when submitting new features or bug fixes. Ensure you test your WebSocket parsing logic carefully to prevent memory leaks!
 
