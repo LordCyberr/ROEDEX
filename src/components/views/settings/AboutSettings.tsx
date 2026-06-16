@@ -160,7 +160,7 @@ export const AboutSettings: React.FC = () => {
         </div>
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-subtle)]">
-            <span className="text-[11px] text-[var(--text-primary)] font-bold">Lord Cyber</span>
+            <span className="text-[11px] text-[var(--text-primary)] font-bold">Lord Cyberr</span>
             <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">Lead Developer & Creator</span>
           </div>
           <div className="flex justify-between items-center bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-subtle)]">
