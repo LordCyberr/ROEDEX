@@ -10,84 +10,149 @@ type TutorialStep = {
   id: string;
   text: string;
   actionRequired?: boolean;
+  autoAdvance?: boolean;
   allowGameInteraction?: boolean;
   checkCompletion?: (state: any) => boolean;
 };
 
 const steps: TutorialStep[] = [
-  {
-    id: 'tutorial-gather-flowers',
-    text: "See that flower highlighted? Look at its name, distance, and how many are alive. Pick the exact same flower twice so we can track its respawn!",
-    actionRequired: true,
-    allowGameInteraction: true,
-    checkCompletion: (s) => {
-      const counts: Record<string, number> = {};
-      Object.values(s.timers).forEach((t: any) => {
-        counts[t.name] = (counts[t.name] || 0) + 1;
-      });
-      return Object.values(counts).some((c: number) => c >= 2);
-    }
+  { 
+    id: 'tutorial-intro', 
+    text: "Welcome to ROEDEX! This tutorial will cover all overlay features in one go so you don't have to discover them on your own. Click 'NEXT' below to begin.",
   },
   { 
     id: 'tutorial-global-tab', 
-    text: "Welcome to the Global Tab! Here you can see every mob, tree, and plant in your zone. It even shows the exact distance from where you are right now!" 
+    text: "This is the Global Tab. The header tracks Name, Distance, Alive & Dead counts, and Respawn Time for the current zone. Click 'NEXT' below to continue." 
   },
   { 
     id: 'tutorial-timer-row', 
-    text: "Now hover your mouse over the timer! It will show you the exact respawn queue so you know when it's coming back.",
+    text: "Hover over the first item's respawn timer to see the respawn queue! Once you've seen it, click 'NEXT' below.",
+    actionRequired: false
+  },
+  {
+    id: 'tutorial-bookmark',
+    text: "Great! Now, click the category icon (like the sword, leaf, or pickaxe) next to an item in the list to bookmark it.",
     actionRequired: true,
-    checkCompletion: (s) => s.hoveredTimerId === 'tutorial-timer-row'
+    autoAdvance: true,
+    checkCompletion: (s) => s.favorites.length > 0
+  },
+  {
+    id: 'tutorial-favorites-tab',
+    text: "Click the Favorites Tab (the star icon) at the top of the UI to view your bookmarks.",
+    actionRequired: true,
+    autoAdvance: true,
+    checkCompletion: (s) => s.activeTab === 'favorites'
+  },
+  {
+    id: 'tutorial-bookmark',
+    text: "See your bookmark? Now click the icon again to remove it from your favorites.",
+    actionRequired: true,
+    autoAdvance: true,
+    checkCompletion: (s) => s.favorites.length === 0
   },
   { 
     id: 'tutorial-session-tab', 
-    text: "Click the Session Tab up top. This is where we calculate how rich you're getting per hour. Start a run, and I'll track your XP and Runestone efficiency!",
+    text: "Click the Session Tab up top. This tab tracks your Player Profile, Session Stats (record runs and run history), and Chest Loot.",
     actionRequired: true,
+    autoAdvance: true,
     checkCompletion: (s) => s.activeTab === 'session'
   },
   { 
-    id: 'tutorial-popout-btn', 
-    text: "Got a messy screen? Click this icon to pop tabs out into their own mini-overlays anywhere on your screen!",
+    id: 'tutorial-npcs-tab', 
+    text: "Click the NPC Tab. This shows you the locations of all vendors, quest givers, and important characters.",
     actionRequired: true,
+    autoAdvance: true,
+    checkCompletion: (s) => s.activeTab === 'npcs'
+  },
+  {
+    id: 'tutorial-alchemist-category',
+    text: "Click the 'Alchemist' category row to expand it, then hover over the first NPC row.",
+    actionRequired: true,
+    autoAdvance: true,
+    checkCompletion: (s) => !s.collapsedCategories['npcs_alchemist']
+  },
+  { 
+    id: 'tutorial-settings-tab', 
+    text: "Click the Settings tab (the gear icon). Everything is customizable here, from layout colors to notification behavior.",
+    actionRequired: true,
+    autoAdvance: true,
+    checkCompletion: (s) => s.activeTab === 'settings'
+  },
+  {
+    id: 'tutorial-about-accordion',
+    text: "Scroll down and click on 'ABOUT ROEDEX' to expand the section. Click 'NEXT' below after expanding.",
+    actionRequired: false
+  },
+  {
+    id: 'tutorial-changelog-btn',
+    text: "Now click the 'Project Changelogs' button to read the latest updates.",
+    actionRequired: true,
+    autoAdvance: true,
+    checkCompletion: (s) => s.isChangelogOpen
+  },
+  {
+    id: 'tutorial-close-changelog',
+    text: "Great! Now close the changelog window by clicking the X in the top right corner.",
+    actionRequired: true,
+    autoAdvance: true,
+    checkCompletion: (s) => !s.isChangelogOpen
+  },
+  { 
+    id: 'tutorial-popout-btn', 
+    text: "Let's go back to the Global Tab. Click the Pop-out icon in the top right of the UI to separate it into its own mini-overlay!",
+    actionRequired: true,
+    autoAdvance: true,
     checkCompletion: (s) => Object.keys(s.poppedOutWindows).length > 0
   },
   { 
+    id: 'tutorial-drag-popout', 
+    text: "Grab the header of the popped-out window and drag it. You can drag windows anywhere on your screen! Click 'NEXT' below when you're done.",
+  },
+  { 
     id: 'tutorial-merge-btn', 
-    text: "Want to close all those popped-out windows at once? Hit this merge button to bring them all back into the main view!",
+    text: "Click the 'Merge' button in the header (down arrow icon) to bring all popped-out windows back into the main view.",
     actionRequired: true,
+    autoAdvance: true,
     checkCompletion: (s) => Object.keys(s.poppedOutWindows).length === 0
   },
   { 
-    id: 'tutorial-minimize-btn', 
-    text: "Need to hide the app quickly? Click the minimize button to shrink the window into a tiny floating orb! (You can double-click the orb to bring it back)",
+    id: 'tutorial-layout-toggle', 
+    text: "Click the Layout button in the top right (panel icons) to switch to Horizontal View! It lets you see multiple pieces of info at a glance.",
     actionRequired: true,
+    autoAdvance: true,
+    checkCompletion: (s) => s.layoutMode === 'horizontal'
+  },
+  {
+    id: 'tutorial-layout-toggle-back',
+    text: "Great! Now click it again to switch back to Vertical View.",
+    actionRequired: true,
+    autoAdvance: true,
+    checkCompletion: (s) => s.layoutMode === 'vertical'
+  },
+  { 
+    id: 'tutorial-minimize-btn', 
+    text: "Click the minimize button (dash icon) to shrink the window into a tiny floating orb! (Double-click the orb to bring it back)",
+    actionRequired: true,
+    autoAdvance: true,
     checkCompletion: (s) => s.isMinimized
   },
   { 
     id: 'tutorial-lock-btn', 
-    text: "Double-tap the orb to reopen the UI, then click the Lock button! When locked, the UI becomes click-through so you can play the game.",
+    text: "Double-tap the orb to reopen the UI, then click the Lock button! When locked, the UI becomes click-through.",
     actionRequired: true,
+    autoAdvance: true,
     checkCompletion: (s) => s.isUILocked
   },
   { 
-    id: 'tutorial-lock-btn', 
-    text: "Great! Now click the lock button again to UNLOCK the UI. If you don't unlock it, you can't click any tabs!",
+    id: 'tutorial-end', 
+    text: "Great! Now click the lock button again to UNLOCK the UI, and you're ready to start playing!",
     actionRequired: true,
+    autoAdvance: true,
     checkCompletion: (s) => !s.isUILocked
-  },
-  { 
-    id: 'tutorial-settings-tab', 
-    text: "You can tweak my settings or shut me up in the Settings tab. Click it to finish the tutorial!",
-    actionRequired: true,
-    checkCompletion: (s) => s.activeTab === 'settings'
-  },
-  {
-    id: 'tutorial-end',
-    text: "One last thing: The ROEDEX only tracks what it sees. Run into the Cave and the Forest in-game to calibrate the trackers!",
-    actionRequired: false
   }
 ];
 
-export const BobTutorialOverlay: React.FC = () => {
+export const CompanionGuideOverlay: React.FC = () => {
   const { 
     tutorialStep, 
     tutorialCompleted, 
@@ -108,31 +173,48 @@ export const BobTutorialOverlay: React.FC = () => {
   const companionColor = COMPANIONS[activeCompanion as keyof typeof COMPANIONS]?.color || '#22d3ee';
   
   const playerName = useTrackerStore(state => state.playerProfile?.name);
+  const sessionPlayerName = useTrackerStore(state => state.sessionPlayerName);
   const currentZone = useTrackerStore(state => state.currentZone);
-  const isGameLoaded = !!currentZone && currentZone !== 'Unknown';
+  const isGameLoaded = !!sessionPlayerName && sessionPlayerName.toLowerCase() !== 'unknown';
 
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [kills, setKills] = useState(0);
   const [canShowBootSequence, setCanShowBootSequence] = useState(false);
   const [splashSeen, setSplashSeen] = useState(false);
+  const [actionCompleted, setActionCompleted] = useState(false);
 
   useEffect(() => {
-    if (isGameLoaded) {
-      const timer = setTimeout(() => {
-        setCanShowBootSequence(true);
-      }, 10000);
-      return () => clearTimeout(timer);
+    if (isGameLoaded && !canShowBootSequence && !splashSeen) {
+      setCanShowBootSequence(true);
     }
-  }, [isGameLoaded]);
+  }, [isGameLoaded, canShowBootSequence, splashSeen]);
 
   const currentStepData = tutorialStep > 0 && tutorialStep <= steps.length ? steps[tutorialStep - 1] : null;
 
-  // Auto-advance logic
+  // Auto-advance logic and state reset
   useEffect(() => {
-    if (tutorialStep === 0 || tutorialStep > steps.length) return;
+    setActionCompleted(false);
+    
+    if (tutorialStep <= 0 || tutorialStep > steps.length) return;
     const stepData = steps[tutorialStep - 1];
     
     if (stepData.actionRequired && stepData.checkCompletion) {
+      // Check immediately
+      const currentState = useTrackerStore.getState();
+      if (stepData.checkCompletion(currentState)) {
+        setActionCompleted(true);
+        if (stepData.autoAdvance) {
+          const currentStep = currentState.notificationSettings.tutorialStep;
+          if (currentStep >= steps.length) {
+            currentState.setTutorialStep(0);
+            currentState.updateNotificationSettings({ tutorialCompleted: true });
+          } else {
+            currentState.setTutorialStep(currentStep + 1);
+          }
+          return;
+        }
+      }
+
       // We set up a quick interval to check the store state directly
       const checker = setInterval(() => {
         const currentState = useTrackerStore.getState();
@@ -140,7 +222,19 @@ export const BobTutorialOverlay: React.FC = () => {
           setKills(currentState.sessionMobsKilled);
         }
         if (stepData.checkCompletion!(currentState)) {
-          handleNext();
+          setActionCompleted(true);
+          if (stepData.autoAdvance) {
+            clearInterval(checker);
+            const currentStep = currentState.notificationSettings.tutorialStep;
+            if (currentStep >= steps.length) {
+              currentState.setTutorialStep(0);
+              currentState.updateNotificationSettings({ tutorialCompleted: true });
+            } else {
+              currentState.setTutorialStep(currentStep + 1);
+            }
+          }
+        } else {
+          setActionCompleted(false);
         }
       }, 500);
       return () => clearInterval(checker);
@@ -159,7 +253,7 @@ export const BobTutorialOverlay: React.FC = () => {
   }, [tutorialStep]);
 
   useEffect(() => {
-    if (tutorialStep === 0 || tutorialStep > steps.length) {
+    if (tutorialStep <= 0 || tutorialStep > steps.length) {
       setTargetRect(null);
       return;
     }
@@ -256,6 +350,14 @@ export const BobTutorialOverlay: React.FC = () => {
     }
   };
 
+  const handlePrevious = () => {
+    const currentState = useTrackerStore.getState();
+    const currentStep = currentState.notificationSettings.tutorialStep;
+    if (currentStep > 1) {
+      currentState.setTutorialStep(currentStep - 1);
+    }
+  };
+
   const handleSkip = () => {
     const currentState = useTrackerStore.getState();
     currentState.setTutorialStep(0);
@@ -263,15 +365,19 @@ export const BobTutorialOverlay: React.FC = () => {
   };
 
   const renderContent = () => {
-    if (tutorialStep === 0 || tutorialStep > steps.length) {
-      if (!tutorialCompleted && tutorialStep === 0) {
-        if (!isGameLoaded || !canShowBootSequence) {
-          return null;
-        }
+    if (tutorialStep <= 0 || tutorialStep > steps.length) {
+      if (tutorialCompleted) {
+        return null;
+      }
 
+      if (!isGameLoaded) {
+        return null;
+      }
+
+      if (canShowBootSequence) {
         return <BootSequence 
           key="boot-sequence"
-          playerName={playerName}
+          playerName={sessionPlayerName || playerName || 'UNKNOWN_USER'}
           currentZone={currentZone}
           onComplete={(compId) => {
             const store = useTrackerStore.getState();
@@ -287,6 +393,7 @@ export const BobTutorialOverlay: React.FC = () => {
           }} 
         />;
       }
+      
       return null;
     }
 
@@ -322,7 +429,7 @@ export const BobTutorialOverlay: React.FC = () => {
       <div className="absolute top-4 right-4 flex flex-col gap-2 z-50">
         <button
           onClick={handleSkip}
-          className="pointer-events-auto bg-red-500/20 hover:bg-red-500/40 text-red-200 border border-red-500/30 px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-lg"
+          className="pointer-events-auto bg-red-500 hover:bg-red-600 text-white border border-red-500 px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-lg"
         >
           Skip Tutorial
         </button>
@@ -332,7 +439,7 @@ export const BobTutorialOverlay: React.FC = () => {
             store.setTutorialStep(0);
             store.updateNotificationSettings({ tutorialCompleted: false });
           }}
-          className="pointer-events-auto bg-blue-500/20 hover:bg-blue-500/40 text-blue-200 border border-blue-500/30 px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-lg"
+          className="pointer-events-auto bg-blue-500 hover:bg-blue-600 text-white border border-blue-500 px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-lg"
         >
           Restart Intro
         </button>
@@ -357,6 +464,22 @@ export const BobTutorialOverlay: React.FC = () => {
           <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2" style={{ borderColor: companionColor }} />
         </div>
       )}
+
+      {/* Ring Pulse Zoom In for Action Required Target */}
+      {targetRect && currentStepData?.actionRequired && !actionCompleted && (
+        <div 
+          className="absolute pointer-events-none z-[9999999] flex items-center justify-center rounded-full animate-ring-zoom-in"
+          style={{
+            left: sLeft + sWidth / 2 - 30,
+            top: sTop + sHeight / 2 - 30,
+            width: 60,
+            height: 60,
+            borderColor: companionColor
+          }}
+        />
+      )}
+
+
 
       {/* Tutorial Chat Bubble */}
       <AnimatePresence>
@@ -393,26 +516,38 @@ export const BobTutorialOverlay: React.FC = () => {
             <div className="relative z-10 flex justify-between items-center mt-2 pt-3 border-t" style={{ borderColor: `${companionColor}40` }}>
               <span className="text-[10px] uppercase font-mono tracking-widest" style={{ color: `${companionColor}aa` }}>Step {tutorialStep} / {steps.length}</span>
               <div className="flex gap-2 items-center">
+                {tutorialStep > 1 && (
+                  <button
+                    onClick={handlePrevious}
+                    className="px-3 py-1 rounded-lg text-[10px] font-bold tracking-widest uppercase transition-colors hover:text-white"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
+                    Previous
+                  </button>
+                )}
                 <button
                   onClick={handleNext}
-                  className="px-3 py-1 rounded-lg text-[10px] font-bold tracking-widest uppercase transition-colors"
+                  className="px-3 py-1 rounded-lg text-[10px] font-bold tracking-widest uppercase transition-colors hover:text-white"
                   style={{ color: 'var(--text-muted)' }}
                 >
                   Skip
                 </button>
-                {!currentStepData?.actionRequired ? (
-                  <button
-                    onClick={handleNext}
-                    className="px-5 py-1.5 rounded-lg text-[11px] font-black tracking-widest uppercase transition-colors shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:brightness-125 animate-pulse"
-                    style={{
-                      backgroundColor: `${companionColor}40`,
-                      color: companionColor,
-                      border: `1px solid ${companionColor}`,
-                      boxShadow: `0 0 15px ${companionColor}80`
-                    }}
-                  >
-                    Next
-                  </button>
+                {(!currentStepData?.actionRequired || actionCompleted) ? (
+                  <div className="relative">
+                    <div className="absolute inset-[-6px] pointer-events-none rounded-xl animate-ring-zoom-in" style={{ borderColor: companionColor }} />
+                    <button
+                      onClick={handleNext}
+                      className="relative px-5 py-1.5 rounded-lg text-[11px] font-black tracking-widest uppercase transition-colors shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:brightness-125 animate-pulse z-10"
+                      style={{
+                        backgroundColor: `${companionColor}40`,
+                        color: companionColor,
+                        border: `1px solid ${companionColor}`,
+                        boxShadow: `0 0 15px ${companionColor}80`
+                      }}
+                    >
+                      Next
+                    </button>
+                  </div>
                 ) : (
                   <span className="text-[10px] font-mono tracking-widest animate-pulse" style={{ color: companionColor }}>AWAITING INPUT...</span>
                 )}

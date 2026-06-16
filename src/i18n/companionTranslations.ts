@@ -32,6 +32,10 @@ export const companionTranslations = {
         "I'm practically unstoppable now.",
         "Next level! Keep it coming!"
       ],
+      zoneHome: ["Ah, finally, home sweet home. Don't touch my weapons.", "Safe inside. Keep your hands off my gear.", "A good place to rest, but I prefer the battlefield."],
+      zoneTown: ["Ah, civilization, so many NPCs. Maybe I should first go to home, rest well, and then empty my pockets.", "Too many people here. Keep your guard up.", "Town is safe, but boring."],
+      zoneForest: ["Lots of weaklings in this forest. Let's find something big to fight!", "Trees and bugs. Bring out the real monsters!"],
+      zoneCave: ["A cave! Usually the best fights are in the dark.", "Finally, some real danger. Let's go."],
       tutorial: [
         "We're stuck in Town. If you took a beating, go sleep in that bed over there. Once you're healed, we hunt.",
         "The system needs targets. Head into the Cave or Forest and smash 3 monsters. Don't come back until they're dead!",
@@ -80,6 +84,10 @@ export const companionTranslations = {
         "A refinement of my magical abilities.",
         "Knowledge and power, hand in hand."
       ],
+      zoneHome: ["Ah, finally, home sweet home. It's so peaceful here.", "A warm bed and a safe roof. Just what we needed.", "Home... Let's rest for a while."],
+      zoneTown: ["Ah, civilization, so many NPCs. Maybe we should go home, rest well, and then empty our pockets.", "It's bustling today. So many friendly faces!", "Town is always so lively."],
+      zoneForest: ["The forest is so beautiful. Be careful not to get lost.", "Listen to the rustling leaves... and the monsters hiding within."],
+      zoneCave: ["It's so dark in here... Please stay close to me.", "Caves are scary. I hope we don't run into anything too big."],
       tutorial: [
         "We arrive in Town. Should your vitality be low, I suggest resting in the bed within the house. Once restored, we shall proceed.",
         "The grimoire requires live data to attune. Travel to the Cave or Forest and vanquish 3 monsters.",
@@ -128,6 +136,10 @@ export const companionTranslations = {
         "Crash muscles get bigger!",
         "More power for Crash!"
       ],
+      zoneHome: ["AH! CRASH HOME! CRASH REST NOW!", "CRASH LIKE HOME! NO MONSTERS HERE!", "HOME GOOD! BED GOOD!"],
+      zoneTown: ["TOWN! SO MANY LITTLE PEOPLE! Crash maybe rest at home first, then empty pockets.", "CRASH IN TOWN! NO SMASHING HERE!", "LITTLE PEOPLE EVERYWHERE!"],
+      zoneForest: ["TREES! CRASH LIKE TREES! MORE THINGS TO SMASH!", "FOREST FULL OF LITTLE MONSTERS FOR CRASH!"],
+      zoneCave: ["CAVE DARK! CRASH SMASH ROCKS IN DARK!", "BIG ROCKS IN CAVE! CRASH READY!"],
       tutorial: [
         "CRASH IN TOWN! If you hurt, go sleep in bed! Sleep make strong!",
         "CRASH WANT TO FIGHT! Go to Cave or Forest and SMASH 3 monsters! SMASH NOW!",
@@ -191,6 +203,10 @@ export const companionTranslations = {
         "Soy prácticamente imparable ahora.",
         "¡Siguiente nivel! ¡Que siga así!"
       ],
+      zoneHome: ["Ah, por fin, hogar dulce hogar. No toques mis armas.", "A salvo adentro. No toques mi equipo.", "Un buen lugar para descansar, pero prefiero el campo de batalla."],
+      zoneTown: ["Ah, civilización, tantos NPCs. Tal vez debería ir a casa primero, descansar bien y luego vaciar mis bolsillos.", "Demasiada gente aquí. Mantén la guardia en alto.", "El pueblo es seguro, pero aburrido."],
+      zoneForest: ["Muchos debiluchos en este bosque. ¡Vamos a buscar algo grande para pelear!", "Árboles y bichos. ¡Traigan a los verdaderos monstruos!"],
+      zoneCave: ["¡Una cueva! Normalmente las mejores peleas están en la oscuridad.", "Por fin, verdadero peligro. Vamos."],
       tutorial: [
         "Estamos en la Ciudad. Si te golpearon, ve a dormir a esa cama de ahí. Una vez curado, cazamos.",
         "El sistema necesita objetivos. Ve a la Cueva o al Bosque y aplasta 3 monstruos.",
@@ -239,6 +255,10 @@ export const companionTranslations = {
         "Un refinamiento de mis habilidades mágicas.",
         "Conocimiento y poder, de la mano."
       ],
+      zoneHome: ["Ah, por fin, hogar dulce hogar. Es tan pacífico aquí.", "Una cama caliente y un techo seguro. Justo lo que necesitábamos.", "Hogar... Descansemos un rato."],
+      zoneTown: ["Ah, civilización, tantos NPCs. Tal vez deberíamos ir a casa, descansar bien y luego vaciar nuestros bolsillos.", "Hay mucho movimiento hoy. ¡Tantas caras amigables!", "El pueblo siempre está muy animado."],
+      zoneForest: ["El bosque es tan hermoso. Ten cuidado de no perderte.", "Escucha el crujir de las hojas... y los monstruos escondidos en ellas."],
+      zoneCave: ["Está tan oscuro aquí... Por favor mantente cerca de mí.", "Las cuevas dan miedo. Espero que no nos encontremos con nada demasiado grande."],
       tutorial: [
         "Llegamos a la Ciudad. Si tu vitalidad es baja, descansa en la cama de la casa. Una vez restaurado, procederemos.",
         "El grimorio requiere datos vivos. Viaja a la Cueva o al Bosque y vence 3 monstruos.",
@@ -287,6 +307,10 @@ export const companionTranslations = {
         "¡Músculos de Crash más grandes!",
         "¡Más poder para Crash!"
       ],
+      zoneHome: ["¡AH! ¡CRASH EN CASA! ¡CRASH DESCANSAR AHORA!", "¡A CRASH GUSTAR CASA! ¡NO HAY MONSTRUOS AQUÍ!", "¡CASA BUENA! ¡CAMA BUENA!"],
+      zoneTown: ["¡PUEBLO! ¡TANTA GENTE PEQUEÑA! Crash tal vez descansar en casa primero, luego vaciar bolsillos.", "¡CRASH EN PUEBLO! ¡NO APLASTAR AQUÍ!", "¡GENTE PEQUEÑA POR TODAS PARTES!"],
+      zoneForest: ["¡ÁRBOLES! ¡A CRASH GUSTAR ÁRBOLES! ¡MÁS COSAS PARA APLASTAR!", "¡BOSQUE LLENO DE MONSTRUOS PEQUEÑOS PARA CRASH!"],
+      zoneCave: ["¡CUEVA OSCURA! ¡CRASH APLASTAR ROCAS EN LA OSCURIDAD!", "¡ROCAS GRANDES EN CUEVA! ¡CRASH LISTO!"],
       tutorial: [
         "¡CRASH EN CIUDAD! ¡Si te duele, duerme en cama! ¡Dormir hace fuerte!",
         "¡CRASH QUIERE PELEAR! ¡Ve a Cueva o Bosque y APLASTA 3 monstruos!",
@@ -350,6 +374,10 @@ export const companionTranslations = {
         "Теперь меня практически не остановить.",
         "Следующий уровень! Так держать!"
       ],
+      zoneHome: ["Ах, наконец-то, дом, милый дом. Не трогай мое оружие.", "Внутри безопасно. Убери руки от моей экипировки.", "Хорошее место для отдыха, но я предпочитаю поле боя."],
+      zoneTown: ["Ах, цивилизация, столько NPC. Может, мне сначала пойти домой, хорошенько отдохнуть, а потом опустошить карманы.", "Здесь слишком много людей. Будь начеку.", "В городе безопасно, но скучно."],
+      zoneForest: ["В этом лесу полно слабаков. Давай найдем кого-нибудь покрупнее для драки!", "Деревья и жуки. Подавайте настоящих монстров!"],
+      zoneCave: ["Пещера! Обычно лучшие драки случаются в темноте.", "Наконец-то настоящая опасность. Погнали."],
       tutorial: [
         "Мы в Городе. Если тебя побили, иди поспи на той кровати. Как подлечишься, начнем охоту.",
         "Системе нужны цели. Иди в Пещеру или Лес и сокруши 3 монстров.",
@@ -398,6 +426,10 @@ export const companionTranslations = {
         "Улучшение моих магических способностей.",
         "Знание и сила, рука об руку."
       ],
+      zoneHome: ["Ах, наконец-то, дом, милый дом. Здесь так спокойно.", "Теплая кровать и надежная крыша. То, что нужно.", "Дом... Давай немного отдохнем."],
+      zoneTown: ["Ах, цивилизация, столько NPC. Может, нам стоит пойти домой, хорошенько отдохнуть, а потом опустошить карманы.", "Сегодня тут суетливо. Столько дружелюбных лиц!", "В городе всегда так оживленно."],
+      zoneForest: ["Лес так прекрасен. Будь осторожен, не заблудись.", "Прислушайся к шелесту листьев... и к монстрам, прячущимся в них."],
+      zoneCave: ["Здесь так темно... Пожалуйста, держись ближе ко мне.", "Пещеры пугают. Надеюсь, мы не встретим ничего слишком большого."],
       tutorial: [
         "Мы прибыли в Город. Если твоя жизненная сила иссякла, советую отдохнуть в кровати. После восстановления мы продолжим.",
         "Гримуару требуются живые данные. Отправляйся в Пещеру или Лес и одолей 3 монстров.",
@@ -446,6 +478,10 @@ export const companionTranslations = {
         "Мышцы Крэша стали больше!",
         "Больше силы для Крэша!"
       ],
+      zoneHome: ["АА! КРЭШ ДОМА! КРЭШ ОТДЫХАТЬ СЕЙЧАС!", "КРЭШ ЛЮБИТ ДОМ! ТУТ НЕТ МОНСТРОВ!", "ДОМ ХОРОШО! КРОВАТЬ ХОРОШО!"],
+      zoneTown: ["ГОРОД! ТАК МНОГО МАЛЕНЬКИХ ЛЮДЕЙ! Крэш может отдохнуть дома сначала, потом опустошить карманы.", "КРЭШ В ГОРОДЕ! ЗДЕСЬ НЕЛЬЗЯ КРУШИТЬ!", "МАЛЕНЬКИЕ ЛЮДИ ВЕЗДЕ!"],
+      zoneForest: ["ДЕРЕВЬЯ! КРЭШ ЛЮБИТ ДЕРЕВЬЯ! БОЛЬШЕ ВЕЩЕЙ ЧТОБЫ КРУШИТЬ!", "ЛЕС ПОЛОН МАЛЕНЬКИХ МОНСТРОВ ДЛЯ КРЭША!"],
+      zoneCave: ["ПЕЩЕРА ТЕМНАЯ! КРЭШ КРУШИТЬ КАМНИ В ТЕМНОТЕ!", "БОЛЬШИЕ КАМНИ В ПЕЩЕРЕ! КРЭШ ГОТОВ!"],
       tutorial: [
         "КРЭШ В ГОРОДЕ! Если больно, иди спать в кровать! Сон делает сильным!",
         "КРЭШ ХОЧЕТ ДРАТЬСЯ! Иди в Пещеру или Лес и РАЗДАВИ 3 монстров!",
@@ -509,6 +545,10 @@ export const companionTranslations = {
         "이제 나를 막을 수 없을걸.",
         "다음 레벨! 계속 가자!"
       ],
+      zoneHome: ["아, 드디어, 즐거운 나의 집. 내 무기엔 손대지 마.", "안은 안전해. 내 장비에 손대지 마.", "쉬기 좋은 곳이긴 한데, 난 전쟁터가 더 좋아."],
+      zoneTown: ["아, 문명, NPC가 정말 많네. 먼저 집에 가서 푹 쉬고 주머니를 비워야겠어.", "여긴 사람이 너무 많아. 경계 늦추지 마.", "마을은 안전하지만 지루해."],
+      zoneForest: ["이 숲에는 약골들 천지네. 싸울 만한 큰 놈을 찾아보자!", "나무랑 벌레뿐이네. 진짜 몬스터를 데려와!"],
+      zoneCave: ["동굴! 보통 어둠 속에서 최고의 싸움이 벌어지지.", "드디어 진짜 위험이군. 가자."],
       tutorial: [
         "우린 지금 마을에 갇혀있어. 상처를 입었다면 저기 침대에서 자. 치료가 끝나면 사냥을 시작하지.",
         "시스템에는 타겟이 필요해. 동굴이나 숲으로 가서 몬스터 3마리를 박살내. 죽기 전엔 돌아오지 마!",
@@ -557,6 +597,10 @@ export const companionTranslations = {
         "마법 능력이 더욱 세련되어졌어요.",
         "지식과 힘이 함께 성장합니다."
       ],
+      zoneHome: ["아, 드디어, 즐거운 나의 집. 정말 평화롭다.", "따뜻한 침대와 안전한 지붕. 딱 필요했던 거야.", "집... 잠시 쉬어가자."],
+      zoneTown: ["아, 문명, NPC가 정말 많네요. 먼저 집에 가서 푹 쉬고 주머니를 비워야겠어요.", "오늘은 꽤 붐비네요. 친근한 얼굴들이 많아요!", "마을은 항상 활기차요."],
+      zoneForest: ["숲이 너무 아름다워요. 길을 잃지 않게 조심하세요.", "바스락거리는 나뭇잎 소리를 들어보세요... 그 안에 숨어 있는 몬스터도요."],
+      zoneCave: ["여긴 너무 어두워요... 제 곁에 꼭 붙어 있으세요.", "동굴은 무서워요. 너무 큰 몬스터는 만나지 않았으면 좋겠네요."],
       tutorial: [
         "우리는 마을에 도착했습니다. 활력이 부족하다면 집 안의 침대에서 휴식을 취하시길 권합니다.",
         "그리모어는 생명 데이터가 필요합니다. 동굴이나 숲으로 이동하여 몬스터 3마리를 처치하세요.",
@@ -605,6 +649,10 @@ export const companionTranslations = {
         "크래쉬 근육 더 커졌다!",
         "크래쉬한테 더 많은 힘을!"
       ],
+      zoneHome: ["아! 크래쉬 집이다! 크래쉬 이제 쉰다!", "크래쉬 집 좋아! 여긴 몬스터 없어!", "집 좋아! 침대 좋아!"],
+      zoneTown: ["마을! 쪼끄만 사람들이 정말 많아! 크래쉬 먼저 집에서 쉬고 주머니 비운다.", "크래쉬 마을에 왔다! 여긴 부수면 안 돼!", "사방에 쪼끄만 사람들이야!"],
+      zoneForest: ["나무! 크래쉬 나무 좋아! 부술 게 더 많아!", "크래쉬를 위한 쪼끄만 몬스터가 숲에 가득해!"],
+      zoneCave: ["동굴 어둡다! 크래쉬 어둠 속에서 바위 부순다!", "동굴에 큰 바위! 크래쉬 준비 완료!"],
       tutorial: [
         "크래쉬 마을에 왔다! 아프면 침대에 가서 자! 자면 강해져!",
         "크래쉬 싸우고 싶어! 동굴이나 숲으로 가서 몬스터 3마리 박살내! 지금 박살내!",

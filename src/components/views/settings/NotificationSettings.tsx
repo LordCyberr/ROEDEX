@@ -1,9 +1,13 @@
 import React from 'react';
 import { useTrackerStore } from '../../../store/trackerStore';
+import { useShallow } from 'zustand/react/shallow';
 import { ToggleRow, SliderRow, SelectRow } from './SettingsControls';
 
 export const NotificationSettings: React.FC = () => {
-  const store = useTrackerStore();
+  const store = useTrackerStore(useShallow(state => ({
+    notificationSettings: state.notificationSettings,
+    updateNotificationSettings: state.updateNotificationSettings
+  })));
 
   return (
     <>

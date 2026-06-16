@@ -5,24 +5,28 @@ interface ParticleGlobeProps {
   isTalking?: boolean;
   className?: string;
   mood?: string;
+  forceHighFPS?: boolean;
 }
 
 export const ParticleGlobe: React.FC<ParticleGlobeProps> = ({
   color = '#00e5ff',
   isTalking = false,
   className = '',
-  mood = 'idle'
+  mood = 'idle',
+  forceHighFPS = false
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const moodRef = useRef(mood);
   const colorRef = useRef(color);
   const isTalkingRef = useRef(isTalking);
+  const forceHighFPSRef = useRef(forceHighFPS);
 
   useEffect(() => {
     moodRef.current = mood;
     colorRef.current = color;
     isTalkingRef.current = isTalking;
-  }, [mood, color, isTalking]);
+    forceHighFPSRef.current = forceHighFPS;
+  }, [mood, color, isTalking, forceHighFPS]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -39,7 +43,7 @@ export const ParticleGlobe: React.FC<ParticleGlobeProps> = ({
     canvas.height = height * dpr;
     ctx.scale(dpr, dpr);
 
-    const NUM_CORE_PARTICLES = 400;
+    const NUM_CORE_PARTICLES = 200;
     const BASE_RADIUS = Math.min(width, height) * 0.08;
     const PERSPECTIVE = width * 0.8;
     const PROJECTION_CENTER_X = width / 2;
@@ -63,7 +67,7 @@ export const ParticleGlobe: React.FC<ParticleGlobeProps> = ({
       });
     }
 
-    const NUM_RINGS = 6;
+    const NUM_RINGS = 4;
     for (let r = 0; r < NUM_RINGS; r++) {
       const ringRadius = BASE_RADIUS * (1.5 + (r * 0.3));
       const numRingParticles = 80 + (r * 15);
@@ -98,6 +102,7 @@ export const ParticleGlobe: React.FC<ParticleGlobeProps> = ({
     }
 
     let animationFrameId: number;
+    let throttleTimer: ReturnType<typeof setTimeout>;
     let time = 0;
     let globalRotY = 0;
     let globalRotX = 0;
@@ -294,12 +299,27 @@ export const ParticleGlobe: React.FC<ParticleGlobeProps> = ({
       ctx.arc(PROJECTION_CENTER_X, PROJECTION_CENTER_Y, finalRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      animationFrameId = requestAnimationFrame(render);
+      // Throttle FPS based on mood to preserve game performance
+      const targetFPS = forceHighFPSRef.current ? 60 : (
+        currentMood === 'dimmed' ? 5 
+        : currentIsTalking ? 30 : 15
+      );
+      
+      if (targetFPS >= 60) {
+        animationFrameId = requestAnimationFrame(render);
+      } else {
+        throttleTimer = setTimeout(() => {
+          animationFrameId = requestAnimationFrame(render);
+        }, 1000 / targetFPS);
+      }
     };
 
     render();
 
-    return () => cancelAnimationFrame(animationFrameId);
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      clearTimeout(throttleTimer);
+    };
   }, []); // Empty dependency array! Will never unmount on prop changes!
 
   let shadowColor = color;

@@ -3,6 +3,7 @@ import { useTrackerStore } from '../../store/trackerStore';
 import { useShallow } from 'zustand/react/shallow';
 import { motion, useMotionValue } from 'motion/react';
 import { Sword, Lock, Unlock, Axe, Pickaxe } from 'lucide-react';
+import { Tooltip } from '../ui/Tooltip';
 
 export const WeaponUI: React.FC = () => {
   const { weapon, weaponUISettings, updateWeaponUISettings } = useTrackerStore(useShallow((state) => ({
@@ -74,18 +75,14 @@ export const WeaponUI: React.FC = () => {
   let textColor = 'text-emerald-400 drop-shadow-[0_0_4px_rgba(16,185,129,0.5)]';
   let borderColor = 'border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]';
   
-  if (percentage <= 20) {
+  if (percentage <= 11) {
     color = 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]';
     textColor = 'text-red-400 drop-shadow-[0_0_4px_rgba(239,68,68,0.5)]';
     borderColor = 'border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]';
-  } else if (percentage <= 40) {
+  } else if (percentage <= 50) {
     color = 'bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.3)]';
     textColor = 'text-orange-400 drop-shadow-[0_0_4px_rgba(249,115,22,0.5)]';
     borderColor = 'border-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.3)]';
-  } else if (percentage <= 75) {
-    color = 'bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]';
-    textColor = 'text-yellow-400 drop-shadow-[0_0_4px_rgba(250,204,21,0.5)]';
-    borderColor = 'border-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]';
   }
 
   const borderColorClass = dynamicBorderColor ? borderColor : 'border-white/20';
@@ -151,28 +148,30 @@ export const WeaponUI: React.FC = () => {
         borderRadius: `${borderRadius}px`,
         borderWidth: isDraggable ? '2px' : (borderWidth > 0 ? `${borderWidth}px` : (hasText ? '1px' : '0px')),
         borderColor: isDraggable ? undefined : (borderWidth > 0 ? undefined : (hasText ? 'rgba(255,255,255,0.05)' : 'transparent')),
-        padding: !hasBar ? '4px 10px' : '0px',
-        width: layout === 'horizontal' 
+        padding: !hasBar ? (layout === 'horizontal' ? '4px 10px' : '10px 4px') : '0px',
+        width: layout === 'horizontal'
           ? (hasBar ? `${width}px` : 'max-content') 
-          : (hasText ? `${Math.max(24, height + 16)}px` : `${height}px`),
+          : 'max-content',
         height: layout === 'horizontal'
-          ? (hasText ? `${Math.max(24, height + 12)}px` : `${height}px`)
-          : `${width}px`,
+          ? (hasBar ? `${height}px` : 'max-content')
+          : (hasBar ? `${width}px` : 'max-content'),
+        minWidth: layout === 'vertical' ? (hasBar ? `${height}px` : undefined) : undefined,
       }}
     >
       {/* Lock/Unlock Icon Overlay */}
-      <button 
-        onClick={() => updateWeaponUISettings({ locked: !locked })}
-        className="absolute -top-6 right-0 p-1 pointer-events-auto text-[var(--text-muted)] opacity-30 hover:opacity-100 transition-opacity bg-black/40 rounded-full"
-        title={locked ? "Unlock Position" : "Lock Position"}
-      >
-        {locked ? <Lock size={12} /> : <Unlock size={12} />}
-      </button>
+      <Tooltip content={locked ? "Unlock Position" : "Lock Position"}>
+        <button 
+          onClick={() => updateWeaponUISettings({ locked: !locked })}
+          className="absolute -top-6 right-0 p-1 pointer-events-auto text-[var(--text-muted)] opacity-30 hover:opacity-100 transition-opacity bg-black/40 rounded-full"
+        >
+          {locked ? <Lock size={12} /> : <Unlock size={12} />}
+        </button>
+      </Tooltip>
 
       {/* Background Health Bar */}
       {hasBar && (
         <div 
-          className={`absolute ${layout === 'horizontal' ? 'left-0 top-0 bottom-0 w-full' : 'left-0 bottom-0 right-0 h-full flex items-end'} ${!hasText ? 'bg-black/40 border border-white/5' : ''}`} 
+          className={`absolute ${layout === 'horizontal' ? 'left-0 top-0 bottom-0 w-full' : 'bottom-0 left-0 right-0 h-full flex items-end'} ${!hasText ? 'bg-black/40 border border-white/5' : ''}`} 
           style={{ borderRadius: hasText ? 0 : borderRadius }}
         >
           <motion.div 
@@ -186,7 +185,7 @@ export const WeaponUI: React.FC = () => {
 
       {/* Foreground Text */}
       {hasText && (
-        <div className={`relative z-10 flex w-full px-2 ${layout === 'vertical' ? 'flex-col justify-center' : 'items-center justify-between'} gap-2 drop-shadow-md`}>
+        <div className={`relative z-10 flex ${layout === 'vertical' ? 'flex-col items-center justify-between h-full py-2' : 'w-full px-2 items-center justify-between'} gap-2 drop-shadow-md`}>
           <div className={`flex items-center gap-1.5 ${textColor}`}>
             {(() => {
               const nameLower = (displayWeapon.name || '').toLowerCase();
@@ -195,13 +194,10 @@ export const WeaponUI: React.FC = () => {
               return <Sword size={14} />;
             })()}
           </div>
-          <span 
-            className={`font-mono font-black text-[12px] text-white tracking-wide drop-shadow-[0_2px_2px_rgba(0,0,0,1)] text-right ${layout === 'vertical' ? 'writing-vertical-rl rotate-180' : ''}`}
-            style={layout === 'vertical' ? { writingMode: 'vertical-rl' } : {}}
-          >
-            {showPct && pctStr}
-            {showDur && durStr}
-          </span>
+          <div className={`flex ${layout === 'vertical' ? 'flex-col items-center' : 'items-baseline gap-1'} font-mono font-black text-[12px] text-white tracking-wide drop-shadow-[0_2px_2px_rgba(0,0,0,1)]`}>
+            {showPct && <span>{pctStr}</span>}
+            {showDur && <span className={`opacity-80 ${layout === 'vertical' ? 'text-[9px]' : 'text-[10px]'}`}>{durStr}</span>}
+          </div>
         </div>
       )}
     </motion.div>

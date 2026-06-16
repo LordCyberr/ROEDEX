@@ -35,3 +35,12 @@ export const formatInternalName = (raw: string) => {
   
   return clean.replace(/^./, (str) => str.toUpperCase());
 };
+
+export const formatDuration = (ms: number) => {
+  const totalSecs = Math.floor(ms / 1000);
+  const m = Math.floor(totalSecs / 60);
+  const s = totalSecs % 60;
+  const h = Math.floor(m / 60);
+  if (h > 0) return `${h}h ${m % 60}m ${s}s`;
+  return `${m}m ${s}s`;
+};

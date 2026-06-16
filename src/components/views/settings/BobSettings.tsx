@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTrackerStore } from '../../../store/trackerStore';
+import { useShallow } from 'zustand/react/shallow';
 import { ToggleRow, SliderRow, SelectRow } from './SettingsControls';
 
 const SectionHeader: React.FC<{ title: string; description?: string }> = ({ title, description }) => (
@@ -10,7 +11,13 @@ const SectionHeader: React.FC<{ title: string; description?: string }> = ({ titl
 );
 
 export const BobSettings: React.FC = () => {
-  const store = useTrackerStore();
+  const store = useTrackerStore(useShallow(state => ({
+    notificationSettings: state.notificationSettings,
+    updateNotificationSettings: state.updateNotificationSettings,
+    activeCompanion: state.activeCompanion,
+    setActiveCompanion: state.setActiveCompanion,
+    setTutorialStep: state.setTutorialStep
+  })));
 
   return (
     <>

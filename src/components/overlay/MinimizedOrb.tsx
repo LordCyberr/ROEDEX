@@ -116,7 +116,7 @@ export const MinimizedOrb: React.FC = () => {
         id="tutorial-minimized-orb"
         style={{ width: orbSize, height: orbSize, borderWidth: orbBorderThickness }}
         className={`
-        group relative flex items-center justify-center rounded-full cursor-pointer
+        group relative flex items-center justify-center rounded-full cursor-pointer pointer-events-auto
         bg-[var(--bg-base)] backdrop-blur-md ${glowColor}
         transition-all duration-300 hover:scale-105 hover:brightness-110
         ${pulse ? 'animate-pulse' : ''}

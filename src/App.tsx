@@ -1,9 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { connectWebSocket, disconnectWebSocket } from './core/websocket/connection';
+import { BobCompanion } from './core/companion/BobCompanion';
 import { OverlayContainer } from './components/overlay/OverlayContainer';
 import { useTrackerStore } from './store/trackerStore';
 
 function App() {
+  const [isHydrated, setIsHydrated] = useState(false);
   useEffect(() => {
     // Load persisted settings
     if (typeof chrome !== 'undefined' && chrome?.storage?.local) {
@@ -38,9 +40,7 @@ function App() {
     const unsubscribe = useTrackerStore.subscribe((state, prevState) => {
       // Bob Tour Guide hook
       if (state.activeTab !== prevState.activeTab) {
-        import('./core/companion/BobCompanion').then(({ BobCompanion }) => {
-          BobCompanion.onTabOpened(state.activeTab);
-        });
+        BobCompanion.onTabOpened(state.activeTab);
       }
 
       if (typeof chrome !== 'undefined' && chrome?.storage?.local) {
@@ -91,10 +91,19 @@ function App() {
         store.toggleDebugPanel();
       }
 
-      // Ctrl + Shift + C: Toggle Minimal Chest HUD manually (DEBUG)
+      // Ctrl + Shift + C: Developer Force Overlay (Bypass Login)
       if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'c') {
         e.preventDefault();
-        store.setIsChestOpen(!store.isChestOpen);
+        const newState = !store.devForceOverlay;
+        store.setDevForceOverlay(newState);
+        
+        if (newState) {
+          store.setConnected(true);
+          store.setIsMinimized(true);
+          // Mark all tutorials as completed to bypass splashes
+          store.setFirstTimeWizardCompleted(true);
+          store.updateNotificationSettings({ tutorialCompleted: true, tutorialStep: -1 });
+        }
       }
       
       // Parse the custom hotkey (e.g., 'Shift+Alt+C' or 'Ctrl+Shift+M')
@@ -122,6 +131,17 @@ function App() {
       disconnectWebSocket();
     };
   }, []);
+
+  useEffect(() => {
+    // Wait for Zustand persist hydration to finish before rendering UI
+    const unsubHydrate = useTrackerStore.persist.onFinishHydration(() => setIsHydrated(true));
+    setIsHydrated(useTrackerStore.persist.hasHydrated());
+    return () => {
+      unsubHydrate();
+    };
+  }, []);
+
+  if (!isHydrated) return null;
 
   return (
     <div className="w-screen h-screen bg-transparent overflow-hidden">

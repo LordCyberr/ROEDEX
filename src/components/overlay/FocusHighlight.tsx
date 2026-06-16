@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
 
-export const BlackoutTutorial: React.FC = () => {
+export const FocusHighlight: React.FC = () => {
   const store = useTrackerStore();
 
   // Show if HUD enabled, chest is open, and tutorial not seen

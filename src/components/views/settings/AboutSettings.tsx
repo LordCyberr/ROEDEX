@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { useTrackerStore } from '../../../store/trackerStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { Heart, Copy, CheckCircle2 } from 'lucide-react';
+import { Tooltip } from '../../ui/Tooltip';
 
 export const AboutSettings: React.FC = () => {
-  const store = useTrackerStore();
+  const store = useTrackerStore(useShallow(state => ({
+    setIsChangelogOpen: state.setIsChangelogOpen
+  })));
   const { t } = useTranslation();
   const [showCrypto, setShowCrypto] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -49,6 +53,7 @@ export const AboutSettings: React.FC = () => {
           </p>
 
           <button
+            id="tutorial-changelog-btn"
             onClick={() => store.setIsChangelogOpen(true)}
             className="group/btn flex items-center justify-between w-full p-3 rounded-xl bg-[var(--bg-hover)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] transition-all duration-300"
           >
@@ -100,13 +105,14 @@ export const AboutSettings: React.FC = () => {
                     <code className="flex-1 text-[11px] text-[var(--text-secondary)] font-mono truncate select-all bg-black/40 p-2 rounded-md border border-white/5">
                       {w.address}
                     </code>
-                    <button 
-                      onClick={() => handleCopy(w.name, w.address)}
-                      className="p-2 rounded-md bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-white hover:bg-[var(--accent-primary)] transition-all shadow-sm"
-                      title="Copy Address"
-                    >
-                      {copiedKey === w.name ? <CheckCircle2 size={14} className="text-white" /> : <Copy size={14} />}
-                    </button>
+                    <Tooltip content="Copy Address">
+                      <button 
+                        onClick={() => handleCopy(w.name, w.address)}
+                        className="p-2 rounded-md bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-white hover:bg-[var(--accent-primary)] transition-all shadow-sm"
+                      >
+                        {copiedKey === w.name ? <CheckCircle2 size={14} className="text-white" /> : <Copy size={14} />}
+                      </button>
+                    </Tooltip>
                   </div>
                 </div>
               ))}

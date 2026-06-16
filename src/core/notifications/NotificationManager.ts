@@ -61,11 +61,19 @@ export class NotificationManager {
 
     this.hasGreeted = true;
 
-    // Use a generic system greeting
+    // Send the initializing boot sequence toast immediately
     store.addNotification({
-      type: 'info',
-      title: 'System',
-      message: username ? `Welcome, ${username}!` : `Welcome to ROEDEX!`
-    });
+      type: 'boot-sequence',
+      title: 'INITIALIZING SYSTEM...'
+    } as any);
+
+    // Wait 5 seconds, then send the connection established / welcome toast
+    setTimeout(() => {
+      store.addNotification({
+        type: 'system-online',
+        title: 'CONNECTION ESTABLISHED',
+        message: username ? `Welcome, ${username}!` : `Welcome to ROEDEX!`
+      });
+    }, 5000);
   }
 }

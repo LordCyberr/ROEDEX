@@ -35,8 +35,8 @@ export const ArmorSettings: React.FC = () => {
               onChange={(v) => store.updateArmorUISettings({ style: v as any })} 
             />
             <ToggleRow label="Enable Animations" value={store.armorUISettings.enableAnimations} onChange={(v) => store.updateArmorUISettings({ enableAnimations: v })} />
-            <SliderRow label="Width" value={store.armorUISettings.width} min={80} max={300} step={10} display={`${store.armorUISettings.width}px`} onChange={(v) => store.updateArmorUISettings({ width: v })} />
-            <SliderRow label="Height (Bar)" value={store.armorUISettings.height} min={2} max={20} step={2} display={`${store.armorUISettings.height}px`} onChange={(v) => store.updateArmorUISettings({ height: v })} />
+            <SliderRow label="Width" value={store.armorUISettings.width} min={20} max={300} step={10} display={`${store.armorUISettings.width}px`} onChange={(v) => store.updateArmorUISettings({ width: v })} />
+            <SliderRow label="Height (Bar)" value={store.armorUISettings.height} min={2} max={60} step={2} display={`${store.armorUISettings.height}px`} onChange={(v) => store.updateArmorUISettings({ height: v })} />
             <SliderRow label="Scale" value={store.armorUISettings.scale} min={0.5} max={1.5} step={0.1} display={`${(store.armorUISettings.scale * 100).toFixed(0)}%`} onChange={(v) => store.updateArmorUISettings({ scale: v })} />
             <SliderRow label="Opacity" value={store.armorUISettings.opacity} min={0.1} max={1} step={0.05} display={`${(store.armorUISettings.opacity * 100).toFixed(0)}%`} onChange={(v) => store.updateArmorUISettings({ opacity: v })} />
             <SliderRow label="Background Radius" value={store.armorUISettings.borderRadius} min={0} max={24} step={2} display={`${store.armorUISettings.borderRadius}px`} onChange={(v) => store.updateArmorUISettings({ borderRadius: v })} />

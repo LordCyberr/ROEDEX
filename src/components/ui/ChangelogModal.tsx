@@ -31,6 +31,7 @@ export const ChangelogModal: React.FC = () => {
                 <span className="text-[var(--accent-primary)]">✨</span> What's New
               </h2>
               <button 
+                id="tutorial-close-changelog"
                 onClick={() => setIsChangelogOpen(false)}
                 className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors p-1"
               >

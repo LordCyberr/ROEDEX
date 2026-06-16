@@ -11,3 +11,15 @@ reference_old/
 
 # AI and Project Memory
 PROJECT_STATE.md
+ROEDEX_MASTER_PLAN.md
+
+# AI Files
+.gemini/
+agents/
+skills/
+plan.json
+check.json
+diff.txt
+*.diff
+previous_NotificationToaster.tsx
+final_extension/

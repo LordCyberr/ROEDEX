@@ -39,8 +39,6 @@ export class TrackerValidator {
     }
 
     return true;
-
-    return true;
   }
 
   static validateResourceSpawn(payload: ResourceRespawnEvent): boolean {

@@ -1,10 +1,21 @@
 import React from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
+import { useShallow } from 'zustand/react/shallow';
 import { motion } from 'motion/react';
 import { getResellValue } from '../../data/prices';
 
 export const MinimalChestHUD: React.FC = () => {
-  const store = useTrackerStore();
+  const store = useTrackerStore(useShallow(state => ({
+    isChestOpen: state.isChestOpen,
+    minimalChestHud: state.minimalChestHud,
+    chestInventory: state.chestInventory,
+    bankInventory: state.bankInventory,
+    minimalChestHudLocked: state.minimalChestHudLocked,
+    setIsChestOpen: state.setIsChestOpen,
+    chestWidgetPositions: state.chestWidgetPositions,
+    setChestWidgetPosition: state.setChestWidgetPosition,
+    globalScale: state.globalScale
+  })));
 
   if (!store.isChestOpen || !store.minimalChestHud) return null;
 

@@ -26,14 +26,9 @@ export function connectWebSocket() {
 
     if (event.data.type === 'WS_OPEN') {
       const state = useTrackerStore.getState();
+      
       state.setConnected(true);
       state.setIsMinimized(true);
-      
-      state.addNotification({
-        type: 'info',
-        title: 'System Online',
-        message: 'Connected to ROEDEX Tracker'
-      });
 
       Object.keys(state.poppedOutWindows).forEach(id => {
         state.updatePoppedOutWindow(id, { isMinimized: true });
@@ -65,7 +60,10 @@ export function connectWebSocket() {
 
   // Track Packets Per Second
   packetInterval = setInterval(() => {
-    useTrackerStore.getState().updateDebugStats(packetCount);
+    // Only update the store if the debug panel is open to avoid unnecessary re-renders
+    if (useTrackerStore.getState().isDebugPanelOpen) {
+      useTrackerStore.getState().updateDebugStats(packetCount);
+    }
     packetCount = 0;
   }, 1000);
 }

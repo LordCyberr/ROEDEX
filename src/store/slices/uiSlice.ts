@@ -10,6 +10,22 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
   debugStats: { pps: 0 },
   updateDebugStats: (pps: number) => set({ debugStats: { pps } }),
   
+  profilerMetrics: {
+    parseTime: { average: 0, max: 0, lastSpike: 0, totalEvents: 0 },
+    renderTime: { average: 0, lastRender: 0 },
+    memory: { enemiesCount: 0, resourcesCount: 0, poppedOutWindows: 0, lastUpdate: 0 }
+  },
+  updateProfilerMetrics: (updates) => set((state) => ({
+    profilerMetrics: {
+      ...state.profilerMetrics,
+      ...updates,
+      parseTime: { ...state.profilerMetrics.parseTime, ...(updates.parseTime || {}) },
+      renderTime: { ...state.profilerMetrics.renderTime, ...(updates.renderTime || {}) },
+      memory: { ...state.profilerMetrics.memory, ...(updates.memory || {}) },
+    }
+  })),
+
+
   activeCompanion: 'bob',
   setActiveCompanion: (companion) => set({ activeCompanion: companion }),
 
@@ -39,6 +55,12 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
 
   language: 'en',
   setLanguage: (lang) => set({ language: lang }),
+  firstTimeWizardCompleted: false,
+  setFirstTimeWizardCompleted: (completed) => set({ firstTimeWizardCompleted: completed }),
+  isLifetimeStatsOpen: false,
+  setIsLifetimeStatsOpen: (open) => set({ isLifetimeStatsOpen: open }),
+  isRunHistoryOpen: false,
+  setIsRunHistoryOpen: (open: boolean) => set({ isRunHistoryOpen: open }),
 
   activeTab: 'global',
   setActiveTab: (tab) => set({ activeTab: tab }),
@@ -73,11 +95,11 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
   setLayoutMode: (mode) => set({ layoutMode: mode }),
   verticalGroupingMode: 'grouped',
   setVerticalGroupingMode: (mode) => set({ verticalGroupingMode: mode }),
-  overlayPosition: { x: 20, y: 80 },
+  overlayPosition: { x: 20, y: 150 },
   setOverlayPosition: (pos) => set({ overlayPosition: pos }),
-  orbPosition: { x: typeof window !== 'undefined' ? window.innerWidth / 2 - 70 : 500, y: 16 },
+  orbPosition: { x: 20, y: 100 },
   setOrbPosition: (pos) => set({ orbPosition: pos }),
-  bobPosition: { x: typeof window !== 'undefined' ? window.innerWidth - 80 : 800, y: 220 },
+  bobPosition: { x: typeof window !== 'undefined' ? window.innerWidth - 320 : 800, y: 120 },
   setBobPosition: (pos) => set({ bobPosition: pos }),
   developerMode: false,
   setDeveloperMode: (dev: boolean) => set({ developerMode: dev }),
@@ -173,7 +195,8 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
     customPositionX: typeof window !== 'undefined' ? window.innerWidth - 300 : 0,
     customPositionY: 20,
     volume: 0.5,
-    animation: 'slide'
+    animation: 'slide',
+    seenTabs: {}
   },
   updateNotificationSettings: (settings) => set((state) => ({
     notificationSettings: { ...state.notificationSettings, ...settings }
@@ -187,15 +210,15 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
     alertThreshold: 20,
     scale: 1,
     opacity: 1,
-    width: 180,
-    height: 6,
+    width: 20,
+    height: 100,
     borderRadius: 8,
     glassStrength: 10,
     enableAnimations: true,
     position: 'bottom-center',
     customPositionX: 0,
     customPositionY: 0,
-    layout: 'horizontal',
+    layout: 'vertical',
     borderWidth: 1,
     dynamicBorderColor: true
   },
@@ -211,8 +234,8 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
     alertThreshold: 20,
     scale: 1,
     opacity: 1,
-    width: 160,
-    height: 4,
+    width: 20,
+    height: 100,
     borderRadius: 8,
     glassStrength: 10,
     enableAnimations: true,
@@ -250,6 +273,11 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
   })),
   theme: 'default',
   setTheme: (theme: string) => set({ theme }),
+
+  // Developer Force Overlay
+  devForceOverlay: false,
+  setDevForceOverlay: (force: boolean) => set({ devForceOverlay: force }),
+  
   minimizedIcon: 'rx',
   minimizedIconUrl: '',
   setMinimizedIconUrl: (url) => set({ minimizedIconUrl: url }),

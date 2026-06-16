@@ -4,6 +4,7 @@ import { KNOWN_NPCS_DATA, NPCInfo } from '../../data/npcs';
 import { Users, Search, MapPin, ChevronDown, ChevronRight } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { Tooltip } from '../ui/Tooltip';
 
 export const NPCView: React.FC = () => {
   const { t } = useTranslation();
@@ -244,12 +245,13 @@ export const NPCView: React.FC = () => {
                             <div className="text-[11px] font-bold text-[var(--text-primary)] truncate">{npc.name}</div>
                             <div className="flex items-center gap-1 mt-1">
                               <MapPin size={10} className="text-[var(--text-muted)] shrink-0" />
-                              <div 
-                                className="text-[10px] text-[var(--text-secondary)] truncate hover:text-clip hover:whitespace-normal transition-all"
-                                title={t(npc.location as any)}
-                              >
-                                {t(npc.location as any)}
-                              </div>
+                              <Tooltip content={t(npc.location as any)}>
+                                <div 
+                                  className="text-[10px] text-[var(--text-secondary)] truncate hover:text-clip hover:whitespace-normal transition-all"
+                                >
+                                  {t(npc.location as any)}
+                                </div>
+                              </Tooltip>
                             </div>
                           </div>
                         );
@@ -336,12 +338,13 @@ export const NPCView: React.FC = () => {
                         <div className="flex flex-col gap-1 pl-1 h-full justify-center">
                           <div className="grid grid-cols-[45px_1fr] gap-2 px-2 py-1.5 items-center rounded border transition-colors bg-[var(--bg-hover)] border-transparent hover:border-[var(--border-subtle)]">
                             <div className="text-[11px] font-bold text-[var(--text-primary)] truncate">{item.npc.name}</div>
-                            <div 
-                              className="text-[10px] text-[var(--text-secondary)] truncate hover:text-clip hover:whitespace-normal transition-all"
-                              title={t(item.npc.location as any)}
-                            >
-                              {t(item.npc.location as any)}
-                            </div>
+                            <Tooltip content={t(item.npc.location as any)}>
+                              <div 
+                                className="text-[10px] text-[var(--text-secondary)] truncate hover:text-clip hover:whitespace-normal transition-all"
+                              >
+                                {t(item.npc.location as any)}
+                              </div>
+                            </Tooltip>
                           </div>
                         </div>
                       )}

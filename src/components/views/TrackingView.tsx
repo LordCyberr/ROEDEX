@@ -1,7 +1,9 @@
 import React, { useMemo } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
+import { useThrottledEntities } from '../../hooks/useThrottledEntities';
 import { useTrackerStore } from '../../store/trackerStore';
-import { GlobalTableHeader, CategorySection, CategoryCard, TableRowData } from './CategoryTable';
+import { GlobalTableHeader, CategorySection, CategoryCard, TableRowData } from '../ui/CategoryTable';
+import { Tooltip } from '../ui/Tooltip';
 import { Vector2 } from '../../types/events';
 
 import { useShallow } from 'zustand/react/shallow';
@@ -47,17 +49,13 @@ interface TrackingViewProps {
 
 export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
   const {
-    enemies, resources, timers, throttledPlayerPosition, activeTab, 
+    activeTab, 
     favorites, layoutMode, displayMode, currentZone,
     collapsedCategories, toggleCategory,
     collapsedSidebarZones, toggleSidebarZone,
     verticalGroupingMode, tableSettings,
     tutorialStep, tutorialCompleted
   } = useTrackerStore(useShallow((state) => ({
-    enemies: state.enemies,
-    resources: state.resources,
-    timers: state.timers,
-    throttledPlayerPosition: state.throttledPlayerPosition,
     activeTab: state.activeTab,
     favorites: state.favorites,
     layoutMode: state.layoutMode,
@@ -73,6 +71,8 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
     tutorialCompleted: state.notificationSettings.tutorialCompleted
   })));
   
+  const { enemies, resources, timers, throttledPlayerPosition } = useThrottledEntities(300);
+
   const effectiveTab = forcedTab || activeTab;
   const isHorizontal = layoutMode === 'horizontal';
 
@@ -265,14 +265,15 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
           return (
             <div key={zone} className="flex flex-col">
               {/* Zone Header */}
-              <button
-                onClick={() => toggleSidebarZone(zone)}
-                title={`Toggle ${zone}`}
-                className="flex items-center justify-start gap-1 py-1 px-3 mx-1.5 my-1 text-[11px] font-black text-yellow-400 uppercase tracking-[0.2em] select-none hover:text-yellow-300 hover:bg-[var(--bg-hover)] transition-all border border-[var(--border-accent)] rounded-full font-[var(--font-heading)] bg-[var(--bg-panel)] shadow-md min-w-0 overflow-hidden"
-              >
-                <div className="shrink-0">{isZoneCollapsed ? <ChevronRight size={13} strokeWidth={3} /> : <ChevronDown size={13} strokeWidth={3} />}</div>
-                <span className="truncate block whitespace-nowrap overflow-hidden text-ellipsis">{zone}</span>
-              </button>
+              <Tooltip content={`Toggle ${zone}`}>
+                <button
+                  onClick={() => toggleSidebarZone(zone)}
+                  className="flex items-center justify-start gap-1 py-1 px-3 mx-1.5 my-1 text-[11px] font-black text-yellow-400 uppercase tracking-[0.2em] select-none hover:text-yellow-300 hover:bg-[var(--bg-hover)] transition-all border border-[var(--border-accent)] rounded-full font-[var(--font-heading)] bg-[var(--bg-panel)] shadow-md min-w-0 overflow-hidden"
+                >
+                  <div className="shrink-0">{isZoneCollapsed ? <ChevronRight size={13} strokeWidth={3} /> : <ChevronDown size={13} strokeWidth={3} />}</div>
+                  <span className="truncate block whitespace-nowrap overflow-hidden text-ellipsis">{zone}</span>
+                </button>
+              </Tooltip>
               
               {/* Categories in Zone */}
               {!isZoneCollapsed && cats.map(cat => (
@@ -307,30 +308,32 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
             const isZoneCollapsed = collapsedSidebarZones[zone];
             return (
               <div key={zone} className="flex flex-col gap-0.5">
-                <button 
-                  onClick={() => toggleSidebarZone(zone)}
-                  title={`Toggle ${zone}`}
-                  className="flex items-center justify-between text-[9px] font-black text-yellow-400 hover:text-yellow-300 transition-colors uppercase tracking-widest px-2 py-1 border-b border-[var(--border-subtle)] mb-0.5 min-w-0 overflow-hidden gap-1"
-                >
-                  <span className="truncate block whitespace-nowrap overflow-hidden text-ellipsis">{zone}</span>
-                  <div className="shrink-0">{isZoneCollapsed ? <ChevronRight size={10} strokeWidth={3} /> : <ChevronDown size={10} strokeWidth={3} />}</div>
-                </button>
+                <Tooltip content={`Toggle ${zone}`}>
+                  <button 
+                    onClick={() => toggleSidebarZone(zone)}
+                    className="flex items-center justify-between text-[9px] font-black text-yellow-400 hover:text-yellow-300 transition-colors uppercase tracking-widest px-2 py-1 border-b border-[var(--border-subtle)] mb-0.5 min-w-0 overflow-hidden gap-1"
+                  >
+                    <span className="truncate block whitespace-nowrap overflow-hidden text-ellipsis">{zone}</span>
+                    <div className="shrink-0">{isZoneCollapsed ? <ChevronRight size={10} strokeWidth={3} /> : <ChevronDown size={10} strokeWidth={3} />}</div>
+                  </button>
+                </Tooltip>
                 {!isZoneCollapsed && cats.map(cat => {
                 const isExpanded = !collapsedCategories[cat.id];
                 return (
-                  <button
-                    key={cat.id}
-                    onClick={() => toggleCategory(cat.id)}
-                    title={`Toggle ${cat.category}`}
-                    className={`flex items-center justify-between text-left pl-5 pr-2 py-1 rounded transition-colors text-[10px] font-[var(--font-heading)] font-bold uppercase tracking-wider min-w-0 overflow-hidden gap-1 ${
-                      isExpanded 
-                        ? 'bg-[var(--bg-hover)] text-[var(--text-primary)] border border-[var(--border-accent)]' 
-                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-panel)] border border-transparent'
-                    }`}
-                  >
-                    <span className="truncate block whitespace-nowrap overflow-hidden text-ellipsis">{cat.category}</span>
-                    {isExpanded && <div className="w-1.5 h-1.5 rounded-full bg-[#00ff55] shadow-[0_0_5px_#00ff55] shrink-0" />}
-                  </button>
+                  <Tooltip content={`Toggle ${cat.category}`}>
+                    <button
+                      key={cat.id}
+                      onClick={() => toggleCategory(cat.id)}
+                      className={`flex items-center justify-between text-left pl-5 pr-2 py-1 rounded transition-colors text-[10px] font-[var(--font-heading)] font-bold uppercase tracking-wider min-w-0 overflow-hidden gap-1 ${
+                        isExpanded 
+                          ? 'bg-[var(--bg-hover)] text-[var(--text-primary)] border border-[var(--border-accent)]' 
+                          : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-panel)] border border-transparent'
+                      }`}
+                    >
+                      <span className="truncate block whitespace-nowrap overflow-hidden text-ellipsis">{cat.category}</span>
+                      {isExpanded && <div className="w-1.5 h-1.5 rounded-full bg-[#00ff55] shadow-[0_0_5px_#00ff55] shrink-0" />}
+                    </button>
+                  </Tooltip>
                 )
               })}
             </div>

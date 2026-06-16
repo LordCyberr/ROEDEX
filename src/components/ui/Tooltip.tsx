@@ -92,7 +92,7 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, children, disabled = 
                 zIndex: 2147483647, // Maximum z-index
                 pointerEvents: 'none'
               }}
-              className="bg-[var(--bg-panel)]/90 text-[var(--text-primary)] border border-[var(--border-accent)] shadow-[0_4px_20px_var(--border-subtle)] rounded-lg px-3 py-2 text-[10px] font-bold max-w-[250px] whitespace-normal z-[2147483647] overflow-hidden flex flex-col gap-1 backdrop-blur-xl"
+              className="bg-[var(--bg-panel)]/90 text-[var(--text-primary)] border border-[var(--border-accent)] shadow-[0_8px_32px_var(--border-subtle)] rounded-xl px-3 py-2 text-[10px] font-bold max-w-[250px] whitespace-normal z-[2147483647] overflow-hidden flex flex-col gap-1 backdrop-blur-xl"
             >
               {/* Added absolute glassmorphism highlight */}
               <div className="absolute inset-0 bg-gradient-to-tr from-[var(--accent-primary)]/10 to-transparent pointer-events-none" />

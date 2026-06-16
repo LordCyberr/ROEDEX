@@ -1,0 +1,62 @@
+import React from 'react';
+import { useTrackerStore } from '../../../store/trackerStore';
+import { useShallow } from 'zustand/react/shallow';
+import { Sword } from 'lucide-react';
+
+export const ProfileTab: React.FC<{ isHorizontal: boolean }> = ({ isHorizontal }) => {
+  const { playerProfile, setIsLifetimeStatsOpen } = useTrackerStore(useShallow((state: any) => ({
+    playerProfile: state.playerProfile,
+    setIsLifetimeStatsOpen: state.setIsLifetimeStatsOpen,
+  })));
+
+  const pct = playerProfile.runesRequired > 0 
+    ? Math.min(100, Math.floor((playerProfile.currentRunes / playerProfile.runesRequired) * 100)) 
+    : 0;
+
+  return (
+    <div className={`flex ${isHorizontal ? 'flex-row' : 'flex-col'} gap-2 h-full w-full`}>
+      {/* Left Side: Profile Card */}
+      <div className={`flex flex-col gap-2 ${isHorizontal ? 'w-[140px]' : 'w-full'} shrink-0 h-full`}>
+        <div className="flex flex-col items-center justify-start gap-2 bg-black/30 border border-white/[0.05] p-3 rounded-lg relative overflow-hidden group shadow-inner h-full">
+          <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-blue-500/10 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+          
+          <div className="relative w-16 h-16 flex items-center justify-center shrink-0 drop-shadow-md mt-2">
+             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="16" fill="none" className="stroke-white/10" strokeWidth="3" />
+                <circle cx="18" cy="18" r="16" fill="none" className="stroke-emerald-400" strokeWidth="3" strokeDasharray={`${pct}, 100`} />
+             </svg>
+             <div className="absolute flex flex-col items-center justify-center mt-1">
+                <span className="text-[7px] text-emerald-400/80 uppercase font-bold tracking-widest mb-0.5">LVL</span>
+                <span className="text-[18px] font-black text-white leading-none">{playerProfile.level}</span>
+             </div>
+          </div>
+          
+          <div className="flex flex-col items-center w-full z-10 mt-2">
+             <div className="text-[12px] font-bold text-slate-200 uppercase tracking-widest mb-3 truncate text-center w-full">{playerProfile.name ? playerProfile.name.toUpperCase() : 'PLAYER PROFILE'}</div>
+             <div className="flex flex-col items-center text-[9px] mt-1 w-full px-1">
+                <span className="text-slate-400 mb-1 tracking-wider uppercase font-bold text-center">Runes to Level Up</span>
+                <span className="text-emerald-400 font-mono font-black text-[10px] bg-black/40 px-2 py-1 rounded border border-emerald-500/20 whitespace-nowrap">{playerProfile.currentRunes.toLocaleString()} / {playerProfile.runesRequired.toLocaleString()}</span>
+             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Side: Lifetime Stats Button */}
+      <div className="flex-1 flex flex-col items-center justify-center bg-black/20 border border-white/[0.05] p-4 rounded-lg relative overflow-hidden">
+        <div className="text-center mb-4">
+          <div className="text-[14px] font-black text-white tracking-widest uppercase mb-1">Lifetime Statistics</div>
+          <div className="text-[9px] text-slate-400">View your entire ROEDEX history</div>
+        </div>
+        <button
+          onClick={() => setIsLifetimeStatsOpen(true)}
+          className="group relative px-6 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 hover:border-indigo-400 rounded-lg transition-all"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/10 to-indigo-500/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg" />
+          <span className="text-[10px] font-bold text-indigo-300 group-hover:text-white tracking-wider uppercase flex items-center gap-2 relative z-10">
+            Open Stats Window <Sword size={12} className="group-hover:translate-x-1 transition-transform" />
+          </span>
+        </button>
+      </div>
+    </div>
+  );
+};

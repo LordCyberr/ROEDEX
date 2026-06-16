@@ -29,6 +29,7 @@ const AccordionSection: React.FC<{
     <div className={`mb-2 transition-all duration-300 ${isOpen ? 'bg-[var(--bg-base)] rounded-2xl p-1.5 border border-black/40 shadow-[inset_0_4px_15px_rgba(0,0,0,0.5)]' : ''}`}>
       <Tooltip content={description}>
       <button
+        id={title === 'ABOUT ROEDEX' || title === 'About Me' ? 'tutorial-about-accordion' : undefined}
         onClick={onToggle}
         className={`flex items-center gap-2 w-full px-3 py-2.5 text-[10px] font-bold uppercase tracking-widest transition-all duration-200 select-none ${
           isOpen 
@@ -64,7 +65,7 @@ export const SettingsView: React.FC = () => {
   const { t } = useTranslation();
   const store = useTrackerStore(useShallow(state => {
     const { 
-      packetCounts, enemies, resources, loot, timers, 
+      enemies, resources, loot, timers, 
       playerPosition, throttledPlayerPosition, slotDurabilities,
       weapon, armor, sessionLoot,
       ...safeState 
@@ -93,6 +94,7 @@ export const SettingsView: React.FC = () => {
             {sections.map(s => (
              <Tooltip key={s.id} content={s.description}>
              <button
+               id={s.id === 'about' ? 'tutorial-about-accordion' : undefined}
                onClick={() => setActiveTab(s.id)}
                className={`flex items-center gap-2 w-full px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-widest rounded-full transition-all duration-200 select-none ${
                  activeTab === s.id 

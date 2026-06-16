@@ -1,8 +1,135 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
 import { useShallow } from 'zustand/react/shallow';
 import { motion, AnimatePresence, useDragControls, useMotionValue } from 'motion/react';
-import { Sparkles, Star, Info, Sword, Pickaxe, Map } from 'lucide-react';
+import { Sparkles, Star, Info, Sword, Pickaxe, Map, Terminal, CheckCircle2 } from 'lucide-react';
+
+const BootSequenceToast = ({ notif, animConfig, width, height, opacity, isTop, toastShape }: any) => {
+  const [displayText, setDisplayText] = useState('');
+  const [subTextIndex, setSubTextIndex] = useState(0);
+  const [cycleIndex, setCycleIndex] = useState(0);
+  
+  const subTexts = [
+    'Initializing modules...',
+    'Syncing game state...',
+    'Establishing secure connection...'
+  ];
+
+  // 5 dots
+  const dotsCount = 5;
+
+  useEffect(() => {
+    let currentChar = 0;
+    const targetText = notif.title || 'ROEDEX INITIALIZING';
+    const typeInterval = setInterval(() => {
+      setDisplayText(targetText.substring(0, currentChar + 1));
+      if (currentChar < targetText.length) {
+        currentChar++;
+      } else {
+        clearInterval(typeInterval);
+      }
+    }, 40);
+
+    const subInterval = setInterval(() => {
+      setSubTextIndex(prev => Math.min(prev + 1, subTexts.length - 1));
+    }, 1500);
+
+    const blockInterval = setInterval(() => {
+      setCycleIndex(prev => (prev + 1) % dotsCount);
+    }, 400);
+
+    return () => {
+      clearInterval(typeInterval);
+      clearInterval(subInterval);
+      clearInterval(blockInterval);
+    };
+  }, [notif.title]);
+
+  return (
+    <motion.div
+      layout
+      initial={animConfig.initial}
+      animate={{ ...animConfig.animate, x: 0, y: 0 }}
+      exit={animConfig.exit}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      style={{ 
+        minWidth: `${width}px`,
+        width: 'auto',
+        maxWidth: 'calc(100vw - 32px)', 
+        minHeight: `${height}px`,
+        opacity,
+        transformOrigin: isTop ? 'top center' : 'bottom center'
+      }}
+      className={`flex flex-col justify-center backdrop-blur-xl px-6 py-3 pointer-events-auto bg-[var(--bg-panel)] border border-[#22d3ee]/50 ${toastShape} shadow-[0_0_20px_rgba(34,211,238,0.3)] relative overflow-hidden`}
+    >
+      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#22d3ee] to-transparent animate-pulse" />
+      <div className="flex items-center gap-3 mb-2 justify-center w-full">
+        <Terminal size={18} className="text-[#22d3ee] animate-pulse" />
+        <span className="text-[#22d3ee] font-mono text-sm tracking-[0.2em] uppercase font-bold drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] whitespace-nowrap">
+          {displayText}<span className="animate-pulse">_</span>
+        </span>
+      </div>
+      <div className="flex items-center justify-between w-full px-2">
+        <span className="text-[#22d3ee]/70 font-mono text-xs tracking-widest uppercase whitespace-nowrap">
+          {subTexts[subTextIndex]}
+        </span>
+        <div className="flex gap-1.5 ml-4">
+          {Array.from({ length: dotsCount }).map((_, i) => (
+            <div 
+              key={i} 
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                i <= cycleIndex 
+                  ? 'bg-[#22d3ee] shadow-[0_0_8px_#22d3ee] scale-110' 
+                  : 'bg-[#22d3ee]/20'
+              }`} 
+            />
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const SystemOnlineToast = ({ notif, animConfig, width, height, opacity, isTop, toastShape }: any) => {
+  return (
+    <motion.div
+      layout
+      initial={{ ...animConfig.initial, scale: 0.8 }}
+      animate={{ ...animConfig.animate, x: 0, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scaleY: 0.05, scaleX: 1.5, filter: 'blur(10px)', transition: { duration: 0.3 } }}
+      transition={{ type: "spring", stiffness: 400, damping: 20 }}
+      style={{ 
+        minWidth: `${width}px`,
+        width: 'auto',
+        maxWidth: 'calc(100vw - 32px)', 
+        minHeight: `${height}px`,
+        opacity,
+        transformOrigin: isTop ? 'top center' : 'bottom center'
+      }}
+      className={`flex items-center justify-center backdrop-blur-xl px-6 py-3 pointer-events-auto bg-[var(--bg-panel)] border border-green-500/60 ${toastShape} shadow-[0_0_25px_rgba(34,197,94,0.4)] relative overflow-hidden`}
+    >
+      <motion.div 
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 0 }}
+        transition={{ duration: 1, ease: "easeOut" }}
+        className="absolute inset-0 bg-white z-10 mix-blend-screen"
+      />
+      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-green-400 to-transparent shadow-[0_0_10px_#4ade80]" />
+      
+      <div className="flex flex-col items-center justify-center w-full gap-1.5 text-center relative z-20">
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <CheckCircle2 size={18} className="text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
+          <span className="text-[13px] font-black text-green-400 tracking-[0.2em] uppercase drop-shadow-[0_0_10px_rgba(74,222,128,0.6)] whitespace-nowrap">
+            {notif.title}
+          </span>
+        </div>
+        <span className="text-white/90 font-mono font-bold tracking-wider text-xs sm:text-sm uppercase drop-shadow-md whitespace-nowrap">
+          {notif.message}
+        </span>
+      </div>
+    </motion.div>
+  );
+};
 
 export const NotificationToaster: React.FC = () => {
   // Single useShallow call — was 4 separate subscriptions
@@ -149,7 +276,15 @@ export const NotificationToaster: React.FC = () => {
       }}
     >
       <AnimatePresence>
-        {notifications.map((notif) => (
+        {notifications.map((notif) => {
+          if (notif.type === 'boot-sequence') {
+            return <BootSequenceToast key={notif.id} notif={notif} animConfig={animConfig} width={width} height={height} opacity={opacity} isTop={isTop} toastShape={getShapeClass()} />;
+          }
+          if (notif.type === 'system-online') {
+            return <SystemOnlineToast key={notif.id} notif={notif} animConfig={animConfig} width={width} height={height} opacity={opacity} isTop={isTop} toastShape={getShapeClass()} />;
+          }
+          
+          return (
           <motion.div
             key={notif.id}
             layout
@@ -190,7 +325,7 @@ export const NotificationToaster: React.FC = () => {
               </span>
             </div>
           </motion.div>
-        ))}
+        );})}
       </AnimatePresence>
     </motion.div>
   );

@@ -34,7 +34,7 @@ export const translations = {
       bobCompanion: 'Your Companion',
       advanced: 'Advanced',
       language: 'Language',
-      aboutMe: 'Community Support',
+      aboutMe: 'About ROEDEX',
       aboutMeDesc: 'This project is passionately developed and maintained for the ROE player base. We rely on community support to keep updates flowing. Every contribution directly helps improve ROEDEX for everyone.',
       donate: 'Back the Development',
       cryptoWallets: 'Crypto Addresses',
@@ -120,6 +120,30 @@ export const translations = {
       eastTownArea: 'Roaming the East Town area',
       hidingPillar1: 'Hiding behind the first pillar',
       hidingPillar2: 'Hiding behind the second pillar'
+    },
+    bootSequence: {
+      'initializing': 'INITIALIZING SYSTEM...',
+      'biometric': 'BIOMETRIC SCAN: COMPLETE',
+      'welcome': 'WELCOME',
+      'calibrating': 'CALIBRATING TRACKERS FOR',
+      'online': 'AI CORE ONLINE.',
+      'systemBoot': 'SYSTEM_BOOT',
+      'chooseCompanion': 'CHOOSE YOUR AI COMPANION',
+      'hoverToPreview': 'Hover to preview. Click to select and initialize HUD.',
+      'back': 'BACK',
+      'skipStep': 'Skip Step [ESC]'
+    },
+    welcome: {
+      'title': 'WELCOME TO ROEDEX',
+      'subtitle': 'Your ultimate real-time companion for Curse of Aros. ROEDEX seamlessly tracks your progress without interrupting your gameplay.',
+      'feature1Title': 'Real-time Loot & XP Tracking',
+      'feature1Desc': 'Automatically calculates your Gold & XP per hour based on real in-game actions.',
+      'feature2Title': 'Spawn Timers',
+      'feature2Desc': 'Know exactly when bosses and resources will respawn across all zones.',
+      'feature3Title': 'Smart Overlay System',
+      'feature3Desc': 'Pop out widgets, drag them anywhere, and lock them to click right through them.',
+      'skip': 'Skip Tutorial',
+      'start': 'Start Interactive Guide'
     }
   },
   es: {
@@ -242,6 +266,30 @@ export const translations = {
       eastTownArea: 'Deambulando por la zona este de la ciudad',
       hidingPillar1: 'Escondido detrás del primer pilar',
       hidingPillar2: 'Escondido detrás del segundo pilar'
+    },
+    bootSequence: {
+      'initializing': 'INICIALIZANDO SISTEMA...',
+      'biometric': 'ESCANEO BIOMÉTRICO: COMPLETO',
+      'welcome': 'BIENVENIDO',
+      'calibrating': 'CALIBRANDO RASTREADORES PARA',
+      'online': 'NÚCLEO IA EN LÍNEA.',
+      'systemBoot': 'INICIO_SISTEMA',
+      'chooseCompanion': 'ELIGE TU COMPAÑERO IA',
+      'hoverToPreview': 'Pasa el cursor para ver. Haz clic para seleccionar e inicializar el HUD.',
+      'back': 'VOLVER',
+      'skipStep': 'Saltar Paso [ESC]'
+    },
+    welcome: {
+      'title': 'BIENVENIDO A ROEDEX',
+      'subtitle': 'Tu compañero definitivo en tiempo real para Curse of Aros. ROEDEX rastrea tu progreso sin interrumpir tu juego.',
+      'feature1Title': 'Rastreo de Botín y XP en Tiempo Real',
+      'feature1Desc': 'Calcula automáticamente tu Oro y XP por hora basado en acciones reales en el juego.',
+      'feature2Title': 'Temporizadores de Reaparición',
+      'feature2Desc': 'Conoce exactamente cuándo reaparecerán jefes y recursos en todas las zonas.',
+      'feature3Title': 'Sistema de Superposición Inteligente',
+      'feature3Desc': 'Desacopla widgets, arrástralos a cualquier lugar y bloquéalos para hacer clic a través de ellos.',
+      'skip': 'Saltar Tutorial',
+      'start': 'Iniciar Guía Interactiva'
     }
   },
   ru: {
@@ -364,6 +412,30 @@ export const translations = {
       eastTownArea: 'Бродит по восточной части города',
       hidingPillar1: 'Прячется за первой колонной',
       hidingPillar2: 'Прячется за второй колонной'
+    },
+    bootSequence: {
+      'initializing': 'ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ...',
+      'biometric': 'БИОМЕТРИЧЕСКОЕ СКАНИРОВАНИЕ: ЗАВЕРШЕНО',
+      'welcome': 'ДОБРО ПОЖАЛОВАТЬ',
+      'calibrating': 'КАЛИБРОВКА ТРЕКЕРОВ ДЛЯ',
+      'online': 'ЯДРО ИИ ОНЛАЙН.',
+      'systemBoot': 'ЗАГРУЗКА_СИСТЕМЫ',
+      'chooseCompanion': 'ВЫБЕРИТЕ ИИ КОМПАНЬОНА',
+      'hoverToPreview': 'Наведите для предпросмотра. Кликните, чтобы выбрать и запустить HUD.',
+      'back': 'НАЗАД',
+      'skipStep': 'Пропустить [ESC]'
+    },
+    welcome: {
+      'title': 'ДОБРО ПОЖАЛОВАТЬ В ROEDEX',
+      'subtitle': 'Ваш идеальный компаньон в реальном времени для Curse of Aros. ROEDEX отслеживает ваш прогресс, не прерывая игру.',
+      'feature1Title': 'Отслеживание добычи и опыта',
+      'feature1Desc': 'Автоматически рассчитывает золото и опыт в час на основе реальных действий в игре.',
+      'feature2Title': 'Таймеры возрождения',
+      'feature2Desc': 'Точно знайте, когда боссы и ресурсы возродятся во всех зонах.',
+      'feature3Title': 'Умная система оверлеев',
+      'feature3Desc': 'Открепляйте виджеты, перетаскивайте их куда угодно и блокируйте, чтобы кликать сквозь них.',
+      'skip': 'Пропустить обучение',
+      'start': 'Начать интерактивное руководство'
     }
   },
   ko: {
@@ -486,6 +558,30 @@ export const translations = {
       eastTownArea: '동쪽 마을 구역을 돌아다니는 중',
       hidingPillar1: '첫 번째 기둥 뒤에 숨어 있음',
       hidingPillar2: '두 번째 기둥 뒤에 숨어 있음'
+    },
+    bootSequence: {
+      'initializing': '시스템 초기화 중...',
+      'biometric': '생체 스캔: 완료',
+      'welcome': '환영합니다',
+      'calibrating': '트래커 보정 중:',
+      'online': 'AI 코어 온라인.',
+      'systemBoot': '시스템_부팅',
+      'chooseCompanion': 'AI 컴패니언 선택',
+      'hoverToPreview': '가리켜서 미리보기. 클릭하여 선택하고 HUD를 초기화하세요.',
+      'back': '뒤로',
+      'skipStep': '단계 건너뛰기 [ESC]'
+    },
+    welcome: {
+      'title': 'ROEDEX에 오신 것을 환영합니다',
+      'subtitle': 'Curse of Aros를 위한 궁극의 실시간 컴패니언. ROEDEX는 게임 플레이를 방해하지 않고 진행 상황을 추적합니다.',
+      'feature1Title': '실시간 전리품 및 XP 추적',
+      'feature1Desc': '실제 게임 내 행동을 기반으로 시간당 골드 및 XP를 자동으로 계산합니다.',
+      'feature2Title': '리스폰 타이머',
+      'feature2Desc': '모든 지역에서 보스와 자원이 언제 리스폰되는지 정확히 알 수 있습니다.',
+      'feature3Title': '스마트 오버레이 시스템',
+      'feature3Desc': '위젯을 팝아웃하고, 아무 곳이나 드래그하며, 잠가서 클릭을 통과시킬 수 있습니다.',
+      'skip': '튜토리얼 건너뛰기',
+      'start': '인터랙티브 가이드 시작'
     }
   }
 } as const;
@@ -497,4 +593,6 @@ export type TranslationKey =
   | `categories.${keyof typeof translations.en.categories}`
   | `misc.${keyof typeof translations.en.misc}`
   | `npcZones.${keyof typeof translations.en.npcZones}`
-  | `npcLocations.${keyof typeof translations.en.npcLocations}`;
+  | `npcLocations.${keyof typeof translations.en.npcLocations}`
+  | `bootSequence.${keyof typeof translations.en.bootSequence}`
+  | `welcome.${keyof typeof translations.en.welcome}`;

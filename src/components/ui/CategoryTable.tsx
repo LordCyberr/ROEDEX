@@ -1,8 +1,11 @@
-import React, { memo, useState, useEffect } from 'react';
+import React, { memo } from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
 import { useShallow } from 'zustand/react/shallow';
 import { ChevronDown, ChevronRight, Clock, Sword, Pickaxe, Leaf, Axe, Box, PawPrint } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useGlobalTick } from '../../core/tick';
+import { BobCompanion } from '../../core/companion/BobCompanion';
+import { Tooltip } from './Tooltip';
 
 export interface TableRowData {
   id: string;
@@ -89,25 +92,16 @@ const getTimerColor = (targetMs: number, now: number): string => {
   return 'text-[#ff9900]'; // Orange
 };
 
-import { Tooltip } from '../ui/Tooltip';
 
 const TimerDisplay = memo(({ targetMsArray, textSmall }: { targetMsArray: number[], textSmall: string }) => {
-  const [now, setNow] = useState(Date.now());
+  const now = useGlobalTick();
   const maxTooltips = useTrackerStore(state => state.tableSettings.maxRespawnTooltips) || 5;
   const tutorialStep = useTrackerStore(state => state.notificationSettings.tutorialStep);
-
-  useEffect(() => {
-    // Only update if there's at least one active timer
-    const hasActive = targetMsArray.some(t => t > Date.now());
-    if (!hasActive) return;
-    const interval = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(interval);
-  }, [targetMsArray]);
 
   // Sort ascending and filter out past timers
   let validTimers = targetMsArray.filter(t => t > now).sort((a, b) => a - b);
   
-  if (tutorialStep === 6) {
+  if (tutorialStep === 3) {
     // Inject fake timers for tutorial so the spotlight has a target and the tooltip looks populated
     validTimers = [now + 35000, now + 125000, now + 185000, now + 245000, now + 420000];
   }
@@ -151,6 +145,16 @@ const TimerDisplay = memo(({ targetMsArray, textSmall }: { targetMsArray: number
   );
 });
 
+const DistanceDisplay = memo(({ targetPos }: { targetPos: Vector2 | undefined }) => {
+  const playerPos = useTrackerStore((state) => state.playerPosition);
+  if (!targetPos || !playerPos) return <span>--</span>;
+  
+  const dx = playerPos.x - targetPos.x;
+  const dy = playerPos.y - targetPos.y;
+  const dist = Math.round(Math.sqrt(dx * dx + dy * dy));
+  
+  return <span>{dist}m</span>;
+});
 
 const getCategoryIcon = (categoryId: string | undefined, isCompact: boolean, isFav: boolean, toggleFav: () => void) => {
   if (!categoryId) return null;
@@ -159,7 +163,7 @@ const getCategoryIcon = (categoryId: string | undefined, isCompact: boolean, isF
   const fill = isFav ? "currentColor" : "none";
   const id = categoryId.toLowerCase();
 
-  const iconProps = { size: sz, className: cls, fill, onClick: (e: React.MouseEvent) => { e.stopPropagation(); toggleFav(); } };
+  const iconProps = { id: 'tutorial-bookmark', size: sz, className: cls, fill, onClick: (e: React.MouseEvent) => { e.stopPropagation(); toggleFav(); } };
 
   const parts = id.split('_');
   const cat = parts[parts.length - 1];
@@ -175,11 +179,12 @@ const getCategoryIcon = (categoryId: string | undefined, isCompact: boolean, isF
 // ── Single Data Row ────────────────────────────────────────────
 const DataRow = memo(({ row, categoryId }: { row: TableRowData, categoryId?: string }) => {
   // Single useShallow call instead of 4 separate subscriptions — 4x fewer listeners
-  const { toggleFavorite, isFav, density, tableSettings } = useTrackerStore(useShallow((state) => ({
+  const { toggleFavorite, isFav, density, tableSettings, tutorialStep } = useTrackerStore(useShallow((state) => ({
     toggleFavorite: state.toggleFavorite,
     isFav: state.favorites.includes(row.name),
     density: state.displayDensity,
     tableSettings: state.tableSettings,
+    tutorialStep: state.notificationSettings.tutorialStep,
   })));
 
   const alive = row.counts?.alive ?? 0;
@@ -212,18 +217,19 @@ const DataRow = memo(({ row, categoryId }: { row: TableRowData, categoryId?: str
       <div className="flex items-center gap-1.5 min-w-0">
         {getCategoryIcon(categoryId, isCompact, isFav, () => {
           if (!isFav) {
-            import('../../core/companion/BobCompanion').then(({ BobCompanion }) => BobCompanion.onAddFavorite(row.name));
+            BobCompanion.onAddFavorite(row.name);
           }
           toggleFavorite(row.name);
         })}
-        <span className={`truncate flex-1 min-w-0 ${getRarityColor(row.name)} ${isCompact ? '' : 'font-semibold drop-shadow-sm'}`} title={row.name}>
-          {row.name}
-        </span>
+        <Tooltip content={row.name}>
+          <span className={`truncate flex-1 min-w-0 ${getRarityColor(row.name)} ${isCompact ? '' : 'font-semibold drop-shadow-sm'}`}>
+            {row.name}
+          </span>
+        </Tooltip>
       </div>
       {tableSettings.showDistance && (
         <div className="text-right text-[var(--text-muted)]">
-          {/* Use pre-calculated throttled distance — NO per-row playerPosition subscription */}
-          {row.dist >= 0 ? `${row.dist}m` : '--'}
+          <DistanceDisplay targetPos={row.nearestPos} />
         </div>
       )}
       {tableSettings.showCount && (
@@ -234,8 +240,8 @@ const DataRow = memo(({ row, categoryId }: { row: TableRowData, categoryId?: str
         </div>
       )}
       {tableSettings.showTimer && (
-        hasTimer ? (
-          <TimerDisplay targetMsArray={row.respawnTimesMs!} textSmall={textSmall} />
+        (hasTimer || tutorialStep === 3) ? (
+          <TimerDisplay targetMsArray={row.respawnTimesMs || []} textSmall={textSmall} />
         ) : (
           <div className={`text-right ${textSmall} text-[var(--text-muted)]`}>--</div>
         )
@@ -257,7 +263,7 @@ const CategoryList: React.FC<{ data: TableRowData[]; collapsed: boolean; categor
 };
 
 // ── Category Section (vertical flat mode) ──────────────────────
-export const CategorySection: React.FC<{ categoryId: string; title: string; data: TableRowData[]; align?: 'left' | 'center' }> = ({ categoryId, title, data, align = 'center' }) => {
+export const CategorySection = memo(({ categoryId, title, data, align = 'center' }: { categoryId: string; title: string; data: TableRowData[]; align?: 'left' | 'center' }) => {
   const { toggleCategory, collapsed, density } = useTrackerStore(useShallow((state) => ({
     toggleCategory: state.toggleCategory,
     collapsed: state.collapsedCategories[categoryId],
@@ -272,22 +278,24 @@ export const CategorySection: React.FC<{ categoryId: string; title: string; data
   return (
     <div className="flex flex-col">
       {/* Category title — centered, collapsible */}
-      <button
-        onClick={() => toggleCategory(categoryId)}
-        title={`Toggle ${title}`}
-        className={`flex items-center ${align === 'left' ? 'justify-start pl-4 pr-4 mx-4' : 'justify-center mx-6'} gap-1 my-0.5 ${py} ${textSz} font-bold text-[var(--text-secondary)] uppercase tracking-[0.15em] select-none hover:text-white hover:bg-[var(--bg-hover)] transition-colors border border-[var(--border-subtle)] rounded-full bg-black/30 shadow-none font-[var(--font-heading)] min-w-0 overflow-hidden`}
-      >
-        <div className="shrink-0">{collapsed ? <ChevronRight size={10} strokeWidth={3} /> : <ChevronDown size={10} strokeWidth={3} />}</div>
-        <span className="truncate block whitespace-nowrap overflow-hidden text-ellipsis">{title}</span>
-      </button>
+      <Tooltip content={`Toggle ${title}`}>
+        <button
+          id={categoryId === 'npcs_alchemist' ? 'tutorial-alchemist-category' : undefined}
+          onClick={() => toggleCategory(categoryId)}
+          className={`flex items-center ${align === 'left' ? 'justify-start pl-4 pr-4 mx-4' : 'justify-center mx-6'} gap-1 my-0.5 ${py} ${textSz} font-bold text-[var(--text-secondary)] uppercase tracking-[0.15em] select-none hover:text-white hover:bg-[var(--bg-hover)] transition-colors border border-[var(--border-subtle)] rounded-full bg-black/30 shadow-none font-[var(--font-heading)] min-w-0 overflow-hidden`}
+        >
+          <div className="shrink-0">{collapsed ? <ChevronRight size={10} strokeWidth={3} /> : <ChevronDown size={10} strokeWidth={3} />}</div>
+          <span className="truncate block whitespace-nowrap overflow-hidden text-ellipsis">{title}</span>
+        </button>
+      </Tooltip>
 
       {!collapsed && <CategoryList data={data} collapsed={collapsed} categoryId={categoryId} />}
     </div>
   );
-};
+});
 
 // ── Category Card (horizontal card mode) ───────────────────────
-export const CategoryCard: React.FC<{ categoryId: string; title: string; data: TableRowData[]; showHeader?: boolean }> = ({ categoryId, title, data, showHeader = false }) => {
+export const CategoryCard = memo(({ categoryId, title, data, showHeader = false }: { categoryId: string; title: string; data: TableRowData[]; showHeader?: boolean }) => {
   const { toggleCategory, collapsed, density } = useTrackerStore(useShallow((state) => ({
     toggleCategory: state.toggleCategory,
     collapsed: state.collapsedCategories[categoryId],
@@ -301,16 +309,17 @@ export const CategoryCard: React.FC<{ categoryId: string; title: string; data: T
 
   return (
     <div className={`flex flex-col bg-[var(--bg-card)] rounded-lg overflow-hidden shrink-0 shadow-md border border-[var(--border-subtle)] w-fit min-w-fit h-fit max-h-full`}>
-      <button
-        onClick={() => toggleCategory(categoryId)}
-        title={`Toggle ${title}`}
-        className={`flex items-center justify-between px-2 ${py} bg-[var(--bg-base)] hover:bg-[var(--bg-panel)] transition-colors ${textSz} font-bold text-[var(--text-primary)] uppercase tracking-wider shrink-0 select-none border-b border-[var(--border-subtle)] font-[var(--font-heading)]`}
-      >
-        <div className="flex items-center gap-1">
-          {collapsed ? <ChevronRight size={12} strokeWidth={2.5} /> : <ChevronDown size={12} strokeWidth={2.5} />}
-          {title}
-        </div>
-      </button>
+      <Tooltip content={`Toggle ${title}`}>
+        <button
+          onClick={() => toggleCategory(categoryId)}
+          className={`flex items-center justify-between px-2 ${py} bg-[var(--bg-base)] hover:bg-[var(--bg-panel)] transition-colors ${textSz} font-bold text-[var(--text-primary)] uppercase tracking-wider shrink-0 select-none border-b border-[var(--border-subtle)] font-[var(--font-heading)]`}
+        >
+          <div className="flex items-center gap-1">
+            {collapsed ? <ChevronRight size={12} strokeWidth={2.5} /> : <ChevronDown size={12} strokeWidth={2.5} />}
+            {title}
+          </div>
+        </button>
+      </Tooltip>
 
       {!collapsed && (
         <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
@@ -322,7 +331,7 @@ export const CategoryCard: React.FC<{ categoryId: string; title: string; data: T
       )}
     </div>
   );
-};
+});
 
 // ── Legacy default export (keep backwards compat) ──────────────
 export const CategoryTable = CategoryCard;

@@ -6,13 +6,11 @@ import { TrackingView } from '../views/TrackingView';
 import { LootView } from '../views/LootView';
 
 import { NPCView } from '../views/NPCView';
-import { QuestView } from '../views/QuestView';
 import { SettingsView } from '../views/SettingsView';
 import { WeaponUI } from '../widgets/WeaponUI';
 import { ArmorUI } from '../widgets/ArmorUI';
 import { NotificationToaster } from '../widgets/NotificationToaster';
 import { BobOverlay } from '../widgets/BobOverlay';
-import { BobTutorialOverlay } from './BobTutorialOverlay';
 import { EfficiencyHUD } from '../widgets/EfficiencyHUD';
 import { DebugPanel } from '../widgets/DebugPanel';
 import { MinimizedOrb } from './MinimizedOrb';
@@ -20,14 +18,20 @@ import { PoppedOutWindowComponent } from './PoppedOutWindowComponent';
 import { ErrorBoundary } from '../widgets/ErrorBoundary';
 import { ChangelogModal } from '../ui/ChangelogModal';
 import { motion, useMotionValue, useDragControls } from 'motion/react';
-import { MinimalChestHUD } from '../views/MinimalChestHUD';
-import { BlackoutTutorial } from './BlackoutTutorial';
+import { MinimalChestHUD } from '../widgets/MinimalChestHUD';
+
+import { CompanionGuideOverlay } from './CompanionGuideOverlay';
+import { FocusHighlight } from './FocusHighlight';
+import { LifetimeStatsWindow } from './LifetimeStatsWindow';
+import { RunHistoryWindow } from './RunHistoryWindow';
+import { Profiler, ProfilerOnRenderCallback } from 'react';
+
 export const OverlayContainer: React.FC = () => {
   const {
     activeTab, isMinimized, layoutMode, poppedOutWindows,
     mergeTab, overlayPosition, setOverlayPosition,
     activeOpacity, idleOpacity, isUILocked, globalScale,
-    tabDimensions, theme, tutorialStep, tutorialCompleted, currentZone
+    tabDimensions, theme, tutorialStep, tutorialCompleted, currentZone, devForceOverlay
   } = useTrackerStore(useShallow((state) => ({
     activeTab: state.activeTab,
     isMinimized: state.isMinimized,
@@ -44,22 +48,27 @@ export const OverlayContainer: React.FC = () => {
     globalScale: state.globalScale,
     tutorialStep: state.notificationSettings.tutorialStep,
     tutorialCompleted: state.notificationSettings.tutorialCompleted,
-    currentZone: state.currentZone
+    currentZone: state.currentZone,
+    devForceOverlay: state.devForceOverlay
   })));
 
-  const isGameLoaded = !!currentZone && currentZone !== 'Unknown';
+  const isGameLoaded = devForceOverlay || (!!currentZone && currentZone !== 'Unknown');
   const [isOverlayReady, setIsOverlayReady] = React.useState(false);
 
   React.useEffect(() => {
     if (isGameLoaded) {
-      const timer = setTimeout(() => {
+      if (devForceOverlay) {
         setIsOverlayReady(true);
-      }, 10000); // 10 seconds delay
-      return () => clearTimeout(timer);
+      } else {
+        const timer = setTimeout(() => {
+          setIsOverlayReady(true);
+        }, 10000); // 10 seconds delay
+        return () => clearTimeout(timer);
+      }
     } else {
       setIsOverlayReady(false);
     }
-  }, [isGameLoaded]);
+  }, [isGameLoaded, devForceOverlay]);
 
   const [isHovered, setIsHovered] = React.useState(false);
   
@@ -159,8 +168,6 @@ export const OverlayContainer: React.FC = () => {
         case 'session': return <LootView />;
         case 'npcs':
           return <NPCView />;
-        case 'quests':
-          return <QuestView />;
         case 'settings': return <SettingsView />;
         default: return null;
       }
@@ -246,8 +253,18 @@ export const OverlayContainer: React.FC = () => {
     document.addEventListener('pointerup', onUp);
   };
 
+  const onRender: ProfilerOnRenderCallback = (_id, _phase, actualDuration) => {
+    const state = useTrackerStore.getState();
+    const currentAvg = state.profilerMetrics.renderTime.average;
+    const newAvg = currentAvg === 0 ? actualDuration : (currentAvg * 0.9) + (actualDuration * 0.1);
+    
+    state.profilerMetrics.renderTime.average = Number(newAvg.toFixed(3));
+    state.profilerMetrics.renderTime.lastRender = Number(actualDuration.toFixed(3));
+  };
+
   return (
-    <div ref={containerRef} className="fixed inset-0 pointer-events-none z-50 overflow-hidden text-[var(--text-primary)] font-[var(--font-body)]" data-theme={theme}>
+    <Profiler id="OverlayContainer" onRender={onRender}>
+      <div ref={containerRef} className="fixed inset-0 pointer-events-none z-50 overflow-hidden text-[var(--text-primary)] font-[var(--font-body)]" data-theme={theme}>
       <div 
         className={`w-full h-full transition-opacity duration-1000 ${(!isGameLoaded || !isOverlayReady) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
       >
@@ -314,7 +331,7 @@ export const OverlayContainer: React.FC = () => {
             <ErrorBoundary><EfficiencyHUD /></ErrorBoundary>
             <ErrorBoundary><DebugPanel /></ErrorBoundary>
             <ErrorBoundary><MinimalChestHUD /></ErrorBoundary>
-            <ErrorBoundary><BlackoutTutorial /></ErrorBoundary>
+            <ErrorBoundary><FocusHighlight /></ErrorBoundary>
             {(tutorialCompleted || tutorialStep > 0) && (
               <ErrorBoundary><BobOverlay constraintsRef={containerRef} /></ErrorBoundary>
             )}
@@ -323,8 +340,11 @@ export const OverlayContainer: React.FC = () => {
       </div>
       
       <ErrorBoundary><NotificationToaster /></ErrorBoundary>
-      <ErrorBoundary><BobTutorialOverlay /></ErrorBoundary>
+      <ErrorBoundary><CompanionGuideOverlay /></ErrorBoundary>
       <ErrorBoundary><ChangelogModal /></ErrorBoundary>
+      <ErrorBoundary><LifetimeStatsWindow /></ErrorBoundary>
+      <ErrorBoundary><RunHistoryWindow /></ErrorBoundary>
     </div>
+    </Profiler>
   );
 };

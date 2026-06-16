@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
 import { useShallow } from 'zustand/react/shallow';
 import { motion, useMotionValue } from 'motion/react';
-import { Shield, Shirt, Footprints, HardHat, Hand, Lock, Unlock } from 'lucide-react';
+import { Shield, Shirt, Footprints, HardHat, Hand } from 'lucide-react';
 
 export const ArmorUI: React.FC = () => {
   const { armor, settings, updateSettings } = useTrackerStore(useShallow((state) => ({
@@ -147,13 +147,7 @@ export const ArmorUI: React.FC = () => {
       }}
     >
       {/* Lock/Unlock Icon Overlay */}
-      <button 
-        onClick={() => updateSettings({ locked: !locked })}
-        className="absolute -top-6 right-0 p-1 pointer-events-auto text-[var(--text-muted)] opacity-30 hover:opacity-100 transition-opacity bg-black/40 rounded-full"
-        title={locked ? "Unlock Position" : "Lock Position"}
-      >
-        {locked ? <Lock size={12} /> : <Unlock size={12} />}
-      </button>
+      {/* Removed Lock/Unlock Icon Overlay */}
 
       {Object.entries(displayArmor).map(([slot, item]: [string, any]) => {
         if (!item) return null;
@@ -163,54 +157,63 @@ export const ArmorUI: React.FC = () => {
         let textColor = 'text-emerald-400 drop-shadow-[0_0_4px_rgba(16,185,129,0.5)]';
         let borderColor = 'border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]';
         
-        if (percentage <= 20) {
+        if (percentage <= 11) {
           color = 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]';
           textColor = 'text-red-400 drop-shadow-[0_0_4px_rgba(239,68,68,0.5)]';
           borderColor = 'border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]';
-        } else if (percentage <= 40) {
+        } else if (percentage <= 50) {
           color = 'bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.3)]';
           textColor = 'text-orange-400 drop-shadow-[0_0_4px_rgba(249,115,22,0.5)]';
           borderColor = 'border-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.3)]';
-        } else if (percentage <= 75) {
-          color = 'bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]';
-          textColor = 'text-yellow-400 drop-shadow-[0_0_4px_rgba(250,204,21,0.5)]';
-          borderColor = 'border-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]';
         }
 
         const pctStr = `${Math.round(percentage)}%`;
         const durStr = `${item.durability} / ${item.maxDurability}`;
+        const isBarVertical = layout === 'horizontal';
         const borderColorClass = dynamicBorderColor ? borderColor : 'border-white/20';
 
         return (
-          <div key={slot} className={`relative flex items-center justify-center overflow-hidden ${!isDraggable && borderWidth > 0 ? `border-solid ${borderColorClass}` : ''}`} style={{ width: hasBar ? `${width}px` : 'max-content', height: hasText ? `${Math.max(20, height + 12)}px` : `${height}px`, borderRadius: `${borderRadius}px`, borderWidth: borderWidth > 0 && !isDraggable ? `${borderWidth}px` : undefined, borderColor: borderWidth > 0 && !isDraggable ? undefined : (hasText ? 'rgba(255,255,255,0.05)' : 'transparent'), padding: !hasBar ? '0px 8px' : '0px' }}>
+          <div key={slot} className={`relative flex items-center justify-center overflow-hidden ${!isDraggable && borderWidth > 0 ? `border-solid ${borderColorClass}` : ''}`} 
+            style={{ 
+              width: isBarVertical ? 'max-content' : (hasBar ? `${width}px` : 'max-content'), 
+              height: isBarVertical ? (hasBar ? `${width}px` : 'max-content') : (hasText ? `${Math.max(20, height + 12)}px` : `${height}px`), 
+              minWidth: isBarVertical ? (hasBar ? `${height}px` : undefined) : undefined,
+              borderRadius: `${borderRadius}px`, 
+              borderWidth: borderWidth > 0 && !isDraggable ? `${borderWidth}px` : undefined, 
+              borderColor: borderWidth > 0 && !isDraggable ? undefined : (hasText ? 'rgba(255,255,255,0.05)' : 'transparent'), 
+              padding: !hasBar ? (isBarVertical ? '10px 4px' : '0px 8px') : '0px',
+              flexDirection: isBarVertical ? 'column' : 'row'
+            }}>
             {/* Background Health Bar */}
             {hasBar && (
               <div 
-                className={`absolute left-0 top-0 bottom-0 w-full ${!hasText ? 'bg-black/40 border border-white/5' : 'bg-black/20'}`} 
+                className={`absolute ${!isBarVertical ? 'left-0 top-0 bottom-0 w-full' : 'bottom-0 left-0 right-0 h-full flex items-end'} ${!hasText ? 'bg-black/40 border border-white/5' : 'bg-black/20'}`} 
                 style={{ borderRadius: borderRadius }}
               >
                 <motion.div 
-                  className={`h-full ${color} ${hasText ? 'opacity-80' : ''}`}
+                  className={`absolute ${!isBarVertical ? 'left-0 top-0 bottom-0 h-full' : 'bottom-0 left-0 right-0 w-full'} ${color} ${hasText ? 'opacity-80' : ''}`}
                   initial={false}
-                  animate={{ width: `${percentage}%` }}
+                  animate={!isBarVertical ? { width: `${percentage}%` } : { height: `${percentage}%` }}
                   transition={{ duration: enableAnimations ? 0.3 : 0 }}
                   style={{ borderRadius: borderRadius }}
                 />
               </div>
             )}
 
-            {/* Foreground Text */}
-            {hasText && (
-              <div className="relative z-10 w-full px-2 flex items-center justify-between gap-2 drop-shadow-md">
-                <div className={`flex items-center gap-1.5 ${textColor}`}>
-                  {getIcon(slot)}
-                </div>
-                  <span className={`font-mono font-black text-[10px] text-white tracking-wide drop-shadow-[0_2px_2px_rgba(0,0,0,1)] text-right w-full`}>
-                  {showPct && pctStr}
-                  {showDur && durStr}
-                </span>
+            {/* Foreground Text/Icon */}
+            <div className={`relative z-10 flex ${isBarVertical ? 'flex-col justify-between py-2' : 'flex-row px-2'} items-center ${isBarVertical ? 'gap-1' : 'gap-2'} justify-between w-full h-full`}>
+              <div className={`flex items-center justify-center drop-shadow-md ${textColor}`}>
+                {getIcon(slot)}
               </div>
-            )}
+              
+              {hasText && (
+                <div className={`flex ${isBarVertical ? 'flex-col items-center' : 'items-baseline gap-1 w-full justify-end'} font-mono font-black tracking-wider`}>
+                  {showPct && <span className={`text-[10px] ${textColor}`}>{pctStr}</span>}
+                  {showPct && showDur && !isBarVertical && <span className="text-[8px] text-white/30 font-sans px-1">-</span>}
+                  {showDur && <span className={`text-[9px] ${textColor} opacity-80`}>{durStr}</span>}
+                </div>
+              )}
+            </div>
           </div>
         );
       })}

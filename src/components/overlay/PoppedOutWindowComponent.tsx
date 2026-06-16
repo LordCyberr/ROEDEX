@@ -6,7 +6,7 @@ import { TrackingView } from '../views/TrackingView';
 import { LootView } from '../views/LootView';
 import { NPCView } from '../views/NPCView';
 import { SettingsView } from '../views/SettingsView';
-import { QuestView } from '../views/QuestView';
+import { Tooltip } from '../ui/Tooltip';
 import { Globe2, Star, PackageOpen, Users, Settings, Minus, X, RefreshCw, ScrollText, Lock, Unlock, User, Activity } from 'lucide-react';
 
 const tabsConfig = [
@@ -60,6 +60,72 @@ export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow }>(
   const tabConfig = tabsConfig.find(t => t.id === id);
   const Icon = tabConfig?.icon || Globe2;
   const label = tabConfig?.label || 'Tab';
+  const handleResizeDown = (e: React.PointerEvent, dir: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const startX = e.clientX;
+    const startY = e.clientY;
+    
+    const rect = windowRef.current?.getBoundingClientRect();
+    const startW = rect?.width || (typeof windowWidth.get() === 'number' ? windowWidth.get() as number : (typeof defaultWidth === 'number' ? defaultWidth : 600));
+    const startH = rect?.height || (typeof windowHeight.get() === 'number' ? windowHeight.get() as number : (typeof defaultHeight === 'number' ? defaultHeight : 350));
+
+    const startOverlayX = motionX.get();
+    const startOverlayY = motionY.get();
+
+    const minW = isHorizontal ? 400 : 200;
+    const minH = isHorizontal ? 150 : 200;
+
+    const onMove = (me: PointerEvent) => {
+      let newW = startW;
+      let newH = startH;
+      let newX = startOverlayX;
+      let newY = startOverlayY;
+      
+      if (dir.includes('e')) {
+        newW = Math.max(minW, startW + (me.clientX - startX));
+      } else if (dir.includes('w')) {
+        newW = Math.max(minW, startW - (me.clientX - startX));
+        newX = startOverlayX + (startW - newW);
+      }
+      
+      if (dir.includes('s')) {
+        newH = Math.max(minH, startH + (me.clientY - startY));
+      } else if (dir.includes('n')) {
+        newH = Math.max(minH, startH - (me.clientY - startY));
+        newY = startOverlayY + (startH - newH);
+      }
+      
+      if (dir.includes('e') || dir.includes('w')) {
+        windowWidth.set(newW);
+      }
+      
+      if (dir.includes('s') || dir.includes('n')) {
+        if (isHorizontal) {
+          windowHeight.set(newH);
+        }
+      }
+
+      if (dir.includes('w')) motionX.set(newX);
+      if (dir.includes('n')) motionY.set(newY);
+    };
+
+    const onUp = () => {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      const w = windowWidth.get();
+      const h = windowHeight.get();
+      updatePoppedOutWindow(id, { 
+        width: typeof w === 'number' ? w : undefined, 
+        height: typeof h === 'number' ? h : undefined,
+        x: motionX.get(),
+        y: motionY.get()
+      });
+    };
+
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  };
 
   const renderContent = () => {
     switch (id) {
@@ -71,7 +137,6 @@ export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow }>(
       case 'session_session': return <LootView forcedTab="session" hideNavigation={true} />;
       case 'session_chest': return <LootView forcedTab="chest" hideNavigation={true} />;
       case 'npcs': return <NPCView />;
-      case 'quests': return <QuestView />;
       case 'settings': return <SettingsView />;
       default: return null;
     }
@@ -108,7 +173,7 @@ export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow }>(
       >
         <button
           onDoubleClick={() => updatePoppedOutWindow(id, { isMinimized: false })}
-          className="w-12 h-12 bg-black/90 border-2 border-[var(--border-accent)] rounded-full flex items-center justify-center text-[var(--text-primary)] shadow-[0_0_20px_rgba(0,0,0,0.8)] hover:scale-110 hover:shadow-[0_0_25px_var(--border-accent)] transition-all cursor-pointer relative overflow-hidden"
+          className="w-12 h-12 bg-black/90 border-2 border-[var(--border-accent)] rounded-full flex items-center justify-center text-[var(--text-primary)] shadow-[0_0_20px_rgba(0,0,0,0.8)] hover:scale-110 hover:shadow-[0_0_25px_var(--border-accent)] transition-all cursor-pointer relative overflow-hidden pointer-events-auto"
         >
           <div className="absolute inset-0 bg-gradient-to-tr from-[var(--border-accent)]/20 to-transparent pointer-events-none" />
           <Icon size={24} className="relative z-10" />
@@ -152,7 +217,7 @@ export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow }>(
         absolute top-0 left-0 ${effectiveLock ? 'pointer-events-none' : 'pointer-events-auto'} z-50 
         shadow-[0_12px_40px_rgba(0,0,0,0.9)] border-[var(--border-accent)] 
         flex transition-opacity duration-300 rounded-xl border
-        bg-[var(--bg-base)]/95 flex-col min-h-[150px] min-w-[220px]
+        bg-[var(--bg-base)]/95 flex-col min-h-[150px] min-w-[220px] max-h-[85vh]
         opacity-[var(--idle-opacity)] hover:opacity-[var(--active-opacity)]
         overflow-hidden
         ${effectiveLock ? 'ring-1 ring-amber-500/30' : ''}
@@ -172,24 +237,26 @@ export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow }>(
         </div>
 
         <div className="flex items-center gap-1">
-          <button
-            onClick={() => {
-              windowWidth.set(defaultWidth);
-              windowHeight.set('auto');
-              updatePoppedOutWindow(id, { width: defaultWidth === 'auto' ? undefined : defaultWidth, height: undefined });
-            }}
-            title="Reset Size"
-            className="p-1 rounded hover:bg-white/10 text-[var(--text-muted)] hover:text-white transition-colors"
-          >
-            <RefreshCw size={12} />
-          </button>
-          <button
-            onClick={() => updatePoppedOutWindow(id, { isLocked: !effectiveLock })}
-            title={effectiveLock ? "Unlock Window" : "Lock Window"}
-            className={`p-1 rounded transition-colors ${effectiveLock ? 'text-amber-400 hover:text-amber-300' : 'text-[var(--text-muted)] hover:text-white hover:bg-white/10'}`}
-          >
-            {effectiveLock ? <Lock size={12} /> : <Unlock size={12} />}
-          </button>
+          <Tooltip content="Reset Size">
+            <button
+              onClick={() => {
+                windowWidth.set(defaultWidth);
+                windowHeight.set('auto');
+                updatePoppedOutWindow(id, { width: defaultWidth === 'auto' ? undefined : defaultWidth, height: undefined });
+              }}
+              className="p-1 rounded hover:bg-white/10 text-[var(--text-muted)] hover:text-white transition-colors"
+            >
+              <RefreshCw size={12} />
+            </button>
+          </Tooltip>
+          <Tooltip content={effectiveLock ? "Unlock Window" : "Lock Window"}>
+            <button
+              onClick={() => updatePoppedOutWindow(id, { isLocked: !effectiveLock })}
+              className={`p-1 rounded transition-colors ${effectiveLock ? 'text-amber-400 hover:text-amber-300' : 'text-[var(--text-muted)] hover:text-white hover:bg-white/10'}`}
+            >
+              {effectiveLock ? <Lock size={12} /> : <Unlock size={12} />}
+            </button>
+          </Tooltip>
           <button
             onClick={() => updatePoppedOutWindow(id, { isMinimized: true })}
             className="p-1 rounded hover:bg-white/10 text-[var(--text-muted)] hover:text-white transition-colors"
@@ -209,47 +276,18 @@ export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow }>(
         {renderContent()}
       </div>
 
-      {/* Custom Resize Handle */}
+      {/* Custom Resize Handles */}
       {!effectiveLock && (
-        <div
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            const startX = e.clientX;
-            const startY = e.clientY;
-            
-            // If the value was 'auto', we need to read the actual computed pixel size to start resizing
-            const rect = windowRef.current?.getBoundingClientRect();
-            const startW = rect?.width || (typeof windowWidth.get() === 'number' ? windowWidth.get() as number : (typeof defaultWidth === 'number' ? defaultWidth : 600));
-            const startH = rect?.height || (typeof windowHeight.get() === 'number' ? windowHeight.get() as number : (typeof defaultHeight === 'number' ? defaultHeight : 350));
-
-            const onMove = (me: PointerEvent) => {
-              windowWidth.set(Math.max(200, startW + (me.clientX - startX)));
-              windowHeight.set(Math.max(150, startH + (me.clientY - startY)));
-            };
-
-            const onUp = () => {
-              document.removeEventListener('pointermove', onMove);
-              document.removeEventListener('pointerup', onUp);
-              const w = windowWidth.get();
-              const h = windowHeight.get();
-              updatePoppedOutWindow(id, { 
-                width: typeof w === 'number' ? w : undefined, 
-                height: typeof h === 'number' ? h : undefined 
-              });
-            };
-
-            document.addEventListener('pointermove', onMove);
-            document.addEventListener('pointerup', onUp);
-          }}
-          className="absolute bottom-0 right-0 w-5 h-5 cursor-se-resize flex items-center justify-center opacity-30 hover:opacity-70 transition-opacity pointer-events-auto"
-        >
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor" className="text-[var(--text-muted)]">
-            <circle cx="8" cy="8" r="1.2" />
-            <circle cx="5" cy="8" r="1.2" />
-            <circle cx="8" cy="5" r="1.2" />
-          </svg>
-        </div>
+        <>
+          <div onPointerDown={(e) => handleResizeDown(e, 'n')} className="absolute top-0 left-4 right-4 h-1.5 cursor-n-resize z-[100]" />
+          <div onPointerDown={(e) => handleResizeDown(e, 's')} className="absolute bottom-0 left-4 right-4 h-2 cursor-s-resize z-[100]" />
+          <div onPointerDown={(e) => handleResizeDown(e, 'w')} className="absolute top-4 bottom-4 left-0 w-1.5 cursor-w-resize z-[100]" />
+          <div onPointerDown={(e) => handleResizeDown(e, 'e')} className="absolute top-4 bottom-4 right-0 w-2 cursor-e-resize z-[100]" />
+          <div onPointerDown={(e) => handleResizeDown(e, 'nw')} className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize z-[100]" />
+          <div onPointerDown={(e) => handleResizeDown(e, 'ne')} className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize z-[100]" />
+          <div onPointerDown={(e) => handleResizeDown(e, 'sw')} className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize z-[100]" />
+          <div onPointerDown={(e) => handleResizeDown(e, 'se')} className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize z-[100]" />
+        </>
       )}
     </motion.div>
   );

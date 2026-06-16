@@ -2,9 +2,14 @@ import { StateCreator } from 'zustand';
 import { TrackerState, PlayerSlice, ArmorSlot, ArmorItem } from '../storeTypes';
 import { Vector2, WeaponState } from '../../types/events';
 
+let lastPositionUpdateTime = 0;
+
 export const createPlayerSlice: StateCreator<TrackerState, [], [], PlayerSlice> = (set) => ({
   connected: false,
   setConnected: (status: boolean) => set({ connected: status }),
+  
+  sessionPlayerName: null,
+  setSessionPlayerName: (name: string) => set({ sessionPlayerName: name }),
   
   playerProfile: {
     level: 1,
@@ -20,9 +25,11 @@ export const createPlayerSlice: StateCreator<TrackerState, [], [], PlayerSlice> 
     mobsKilled: {},
     oresMined: {},
     treesCut: {},
-    plantsHarvested: {}
+    plantsHarvested: {},
+    itemsLooted: {}
   },
-  incrementLifetimeStat: (category: 'mobsKilled' | 'oresMined' | 'treesCut' | 'plantsHarvested', id: string, amount = 1) => set((state) => {
+  setLifetimeStats: (stats) => set({ lifetimeStats: stats }),
+  incrementLifetimeStat: (category: 'mobsKilled' | 'oresMined' | 'treesCut' | 'plantsHarvested' | 'itemsLooted', id: string, amount = 1) => set((state) => {
     const currentStats = state.lifetimeStats[category];
     return {
       lifetimeStats: {
@@ -41,6 +48,11 @@ export const createPlayerSlice: StateCreator<TrackerState, [], [], PlayerSlice> 
   playerPosition: null,
   throttledPlayerPosition: null,
   setPlayerPosition: (pos: Vector2) => set((state) => {
+    const now = Date.now();
+    if (now - lastPositionUpdateTime < 100) {
+      return state; // Skip — too soon
+    }
+    lastPositionUpdateTime = now;
     if (!state.throttledPlayerPosition) {
       return { playerPosition: pos, throttledPlayerPosition: pos };
     }
@@ -79,9 +91,6 @@ export const createPlayerSlice: StateCreator<TrackerState, [], [], PlayerSlice> 
 
   packetCounts: {},
   incrementPacketCount: (type: string) => set((state) => ({
-    packetCounts: {
-      ...state.packetCounts,
-      [type]: (state.packetCounts[type] || 0) + 1
-    }
-  }))
+    packetCounts: { ...state.packetCounts, [type]: (state.packetCounts[type] || 0) + 1 }
+  })),
 });

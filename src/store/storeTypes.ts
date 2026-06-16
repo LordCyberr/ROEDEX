@@ -61,6 +61,20 @@ export interface UISlice {
   toggleDebugPanel: () => void;
   debugStats: { pps: number };
   updateDebugStats: (pps: number) => void;
+  
+  firstTimeWizardCompleted: boolean;
+  setFirstTimeWizardCompleted: (completed: boolean) => void;
+  isLifetimeStatsOpen: boolean;
+  setIsLifetimeStatsOpen: (open: boolean) => void;
+  isRunHistoryOpen: boolean;
+  setIsRunHistoryOpen: (open: boolean) => void;
+
+  profilerMetrics: {
+    parseTime: { average: number; max: number; lastSpike: number; totalEvents: number };
+    renderTime: { average: number; lastRender: number };
+    memory: { enemiesCount: number; resourcesCount: number; poppedOutWindows: number; lastUpdate: number };
+  };
+  updateProfilerMetrics: (updates: any) => void;
 
   activeCompanion: import('../data/companions').CompanionId;
   setActiveCompanion: (companion: import('../data/companions').CompanionId) => void;
@@ -181,6 +195,8 @@ export interface UISlice {
     bobVoiceStyle?: 'wave' | 'eq' | 'pulse';
     v4PositionMigrated?: boolean;
     v5PositionMigrated?: boolean;
+    v10PositionsMigrated?: boolean;
+    v11PositionsMigrated?: boolean;
     v6ToastMigrated?: boolean;
     
     // Tutorial & Mood State
@@ -260,11 +276,15 @@ export interface UISlice {
   favorites: string[];
   toggleFavorite: (id: string) => void;
   theme: string;
-  setTheme: (theme: string) => void;
+  setTheme: (t: string) => void;
   minimizedIcon: 'pulse' | 'lightning' | 'sword' | 'pickaxe' | 'shield' | 'roedex' | 'rx' | 'custom';
   minimizedIconUrl?: string;
   setMinimizedIconUrl: (url: string) => void;
   setMinimizedIcon: (icon: 'pulse' | 'lightning' | 'sword' | 'pickaxe' | 'shield' | 'roedex' | 'rx' | 'custom') => void;
+
+  // Developer Force Overlay
+  devForceOverlay: boolean;
+  setDevForceOverlay: (force: boolean) => void;
 
   notifications: OverlayNotification[];
   addNotification: (notification: Omit<OverlayNotification, 'id' | 'timestamp'>) => void;
@@ -330,6 +350,9 @@ export interface PlayerSlice {
   // Connection state
   connected: boolean;
   setConnected: (status: boolean) => void;
+  
+  sessionPlayerName: string | null;
+  setSessionPlayerName: (name: string) => void;
   // Quests
   quests: Quest[];
   setQuests: (quests: Quest[]) => void;
@@ -347,8 +370,16 @@ export interface PlayerSlice {
     oresMined: Record<string, number>;
     treesCut: Record<string, number>;
     plantsHarvested: Record<string, number>;
+    itemsLooted: Record<string, number>;
   };
-  incrementLifetimeStat: (category: 'mobsKilled' | 'oresMined' | 'treesCut' | 'plantsHarvested', id: string, amount?: number) => void;
+  setLifetimeStats: (stats: {
+    mobsKilled: Record<string, number>;
+    oresMined: Record<string, number>;
+    treesCut: Record<string, number>;
+    plantsHarvested: Record<string, number>;
+    itemsLooted: Record<string, number>;
+  }) => void;
+  incrementLifetimeStat: (category: 'mobsKilled' | 'oresMined' | 'treesCut' | 'plantsHarvested' | 'itemsLooted', id: string, amount?: number) => void;
 
   playerPosition: Vector2 | null;
   throttledPlayerPosition: Vector2 | null;

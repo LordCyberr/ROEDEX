@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
 import { useShallow } from 'zustand/react/shallow';
-import { Minus, Maximize2, PanelLeft, PanelTop, Globe2, Star, PackageOpen, Settings, Users, ExternalLink, RefreshCw, ScrollText, Lock, Unlock, ArrowDownLeft } from 'lucide-react';
+import { Minus, Maximize2, PanelLeft, PanelTop, Globe2, Star, PackageOpen, Settings, Users, ExternalLink, RefreshCw, ArrowDownLeft, Lock, Unlock } from 'lucide-react';
 import { Tooltip } from '../ui/Tooltip';
 
 import { useTranslation } from '../../hooks/useTranslation';
@@ -21,6 +21,10 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
     mergeAllTabs,
     tabDimensions, setTabDimensions,
     tutorialStep,
+    tutorialCompleted,
+    seenTabs,
+    updateNotificationSettings,
+    addBobMessage,
   } = useTrackerStore(useShallow((state) => ({
     isMinimized: state.isMinimized,
     setIsMinimized: state.setIsMinimized,
@@ -36,14 +40,38 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
     tabDimensions: state.tabDimensions,
     setTabDimensions: state.setTabDimensions,
     tutorialStep: state.notificationSettings.tutorialStep,
+    tutorialCompleted: state.notificationSettings.tutorialCompleted,
+    seenTabs: state.notificationSettings.seenTabs || {},
+    updateNotificationSettings: state.updateNotificationSettings,
+    addBobMessage: state.addBobMessage,
   })));
+
+  const handleTabHover = (tabId: string) => {
+    if (!tutorialCompleted) return; // Only show tooltips AFTER tutorial
+    if (!seenTabs[tabId]) {
+      updateNotificationSettings({ seenTabs: { ...seenTabs, [tabId]: true } });
+      let text = '';
+      if (tabId === 'global') text = "This is the Global Tab. It tracks every mob, resource, and item across the entire current zone.";
+      if (tabId === 'favorites') text = "Your Favorites Tab. Any item you bookmark with the star icon will appear here for easy tracking.";
+      if (tabId === 'session') text = "The Session Tab tracks your current farming run, including gold per hour, XP, and items gathered.";
+      if (tabId === 'npcs') text = "The NPC Tab shows the locations of all vendors, quest givers, and important characters.";
+      if (tabId === 'settings') text = "The Settings Tab. Customize my appearance, notifications, and tweak how data is displayed.";
+      
+      if (text) {
+        addBobMessage({
+          title: "Tab Info",
+          message: text,
+          type: 'info'
+        });
+      }
+    }
+  };
 
   const tabs = [
     { id: 'global', icon: Globe2, label: t('tabs.global') },
     { id: 'favorites', icon: Star, label: t('tabs.favorites') },
     { id: 'session', icon: PackageOpen, label: t('tabs.session') },
     { id: 'npcs', icon: Users, label: t('tabs.npcs') },
-    { id: 'quests', icon: ScrollText, label: t('tabs.quests') },
     { id: 'settings', icon: Settings, label: t('tabs.settings') }
   ] as const;
 
@@ -71,6 +99,7 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
                 <button
                   id={`tutorial-${tab.id}-tab`}
                   onClick={() => setActiveTab(tab.id as any)}
+                  onMouseEnter={() => handleTabHover(tab.id)}
                   className={`group relative transition-all duration-200 flex items-center justify-center shrink-0 p-1 rounded-lg ${
                     activeTab === tab.id 
                       ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] shadow-[0_0_8px_rgba(0,0,0,0)] shadow-[var(--accent-primary)]/10 ring-1 ring-inset ring-[var(--accent-primary)]/50' 
@@ -106,7 +135,7 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
                 </button>
               </Tooltip>
             )}
-            {(Object.keys(poppedOutWindows).length > 0 || tutorialStep === 5) && (
+            {(Object.keys(poppedOutWindows).length > 0 || tutorialStep === 11) && (
               <Tooltip content="Merge All Popped-Out Tabs">
                 <button 
                   id="tutorial-merge-btn"
@@ -117,23 +146,23 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
                 </button>
               </Tooltip>
             )}
-            <Tooltip content={isUILocked ? "Unlock UI" : "Lock UI (Click-Through Mode)"}>
-              <button 
-                id="tutorial-lock-btn"
-                onClick={() => setIsUILocked(!isUILocked)}
-                className={`group relative rounded-full transition-all duration-200 flex items-center justify-center p-1 ${
-                  isUILocked ? 'text-rose-400 hover:bg-rose-500/20 hover:text-rose-300' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-primary)]/20'
-                }`}
-              >
-                {isUILocked ? <Lock size={12} /> : <Unlock size={12} />}
-              </button>
-            </Tooltip>
+
             <Tooltip content={t('misc.toggleLayout')}>
               <button 
+                id="tutorial-layout-toggle"
                 onClick={() => setLayoutMode('vertical')}
                 className="group relative rounded-full text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-primary)]/20 transition-all duration-200 flex items-center justify-center p-1"
               >
                 <PanelLeft size={12} />
+              </button>
+            </Tooltip>
+            <Tooltip content={isUILocked ? "Unlock UI" : "Lock UI"}>
+              <button 
+                id="tutorial-lock-btn"
+                onClick={() => setIsUILocked(!isUILocked)}
+                className={`group relative rounded-full transition-all duration-200 flex items-center justify-center p-1 ${isUILocked ? 'text-amber-400 hover:text-amber-300' : 'text-[var(--text-muted)] hover:text-white hover:bg-white/10'}`}
+              >
+                {isUILocked ? <Lock size={12} /> : <Unlock size={12} />}
               </button>
             </Tooltip>
             <Tooltip content={isMinimized ? t('misc.maximize') : t('misc.minimize')}>
@@ -149,15 +178,16 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
         </>
       ) : (
         /* Vertical Mode - Single Unified Block of Icons with Partition */
-        <div className="flex w-full items-center justify-between gap-1 px-1">
+          <div className="flex w-full items-center justify-between gap-1 px-1 relative">
           {/* Vertical Tabs Section */}
-          <div className="grid grid-cols-3 grid-rows-2 justify-items-center gap-1 flex-1 min-w-0">
+          <div className="grid grid-cols-3 grid-rows-2 gap-1">
             {tabs.map(tab => (
               <Tooltip key={tab.id} content={tab.label}>
                 <button
                   id={`tutorial-${tab.id}-tab`}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`group relative transition-all duration-200 flex items-center justify-center shrink-0 p-1 rounded-lg w-full max-w-[28px] ${
+                  onMouseEnter={() => handleTabHover(tab.id)}
+                  className={`group relative transition-all duration-200 flex items-center justify-center p-1 rounded-md ${
                     activeTab === tab.id 
                       ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] shadow-[0_0_8px_rgba(0,0,0,0)] shadow-[var(--accent-primary)]/10 ring-1 ring-[var(--accent-primary)]/50' 
                       : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5'
@@ -169,28 +199,30 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
             ))}
           </div>
 
+
+
           {/* Partition */}
           <div className="w-[1px] h-6 bg-[var(--border-subtle)]/70 shrink-0 mx-1" />
 
           {/* Vertical Utilities Section */}
-          <div className="grid grid-cols-3 grid-rows-2 justify-items-center gap-1 flex-1 min-w-0">
+          <div className="grid grid-cols-3 grid-rows-2 gap-1">
             {!poppedOutWindows[activeTab] && (
               <Tooltip content={t('misc.popOutTab')}>
                 <button 
                   id="tutorial-popout-btn"
                   onClick={(e) => popOutTab(activeTab, e.clientX + 20, e.clientY + 20)}
-                  className="group relative rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-primary)]/20 transition-all duration-200 flex items-center justify-center p-1 w-full max-w-[28px]"
+                  className="col-start-1 row-start-1 group relative rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-primary)]/20 transition-all duration-200 flex items-center justify-center p-1"
                 >
                   <ExternalLink size={13} />
                 </button>
               </Tooltip>
             )}
-            {(Object.keys(poppedOutWindows).length > 0 || tutorialStep === 5) && (
+            {(Object.keys(poppedOutWindows).length > 0 || tutorialStep === 11) && (
               <Tooltip content="Merge All Popped-Out Tabs">
                 <button 
                   id="tutorial-merge-btn"
                   onClick={() => mergeAllTabs()}
-                  className="group relative rounded-lg text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 transition-all duration-200 flex items-center justify-center p-1 w-full max-w-[28px]"
+                  className="col-start-1 row-start-2 group relative rounded-md text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 transition-all duration-200 flex items-center justify-center p-1"
                 >
                   <ArrowDownLeft size={13} />
                 </button>
@@ -199,10 +231,30 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
 
             <Tooltip content={t('misc.toggleLayout')}>
               <button 
+                id="tutorial-layout-toggle"
                 onClick={() => setLayoutMode('horizontal')}
-                className="group relative rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5 transition-all duration-200 flex items-center justify-center p-1 w-full max-w-[28px]"
+                className="col-start-2 row-start-1 group relative rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5 transition-all duration-200 flex items-center justify-center p-1"
               >
                 <PanelTop size={14} />
+              </button>
+            </Tooltip>
+
+            <Tooltip content={isUILocked ? "Unlock UI" : "Lock UI"}>
+              <button 
+                id="tutorial-lock-btn"
+                onClick={() => setIsUILocked(!isUILocked)}
+                className={`col-start-3 row-start-2 group relative rounded-md transition-all duration-200 flex items-center justify-center p-1 ${isUILocked ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5'}`}
+              >
+                {isUILocked ? <Lock size={14} /> : <Unlock size={14} />}
+              </button>
+            </Tooltip>
+
+            <Tooltip content={t('misc.resetAutoSize')}>
+              <button 
+                onClick={() => setTabDimensions(activeDimKey, undefined, undefined)}
+                className={`col-start-2 row-start-2 group relative rounded-md ${hasCustomDimensions ? 'text-amber-500/70 hover:text-amber-400 hover:bg-amber-500/10' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5'} transition-all duration-200 flex items-center justify-center p-1`}
+              >
+                <RefreshCw size={13} />
               </button>
             </Tooltip>
 
@@ -210,30 +262,13 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
               <button 
                 id="tutorial-minimize-btn"
                 onClick={() => setIsMinimized(!isMinimized)}
-                className="group relative rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5 transition-all duration-200 flex items-center justify-center p-1 w-full max-w-[28px]"
+                className="col-start-3 row-start-1 group relative rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5 transition-all duration-200 flex items-center justify-center p-1"
               >
                 {isMinimized ? <Maximize2 size={14} /> : <Minus size={14} />}
               </button>
             </Tooltip>
 
-            <Tooltip content={t('misc.resetAutoSize')}>
-              <button 
-                onClick={() => setTabDimensions(activeDimKey, undefined, undefined)}
-                className={`group relative rounded-lg ${hasCustomDimensions ? 'text-amber-500/70 hover:text-amber-400 hover:bg-amber-500/10' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5'} transition-all duration-200 flex items-center justify-center p-1 w-full max-w-[28px]`}
-              >
-                <RefreshCw size={13} />
-              </button>
-            </Tooltip>
 
-            <Tooltip content={isUILocked ? "Unlock UI" : "Lock UI (Click-Through Mode)"}>
-              <button 
-                id="tutorial-lock-btn"
-                onClick={() => setIsUILocked(!isUILocked)}
-                className={`group relative rounded-lg transition-all duration-200 flex items-center justify-center p-1 w-full max-w-[28px] ${isUILocked ? 'text-red-400 hover:text-red-300 bg-red-500/10' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5'}`}
-              >
-                {isUILocked ? <Lock size={14} /> : <Unlock size={14} />}
-              </button>
-            </Tooltip>
           </div>
         </div>
       )}

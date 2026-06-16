@@ -249,6 +249,13 @@ export const bobTranslations = {
       "Friendly NPCs everywhere.",
       "Good place to rest and spend Runes."
     ],
+    zoneHome: [
+      "Ah, finally, home sweet home.",
+      "Safe from the Abstract Chain... for now.",
+      "A good place to rest.",
+      "Home! Time to drop off the loot.",
+      "Feels good to be back indoors."
+    ],
     funny: [
       "I once tried analyzing a boss pattern. It just hit me anyway.",
       "I still don't know why we need so much wood. Ask Ruyui.",
@@ -296,6 +303,7 @@ export const bobTranslations = {
     zoneForest: ["El bosque se siente vivo.", "Vigila tu entorno.", "¡Aire fresco!", "Buen lugar para recolectar.", "Los árboles parecen amigables.", "Muchos recursos cerca.", "Me gusta este lugar.", "El bosque está tranquilo hoy."],
     zoneCave: ["Está más oscuro aquí abajo.", "Escucho algo moverse.", "Mantente alerta.", "Lugar perfecto para minar.", "La cueva nunca duerme.", "Mantén los ojos abiertos.", "Algo se siente diferente.", "Cuidado donde pisas."],
     zoneTown: ["¡Civilización!", "Hora de relajarse.", "El pueblo se siente ocupado hoy.", "Un lugar seguro al fin.", "Tal vez alguien venda nubes de caramelo.", "Caras amigables por todas partes.", "Buen lugar para descansar."],
+    zoneHome: ["Ah, por fin, hogar dulce hogar.", "A salvo de los monstruos... por ahora.", "Un buen lugar para descansar.", "¡Hogar! Hora de guardar el botín.", "Se siente bien estar bajo techo."],
     funny: ["Una vez intenté minar con una cuchara. No funcionó.", "Aún no sé qué son las nubes de caramelo. Un día encontraré una.", "Si un árbol cae y nadie lo escucha... aún obtenemos la madera.", "Creo que ese mineral me estaba mirando.", "Tengo varias preguntas. Ninguna respuesta.", "Debería empezar una colección de rocas. De hecho, ya lo hiciste.", "A veces me pregunto quién rastrea a los rastreadores. Eso sería raro.", "Los champiñones saben algo. Estoy seguro.", "Intenté contar árboles. Perdí la cuenta.", "Estaba analizando los datos del servidor... algunos de estos jefes tienen un HP enorme.", "Según mis datos, los Ore Elementals tienen un HP masivo. Ten cuidado."],
     ultraRare: ["Encontré el sentido de la vida. Lo olvidé.", "Creo que estamos dentro de un juego. No se lo digas a nadie.", "Los champiñones saben algo.", "Por razones legales, no puedo luchar contra jefes.", "Un día encontraremos nubes de caramelo. Hoy no es ese día.", "Si estás leyendo esto, Bob funciona correctamente.", "Vi un árbol moverse. Tal vez.", "La cueva susurró mi nombre. Finjo que no pasó."]
   },
@@ -322,6 +330,7 @@ export const bobTranslations = {
     zoneForest: ["Лес кажется живым.", "Следи за окружением.", "Свежий воздух!", "Отличное место для собирательства.", "Деревья кажутся дружелюбными.", "Много ресурсов поблизости.", "Мне нравится это место.", "Лес сегодня спокойный."],
     zoneCave: ["Здесь внизу темнее.", "Я слышу, как что-то движется.", "Будь начеку.", "Идеальное место для шахтерства.", "Пещера никогда не спит.", "Держи глаза открытыми.", "Что-то ощущается иначе.", "Смотри под ноги."],
     zoneTown: ["Цивилизация!", "Время расслабиться.", "В городе сегодня людно.", "Наконец-то безопасное место.", "Может, кто-то продает сахарные облака.", "Повсюду дружелюбные лица.", "Хорошее место для отдыха."],
+    zoneHome: ["Ах, наконец-то, дом, милый дом.", "В безопасности от монстров... пока что.", "Хорошее место для отдыха.", "Дом! Время выгрузить лут.", "Приятно снова быть под крышей."],
     funny: ["Я как-то пробовал копать ложкой. Не сработало.", "Я всё еще не знаю, что такое сахарные облака. Однажды найду.", "Если дерево падает и никто не слышит... мы всё равно получаем древесину.", "Кажется, эта руда на меня смотрела.", "У меня есть пара вопросов. Ни одного ответа.", "Мне стоит начать коллекционировать камни. Хотя, ты уже начал.", "Иногда мне интересно, кто отслеживает трекеров. Это было бы странно.", "Грибы что-то знают. Я в этом уверен.", "Я пытался сосчитать деревья. Сбился со счета.", "Я тут анализировал данные сервера... у некоторых боссов пугающее количество HP.", "Согласно моим данным, у Ore Elementals куча HP. Будь осторожен."],
     ultraRare: ["Я нашел смысл жизни. Но забыл его.", "Мне кажется, мы в игре. Никому не рассказывай.", "Грибы что-то знают.", "По юридическим причинам я не могу драться с боссами.", "Однажды мы найдем сахарные облака. Но не сегодня.", "Если ты читаешь это, Боб работает правильно.", "Я видел, как дерево пошевелилось. Наверное.", "Пещера прошептала мое имя. Я делаю вид, что этого не было."]
   },
@@ -348,6 +357,7 @@ export const bobTranslations = {
     zoneForest: ["숲이 살아있는 것 같아.", "주변을 잘 살펴.", "상쾌한 공기!", "채집하기 좋은 장소네.", "나무들이 친근해 보여.", "근처에 자원이 많아.", "나 여기 맘에 들어.", "숲이 오늘 평화롭네."],
     zoneCave: ["여긴 더 어둡네.", "뭔가 움직이는 소리가 들려.", "경계해.", "채광하기 완벽한 장소야.", "동굴은 잠들지 않지.", "눈을 크게 떠.", "뭔가 느낌이 달라.", "발밑 조심해."],
     zoneTown: ["문명이야!", "쉴 시간이다.", "오늘 마을이 바빠 보이네.", "드디어 안전한 곳이야.", "누가 솜사탕 구름 안 파나.", "사방이 친근한 얼굴들이야.", "쉬기 좋은 곳이네."],
+    zoneHome: ["아, 드디어, 즐거운 나의 집.", "몬스터로부터 안전해... 지금은.", "쉬기 좋은 곳이야.", "집이다! 전리품을 내려놓을 시간이야.", "실내에 들어오니 좋네."],
     funny: ["예전에 숟가락으로 광석을 캐려 해봤지. 안 되더라구.", "아직도 솜사탕 구름이 뭔지 몰라. 언젠간 찾겠지.", "나무가 쓰러져도 아무도 못 들으면... 그래도 목재는 얻는 거잖아.", "저 광석이 날 쳐다보는 것 같아.", "질문이 여러 개 있어. 대답은 없고.", "나도 돌멩이 수집을 시작해야겠어. 사실 넌 이미 시작했지.", "가끔 누가 추적기를 추적할까 궁금해. 이상하겠지.", "버섯들은 뭔가를 알고 있어. 확신해.", "나무 수를 세보려다가 까먹었어.", "서버 데이터를 분석해봤는데... 어떤 보스들은 체력이 엄청나.", "내 데이터에 따르면, Ore Elemental들은 체력이 무지막지해. 조심해."],
     ultraRare: ["인생의 의미를 찾았는데 까먹었어.", "우린 게임 속에 있는 것 같아. 아무한테도 말하지 마.", "버섯들은 뭔가를 알고 있어.", "법적인 이유로 난 보스랑 싸울 수 없어.", "언젠가 솜사탕 구름을 찾을 거야. 오늘은 아니지만.", "이걸 읽고 있다면, 밥은 정상 작동 중인 거야.", "나무가 움직이는 걸 봤어. 아마도.", "동굴이 내 이름을 속삭였어. 안 들은 척 해야지."]
   }

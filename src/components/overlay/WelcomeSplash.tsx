@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTrackerStore } from '../../store/trackerStore';
 import { COMPANIONS } from '../../data/companions';
+import { useTranslation } from '../../hooks/useTranslation';
 
 import { useShallow } from 'zustand/react/shallow';
 
@@ -11,6 +12,7 @@ interface WelcomeSplashProps {
 }
 
 export const WelcomeSplash: React.FC<WelcomeSplashProps> = ({ onStart, onSkip }) => {
+  const { t } = useTranslation();
   const { theme, activeCompanion } = useTrackerStore(useShallow(state => ({
     theme: state.theme,
     activeCompanion: state.activeCompanion
@@ -44,10 +46,10 @@ export const WelcomeSplash: React.FC<WelcomeSplashProps> = ({ onStart, onSkip })
           
           <div className="relative z-10 flex flex-col items-center text-center text-[var(--text-primary)]">
             <h1 className="text-3xl font-black mb-2 tracking-wider" style={{ color: companionColor, textShadow: `0 0 10px ${companionColor}80` }}>
-              WELCOME TO ROEDEX
+              {t('welcome.title')}
             </h1>
             <p className="text-sm font-medium mb-8 text-[var(--text-muted)] max-w-md leading-relaxed">
-              Your ultimate real-time companion for Curse of Aros. ROEDEX seamlessly tracks your progress without interrupting your gameplay.
+              {t('welcome.subtitle')}
             </p>
 
             <div className="flex flex-col gap-5 w-full text-left mb-8 px-4">
@@ -56,8 +58,8 @@ export const WelcomeSplash: React.FC<WelcomeSplashProps> = ({ onStart, onSkip })
                   <span className="text-xl" style={{ color: companionColor }}>⚔️</span>
                 </div>
                 <div>
-                  <h3 className="font-bold text-[15px] mb-1">Real-time Loot & XP Tracking</h3>
-                  <p className="text-xs text-[var(--text-muted)]">Automatically calculates your Gold & XP per hour based on real in-game actions.</p>
+                  <h3 className="font-bold text-[15px] mb-1">{t('welcome.feature1Title')}</h3>
+                  <p className="text-xs text-[var(--text-muted)]">{t('welcome.feature1Desc')}</p>
                 </div>
               </div>
 
@@ -66,8 +68,8 @@ export const WelcomeSplash: React.FC<WelcomeSplashProps> = ({ onStart, onSkip })
                   <span className="text-xl" style={{ color: companionColor }}>⏱️</span>
                 </div>
                 <div>
-                  <h3 className="font-bold text-[15px] mb-1">Spawn Timers</h3>
-                  <p className="text-xs text-[var(--text-muted)]">Know exactly when bosses and resources will respawn across all zones.</p>
+                  <h3 className="font-bold text-[15px] mb-1">{t('welcome.feature2Title')}</h3>
+                  <p className="text-xs text-[var(--text-muted)]">{t('welcome.feature2Desc')}</p>
                 </div>
               </div>
 
@@ -76,8 +78,8 @@ export const WelcomeSplash: React.FC<WelcomeSplashProps> = ({ onStart, onSkip })
                   <span className="text-xl" style={{ color: companionColor }}>🎯</span>
                 </div>
                 <div>
-                  <h3 className="font-bold text-[15px] mb-1">Smart Overlay System</h3>
-                  <p className="text-xs text-[var(--text-muted)]">Pop out widgets, drag them anywhere, and lock them to click right through them.</p>
+                  <h3 className="font-bold text-[15px] mb-1">{t('welcome.feature3Title')}</h3>
+                  <p className="text-xs text-[var(--text-muted)]">{t('welcome.feature3Desc')}</p>
                 </div>
               </div>
             </div>
@@ -87,7 +89,7 @@ export const WelcomeSplash: React.FC<WelcomeSplashProps> = ({ onStart, onSkip })
                 onClick={onSkip}
                 className="flex-1 py-3 px-4 rounded-xl text-sm font-bold border border-[var(--border-subtle)] hover:bg-white/5 transition-colors"
               >
-                Skip Tutorial
+                {t('welcome.skip')}
               </button>
               <button
                 onClick={onStart}
@@ -97,7 +99,7 @@ export const WelcomeSplash: React.FC<WelcomeSplashProps> = ({ onStart, onSkip })
                   boxShadow: `0 0 20px ${companionColor}60`
                 }}
               >
-                Start Interactive Guide
+                {t('welcome.start')}
               </button>
             </div>
           </div>

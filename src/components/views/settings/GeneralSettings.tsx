@@ -1,10 +1,39 @@
 import React from 'react';
 import { useTrackerStore } from '../../../store/trackerStore';
+import { useShallow } from 'zustand/react/shallow';
 import { ToggleRow, SliderRow, SelectRow, HotkeyRow } from './SettingsControls';
 import { useTranslation } from '../../../hooks/useTranslation';
 
 export const GeneralSettings: React.FC = () => {
-  const store = useTrackerStore();
+  const store = useTrackerStore(useShallow(state => ({
+    language: state.language,
+    setLanguage: state.setLanguage,
+    theme: state.theme,
+    setTheme: state.setTheme,
+    displayDensity: state.displayDensity,
+    setDisplayDensity: state.setDisplayDensity,
+    verticalGroupingMode: state.verticalGroupingMode,
+    setVerticalGroupingMode: state.setVerticalGroupingMode,
+    layoutMode: state.layoutMode,
+    globalScale: state.globalScale,
+    setGlobalScale: state.setGlobalScale,
+    activeOpacity: state.activeOpacity,
+    setActiveOpacity: state.setActiveOpacity,
+    idleOpacity: state.idleOpacity,
+    setIdleOpacity: state.setIdleOpacity,
+    orbSize: state.orbSize,
+    setOrbSize: state.setOrbSize,
+    minimizedIcon: state.minimizedIcon,
+    setMinimizedIcon: state.setMinimizedIcon,
+    minimizedIconUrl: state.minimizedIconUrl,
+    setMinimizedIconUrl: state.setMinimizedIconUrl,
+    orbBorderThickness: state.orbBorderThickness,
+    setOrbBorderThickness: state.setOrbBorderThickness,
+    autoMinimizeOnChest: state.autoMinimizeOnChest,
+    setAutoMinimizeOnChest: state.setAutoMinimizeOnChest,
+    minimizeHotkey: state.minimizeHotkey,
+    setMinimizeHotkey: state.setMinimizeHotkey
+  })));
   const { t } = useTranslation();
 
   return (

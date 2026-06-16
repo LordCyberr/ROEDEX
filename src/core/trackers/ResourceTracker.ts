@@ -41,6 +41,7 @@ export class ResourceTracker {
 
   static handleSpawn(event: ResourceRespawnEvent, zone: string) {
     const node = this.parseSpawn(event, zone);
+    if (node.gathered) return; // Prevent dead entities from entering the store on initial zone load
     const key = `${zone}-${event.idx}`;
     const store = useTrackerStore.getState();
     const isNew = !store.resources[key];
@@ -71,13 +72,8 @@ export class ResourceTracker {
     const store = useTrackerStore.getState();
     const data = payload?.data || payload;
 
-    // We can receive two types of events here: gather_hit_ack and resource_cooldown
-    // gather_hit_ack: { nodeIndex, damage, nodeHp, isGathered }
-    // resource_cooldown: { spawnIndex, cooldownSeconds }
-    
     const index = data.spawnIndex !== undefined ? data.spawnIndex : data.nodeIndex;
     if (data.cooldownSeconds !== undefined && index !== undefined) {
-       // Server sent exact cooldown before the gather hit ack
        const key = `${currentZone}-${index}`;
        this.lastCooldowns[key] = data.cooldownSeconds;
        return;
@@ -87,47 +83,67 @@ export class ResourceTracker {
       const key = `${currentZone}-${data.nodeIndex}`;
       const resource = store.resources[key];
       
-      // Node is dead when gathered = true
       if (data.isGathered === true && resource) {
-        if (!resource.gathered) {
-          if (resource.type === 'Ores') {
-             store.incrementOresMined();
-             store.incrementLifetimeStat('oresMined', resource.resource, 1);
-          } else if (resource.type === 'Trees') {
-             store.incrementTreesCut();
-             store.incrementLifetimeStat('treesCut', resource.resource, 1);
-          } else {
-             store.incrementPlantsHarvested();
-             store.incrementLifetimeStat('plantsHarvested', resource.resource, 1);
+        useTrackerStore.setState((state) => {
+          const updates: any = {};
+          
+          if (!resource.gathered) {
+            const typeStr = (resource.type || '').toLowerCase();
+            const resName = (resource.resource || '').toLowerCase();
+            const isOre = typeStr.includes('ore') || typeStr.includes('rock') || resName.includes('ore') || resName.includes('rock') || resName.includes('copper') || resName.includes('iron') || resName.includes('gold') || resName.includes('silver') || resName.includes('crystal');
+            const isTree = typeStr.includes('tree') || typeStr.includes('wood') || resName.includes('tree') || resName.includes('wood') || resName.includes('log') || resName.includes('oak') || resName.includes('pine') || resName.includes('palm');
+
+            if (isOre) {
+              updates.sessionOresMined = state.sessionOresMined + 1;
+              updates.lifetimeStats = {
+                ...state.lifetimeStats,
+                oresMined: { ...state.lifetimeStats.oresMined, [resource.resource]: (state.lifetimeStats.oresMined[resource.resource] || 0) + 1 }
+              };
+            } else if (isTree) {
+              updates.sessionTreesCut = state.sessionTreesCut + 1;
+              updates.lifetimeStats = {
+                ...state.lifetimeStats,
+                treesCut: { ...state.lifetimeStats.treesCut, [resource.resource]: (state.lifetimeStats.treesCut[resource.resource] || 0) + 1 }
+              };
+            } else {
+              updates.sessionPlantsHarvested = state.sessionPlantsHarvested + 1;
+              updates.lifetimeStats = {
+                ...state.lifetimeStats,
+                plantsHarvested: { ...state.lifetimeStats.plantsHarvested, [resource.resource]: (state.lifetimeStats.plantsHarvested[resource.resource] || 0) + 1 }
+              };
+            }
           }
-        }
 
-        // Use the exact cooldown if we got it recently, else fallback
-        const exactCooldown = this.lastCooldowns[key];
-        let cooldown = exactCooldown !== undefined ? exactCooldown : getFallbackCooldown(resource.resource);
-        
-        // Force Witchbane to exactly 90 minutes regardless of server response
-        if (resource.resource.toLowerCase().includes('witchbane')) {
-           cooldown = 5400;
-        }
+          const exactCooldown = this.lastCooldowns[key];
+          let cooldown = exactCooldown !== undefined ? exactCooldown : getFallbackCooldown(resource.resource);
+          if (resource.resource.toLowerCase().includes('witchbane')) {
+             cooldown = 5400;
+          }
 
-        const respawnTime = Date.now() + (cooldown * 1000);
-        
-        // Reset cache for this node
-        delete this.lastCooldowns[key];
-  
-        // Add timer
-        store.addTimer({
-          id: `resource-${key}`,
-          name: resource.resource,
-          category: resource.type,
-          expectedRespawnTime: respawnTime,
-          pos: resource.pos
+          const respawnTime = Date.now() + (cooldown * 1000);
+          delete this.lastCooldowns[key];
+    
+          const newTimer = {
+            id: `resource-${key}`,
+            name: resource.resource,
+            category: resource.type as 'Trees' | 'Ores' | 'Plants',
+            expectedRespawnTime: respawnTime,
+            pos: resource.pos
+          };
+          updates.timers = { ...state.timers, [newTimer.id]: newTimer };
+          
+          const { [key]: _, ...remainingResources } = state.resources;
+          updates.resources = remainingResources;
+
+          return updates;
         });
-  
-        store.updateResourceHp(key, 0, true);
       } else if (resource && data.nodeHp !== undefined) {
-        store.updateResourceHp(key, data.nodeHp, false);
+        useTrackerStore.setState((state) => ({
+          resources: {
+            ...state.resources,
+            [key]: { ...state.resources[key], hp: data.nodeHp, gathered: false }
+          }
+        }));
       }
     }
   }

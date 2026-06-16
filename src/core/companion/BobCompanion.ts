@@ -1,6 +1,8 @@
 import { useTrackerStore } from '../../store/trackerStore';
 import { bobTranslations } from '../../i18n/bobTranslations';
 import { companionTranslations } from '../../i18n/companionTranslations';
+import { formatInternalName } from '../../utils/formatters';
+import { playSound } from '../../utils/sound';
 
 export class BobCompanion {
   private static lastZone: string = '';
@@ -104,11 +106,15 @@ export class BobCompanion {
        this.triggerCategory('zoneForest', quotes.zoneForest, 0, 'bobTips');
        return;
     }
+    if ((currentZone.includes('home') || currentZone.includes('house')) && quotes.zoneHome) {
+       this.triggerCategory('zoneHome', quotes.zoneHome, 0, 'bobTips');
+       return;
+    }
     if ((currentZone.includes('cave') || currentZone.includes('mine') || currentZone.includes('dungeon')) && quotes.zoneCave) {
        this.triggerCategory('zoneCave', quotes.zoneCave, 0, 'bobTips');
        return;
     }
-    if (currentZone.includes('town') && quotes.zoneTown) {
+    if ((currentZone.includes('town') || currentZone.includes('bank')) && quotes.zoneTown) {
        this.triggerCategory('zoneTown', quotes.zoneTown, 0, 'bobTips');
        return;
     }
@@ -170,18 +176,16 @@ export class BobCompanion {
 
   static onCombatWin(monsterName?: string) {
     if (monsterName) {
-      import('../../utils/formatters').then(({ formatInternalName }) => {
-        const cleanName = formatInternalName(monsterName);
-        if (this.lastKilledMonster === monsterName) {
-          this.consecutiveKills++;
-          if (this.consecutiveKills >= 10 && this.consecutiveKills % 10 === 0) {
-            this.sendBobMessage('chat', this.getAlerts().slayerMilestone.replace('{monster}', cleanName));
-          }
-        } else {
-          this.lastKilledMonster = monsterName;
-          this.consecutiveKills = 1;
+      const cleanName = formatInternalName(monsterName);
+      if (this.lastKilledMonster === monsterName) {
+        this.consecutiveKills++;
+        if (this.consecutiveKills >= 10 && this.consecutiveKills % 10 === 0) {
+          this.sendBobMessage('chat', this.getAlerts().slayerMilestone.replace('{monster}', cleanName));
         }
-      });
+      } else {
+        this.lastKilledMonster = monsterName;
+        this.consecutiveKills = 1;
+      }
     }
     this.triggerCategory('combatWin', this.getQuotes().combatWin, 60000, 'bobCombat');
     this.onActivity();
@@ -195,19 +199,15 @@ export class BobCompanion {
   static onRareDrop() {
     this.triggerCategory('rareDrop', this.getQuotes().rareDrop, 5000, 'bobRareDrop', true);
     this.onActivity();
-    import('../../utils/sound').then(({ playSound }) => {
-      const store = useTrackerStore.getState();
-      if (store.notificationSettings.audio) playSound('rare');
-    });
+    const store = useTrackerStore.getState();
+    if (store.notificationSettings.audio) playSound('rare');
   }
 
   static onMythicDrop() {
     this.triggerCategory('mythicDrop', this.getQuotes().mythicDrop, 5000, 'bobRareDrop', true);
     this.onActivity();
-    import('../../utils/sound').then(({ playSound }) => {
-      const store = useTrackerStore.getState();
-      if (store.notificationSettings.audio) playSound('mythic');
-    });
+    const store = useTrackerStore.getState();
+    if (store.notificationSettings.audio) playSound('mythic');
   }
 
   static onLevelUp() {
@@ -242,11 +242,13 @@ export class BobCompanion {
     }
 
     if (lowerZone.includes('forest')) {
-      this.triggerCategory('zone', this.getQuotes().zoneForest, 60000, 'bobZone');
-    } else if (lowerZone.includes('town') || lowerZone.includes('home') || lowerZone.includes('bank')) {
-      this.triggerCategory('zone', this.getQuotes().zoneTown, 60000, 'bobZone');
-    } else if (lowerZone.includes('mine') || lowerZone.includes('cave')) {
-      this.triggerCategory('zone', this.getQuotes().zoneCave, 60000, 'bobZone');
+      this.triggerCategory('zone', this.getQuotes().zoneForest || [this.getAlerts().zoneEnter.replace('{zone}', zoneName)], 60000, 'bobZone');
+    } else if (lowerZone.includes('home') || lowerZone.includes('house') || lowerZone.includes('hut')) {
+      this.triggerCategory('zone', this.getQuotes().zoneHome || [this.getAlerts().zoneEnter.replace('{zone}', zoneName)], 60000, 'bobZone');
+    } else if (lowerZone.includes('town') || lowerZone.includes('bank') || lowerZone.includes('city')) {
+      this.triggerCategory('zone', this.getQuotes().zoneTown || [this.getAlerts().zoneEnter.replace('{zone}', zoneName)], 60000, 'bobZone');
+    } else if (lowerZone.includes('mine') || lowerZone.includes('cave') || lowerZone.includes('dungeon')) {
+      this.triggerCategory('zone', this.getQuotes().zoneCave || [this.getAlerts().zoneEnter.replace('{zone}', zoneName)], 60000, 'bobZone');
     } else {
       if (store.notificationSettings.bobZone) {
          this.sendBobMessage('zone', this.getAlerts().zoneEnter.replace('{zone}', zoneName));

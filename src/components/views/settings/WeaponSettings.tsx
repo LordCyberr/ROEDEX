@@ -35,8 +35,8 @@ export const WeaponSettings: React.FC = () => {
               onChange={(v) => store.updateWeaponUISettings({ style: v as any })} 
             />
             <ToggleRow label="Enable Animations" value={store.weaponUISettings.enableAnimations} onChange={(v) => store.updateWeaponUISettings({ enableAnimations: v })} />
-            <SliderRow label="Width" value={store.weaponUISettings.width} min={100} max={300} step={10} display={`${store.weaponUISettings.width}px`} onChange={(v) => store.updateWeaponUISettings({ width: v })} />
-            <SliderRow label="Height (Bar)" value={store.weaponUISettings.height} min={2} max={20} step={2} display={`${store.weaponUISettings.height}px`} onChange={(v) => store.updateWeaponUISettings({ height: v })} />
+            <SliderRow label="Width" value={store.weaponUISettings.width} min={20} max={300} step={10} display={`${store.weaponUISettings.width}px`} onChange={(v) => store.updateWeaponUISettings({ width: v })} />
+            <SliderRow label="Height (Bar)" value={store.weaponUISettings.height} min={2} max={60} step={2} display={`${store.weaponUISettings.height}px`} onChange={(v) => store.updateWeaponUISettings({ height: v })} />
             <SliderRow label="Scale" value={store.weaponUISettings.scale} min={0.5} max={1.5} step={0.1} display={`${(store.weaponUISettings.scale * 100).toFixed(0)}%`} onChange={(v) => store.updateWeaponUISettings({ scale: v })} />
             <SliderRow label="Opacity" value={store.weaponUISettings.opacity} min={0.1} max={1} step={0.05} display={`${(store.weaponUISettings.opacity * 100).toFixed(0)}%`} onChange={(v) => store.updateWeaponUISettings({ opacity: v })} />
             <SliderRow label="Background Radius" value={store.weaponUISettings.borderRadius} min={0} max={24} step={2} display={`${store.weaponUISettings.borderRadius}px`} onChange={(v) => store.updateWeaponUISettings({ borderRadius: v })} />

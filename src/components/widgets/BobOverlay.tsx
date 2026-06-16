@@ -11,7 +11,7 @@ export const BobOverlay: React.FC<{ constraintsRef?: React.RefObject<HTMLDivElem
   const [currentMessage, setCurrentMessage] = useState<string | null>(null);
   const [isAsleep, setIsAsleep] = useState(true);
   
-  const { bobMessages, notificationSettings, bobPosition, setBobPosition, isUILocked, playerName, activeCompanion } = useTrackerStore(
+  const { bobMessages, notificationSettings, bobPosition, setBobPosition, isUILocked, playerName, activeCompanion, isMinimized } = useTrackerStore(
     useShallow((state) => ({
       bobMessages: state.bobMessages,
       notificationSettings: state.notificationSettings,
@@ -19,7 +19,8 @@ export const BobOverlay: React.FC<{ constraintsRef?: React.RefObject<HTMLDivElem
       setBobPosition: state.setBobPosition,
       isUILocked: state.isUILocked,
       playerName: state.playerProfile?.name,
-      activeCompanion: state.activeCompanion
+      activeCompanion: state.activeCompanion,
+      isMinimized: state.isMinimized
     }))
   );
 
@@ -165,6 +166,22 @@ export const BobOverlay: React.FC<{ constraintsRef?: React.RefObject<HTMLDivElem
   };
 
   const renderFace = () => {
+    // When minimized and no message, render a static dot instead of the full particle system
+    // This completely stops the canvas animation loop and saves 15-25 FPS
+    if (isMinimized && !currentMessage) {
+      return (
+        <div className="relative w-full h-full flex items-center justify-center">
+          {/* Radial Pulse / Beep Effect */}
+          <div className="absolute w-6 h-6 rounded-full animate-ping opacity-70" 
+            style={{ backgroundColor: companion.color }} 
+          />
+          {/* Core Dot */}
+          <div className="w-3 h-3 rounded-full relative z-10" 
+            style={{ backgroundColor: companion.color, boxShadow: `0 0 10px ${companion.color}` }} 
+          />
+        </div>
+      );
+    }
     return (
       <div className="relative w-full h-full flex items-center justify-center text-indigo-400">
         {/* Solid dark core to occlude the chat bubble passing behind it */}
@@ -188,7 +205,8 @@ export const BobOverlay: React.FC<{ constraintsRef?: React.RefObject<HTMLDivElem
       style={{ 
         x, 
         y, 
-        transformOrigin: 'bottom left'
+        transformOrigin: 'bottom left',
+        willChange: 'transform'
       }}
       animate={isShaking ? { rotate: [-15, 15, -15, 15, -10, 10, -5, 5, 0] } : {}}
       transition={{ duration: 0.5 }}
@@ -221,11 +239,12 @@ export const BobOverlay: React.FC<{ constraintsRef?: React.RefObject<HTMLDivElem
 
       <div 
         className={`absolute w-max max-w-[350px] min-h-[48px] flex items-center justify-center transition-all duration-300 ease-out z-10
-          ${currentMessage ? (notificationSettings.bobBubbleTheme === 'floating' ? 'rounded-[16px] backdrop-blur-md bg-[rgba(20,25,35,0.9)] shadow-xl border-[1px]' : notificationSettings.bobBubbleTheme === 'holographic' ? 'rounded-[8px] backdrop-blur-sm bg-cyan-900/40 border-[1px] shadow-[0_0_15px_rgba(34,211,238,0.3)]' : 'rounded-[24px] backdrop-blur-xl border-[2px] bg-[rgba(10,15,25,0.85)]') : 'bg-transparent border-transparent pointer-events-none rounded-[24px]'}
+          ${currentMessage ? (notificationSettings.bobBubbleTheme === 'floating' ? 'rounded-[16px] backdrop-blur-md bg-[rgba(20,25,35,0.9)] shadow-xl border-[1px]' : notificationSettings.bobBubbleTheme === 'holographic' ? 'rounded-[8px] backdrop-blur-sm border-[1px]' : 'rounded-[24px] backdrop-blur-xl border-[2px] bg-[rgba(10,15,25,0.85)]') : 'bg-transparent border-transparent pointer-events-none rounded-[24px]'}
         `}
         style={{
-          borderColor: currentMessage ? (notificationSettings.bobBubbleTheme === 'holographic' ? '#22d3ee' : currentOrbColor) : 'transparent',
-          boxShadow: currentMessage ? (notificationSettings.bobBubbleTheme === 'holographic' ? `0 0 15px #22d3ee80, inset 0 0 10px #22d3ee40` : `0 0 20px ${currentOrbColor}40, inset 0 0 10px ${currentOrbColor}20`) : 'none',
+          backgroundColor: currentMessage && notificationSettings.bobBubbleTheme === 'holographic' ? `${currentOrbColor}25` : undefined,
+          borderColor: currentMessage ? currentOrbColor : 'transparent',
+          boxShadow: currentMessage ? (notificationSettings.bobBubbleTheme === 'holographic' ? `0 0 15px ${currentOrbColor}80, inset 0 0 10px ${currentOrbColor}40` : `0 0 20px ${currentOrbColor}40, inset 0 0 10px ${currentOrbColor}20`) : 'none',
           opacity: currentMessage ? 1 : 0,
           left: bubblePosition === 'right' ? '100%' : bubblePosition === 'left' ? 'auto' : '50%',
           right: bubblePosition === 'left' ? '100%' : 'auto',
@@ -253,10 +272,13 @@ export const BobOverlay: React.FC<{ constraintsRef?: React.RefObject<HTMLDivElem
         {/* The Text */}
         {displayedMessage && (
           <div 
-            className={`relative z-10 text-[13px] font-bold tracking-wide leading-relaxed whitespace-pre-wrap break-words max-w-[320px] sm:max-w-[400px] drop-shadow-md py-3 text-center
+            className={`relative z-10 font-bold tracking-wide leading-relaxed whitespace-pre-wrap break-words max-w-[320px] sm:max-w-[400px] drop-shadow-md py-3 text-center
               ${notificationSettings.bobBubbleTheme === 'connected' || !notificationSettings.bobBubbleTheme ? (bubblePosition === 'left' ? 'pl-6 pr-[90px]' : bubblePosition === 'right' ? 'pr-6 pl-[90px]' : bubblePosition === 'top' ? 'px-6 pt-3 pb-[90px]' : 'px-6 pb-3 pt-[90px]') : 'px-6'}
             `}
-            style={{ color: notificationSettings.bobBubbleTheme === 'holographic' ? '#a5f3fc' : 'var(--text-primary)' }}
+            style={{ 
+              color: notificationSettings.bobBubbleTheme === 'holographic' ? currentOrbColor : 'var(--text-primary)',
+              fontSize: `calc(13px * ${notificationSettings.bobTextScale || 1.0})`
+            }}
           >
             {displayedMessage}
           </div>

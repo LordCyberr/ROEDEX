@@ -28,6 +28,7 @@ export class MobTracker {
 
   static handleSpawn(event: EnemyRespawnEvent, zone: string) {
     const enemy = this.parseSpawn(event, zone);
+    if (enemy.isDead) return; // Prevent dead entities from entering the store on initial zone load
     const key = `${zone}-${event.entityIndex}`;
     useTrackerStore.getState().setEnemy(key, enemy);
   }
@@ -56,28 +57,45 @@ export class MobTracker {
       BobCompanion.onCombatWin(enemy.type);
     }
 
-    store.updateEnemyHp(key, newHp || 0, isDead);
-    
-    if (isDead) {
-      if (!enemy.isDead) {
-        store.incrementMobsKilled();
-        store.incrementLifetimeStat('mobsKilled', enemy.type, 1);
+    useTrackerStore.setState((state) => {
+      const updates: any = {};
+      
+      if (isDead) {
+        const { [key]: _, ...remainingEnemies } = state.enemies;
+        updates.enemies = remainingEnemies;
+      } else {
+        updates.enemies = {
+          ...state.enemies,
+          [key]: { ...state.enemies[key], hp: newHp || 0, isDead }
+        };
+      }
+
+      if (isDead) {
+        if (!enemy.isDead) {
+          updates.sessionMobsKilled = state.sessionMobsKilled + 1;
+          const currentStats = state.lifetimeStats['mobsKilled'];
+          updates.lifetimeStats = {
+            ...state.lifetimeStats,
+            mobsKilled: {
+              ...currentStats,
+              [enemy.type]: (currentStats[enemy.type] || 0) + 1
+            }
+          };
+        }
+        
+        const respawnTime = Date.now() + (getFallbackCooldown(enemy.type) * 1000);
+        const newTimer = {
+          id: `mob-${key}`,
+          name: enemy.type,
+          category: 'Mob' as const,
+          expectedRespawnTime: respawnTime,
+          pos: enemy.pos
+        };
+        updates.timers = { ...state.timers, [newTimer.id]: newTimer };
       }
       
-      // Prefer exact timestamp if provided in future packet updates, else fallback
-      const respawnTime = Date.now() + (getFallbackCooldown(enemy.type) * 1000);
-
-      // Add timer
-      store.addTimer({
-        id: `mob-${key}`,
-        name: enemy.type,
-        category: 'Mob',
-        expectedRespawnTime: respawnTime,
-        pos: enemy.pos
-      });
-
-      // We DO NOT remove the enemy from the active list. It stays as "isDead: true" for session tracking.
-    }
+      return updates;
+    });
   }
 
   static clearAll() {

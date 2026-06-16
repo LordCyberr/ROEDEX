@@ -2,6 +2,15 @@ import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ParticleGlobe } from '../widgets/ParticleGlobe';
 import { COMPANIONS, CompanionId } from '../../data/companions';
+import { useTranslation } from '../../hooks/useTranslation';
+import { useTrackerStore } from '../../store/trackerStore';
+
+const SELECT_LANGUAGE_TEXTS = [
+  "SELECT LANGUAGE",
+  "SELECCIONAR IDIOMA",
+  "ВЫБЕРИТЕ ЯЗЫК",
+  "언어 선택"
+];
 
 interface BootSequenceProps {
   onComplete: (companionId: CompanionId) => void;
@@ -10,26 +19,27 @@ interface BootSequenceProps {
 }
 
 export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerName = 'UNKNOWN_USER', currentZone = 'UNKNOWN_SECTOR' }) => {
+  const { t } = useTranslation();
   const displayPlayerName = (playerName || 'UNKNOWN_USER').toUpperCase();
   const displayZone = (currentZone || 'UNKNOWN_SECTOR').toUpperCase();
 
   const bootMessagesRef = useRef([
-    "INITIALIZING SYSTEM...",
-    "BIOMETRIC SCAN: COMPLETE",
-    `WELCOME, ${displayPlayerName}...`,
-    `CALIBRATING TRACKERS FOR ${displayZone}...`,
-    "AI CORE ONLINE."
+    t('bootSequence.initializing'),
+    t('bootSequence.biometric'),
+    `${t('bootSequence.welcome')}, ${displayPlayerName}...`,
+    `${t('bootSequence.calibrating')} ${displayZone}...`,
+    t('bootSequence.online')
   ]);
   
   useEffect(() => {
     bootMessagesRef.current = [
-      "INITIALIZING SYSTEM...",
-      "BIOMETRIC SCAN: COMPLETE",
-      `WELCOME, ${displayPlayerName}...`,
-      `CALIBRATING TRACKERS FOR ${displayZone}...`,
-      "AI CORE ONLINE."
+      t('bootSequence.initializing'),
+      t('bootSequence.biometric'),
+      `${t('bootSequence.welcome')}, ${displayPlayerName}...`,
+      `${t('bootSequence.calibrating')} ${displayZone}...`,
+      t('bootSequence.online')
     ];
-  }, [displayPlayerName, displayZone]);
+  }, [displayPlayerName, displayZone, t]);
 
   const [hasSelectedLanguage, setHasSelectedLanguage] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -39,12 +49,29 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
   const [hoveredId, setHoveredId] = useState<CompanionId | null>(null);
   const [selectedCompanion, setSelectedCompanion] = useState<CompanionId | null>(null);
   const [isFlashing, setIsFlashing] = useState(false);
+  const [langTextIndex, setLangTextIndex] = useState(0);
+
+  useEffect(() => {
+    if (hasSelectedLanguage) return;
+    const interval = setInterval(() => {
+      setLangTextIndex((prev) => (prev + 1) % SELECT_LANGUAGE_TEXTS.length);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [hasSelectedLanguage]);
 
   const handleSelectLanguage = (lang: string) => {
-    import('../../store/trackerStore').then(({ useTrackerStore }) => {
-      useTrackerStore.getState().setLanguage(lang as any);
-      setHasSelectedLanguage(true);
-    });
+    useTrackerStore.getState().setLanguage(lang as any);
+    setHasSelectedLanguage(true);
+  };
+
+  const handleGoBack = () => {
+    setHasSelectedLanguage(false);
+    setIsReady(false);
+    setProgress(0);
+    setMessageIndex(0);
+    setDisplayText('');
+    setSelectedCompanion(null);
+    setHoveredId(null);
   };
 
   // Escape key to skip language selection
@@ -89,7 +116,7 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
   useEffect(() => {
     if (!hasSelectedLanguage) return;
     let startTime = Date.now();
-    const duration = 4500; // 4.5 seconds boot
+    const duration = 8000; // 8 seconds boot
 
     const interval = setInterval(() => {
       const elapsed = Date.now() - startTime;
@@ -98,7 +125,13 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
 
       // Change messages based on progress
       const msgs = bootMessagesRef.current;
-      const msgIdx = Math.min(msgs.length - 1, Math.floor((p / 100) * msgs.length));
+      let msgIdx = 0;
+      if (p < 15) msgIdx = 0;
+      else if (p < 25) msgIdx = 1;
+      else if (p < 75) msgIdx = 2; // Keep username on screen for 50% of the boot!
+      else if (p < 90) msgIdx = 3;
+      else msgIdx = 4;
+      
       if (msgIdx !== messageIndex && p < 100) {
         setMessageIndex(msgIdx);
       }
@@ -159,7 +192,7 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
                 onClick={() => handleSelectLanguage('en')}
                 className="text-[#22d3ee] font-mono tracking-widest text-sm opacity-50 hover:opacity-100 hover:scale-110 transition-all uppercase font-bold px-4 py-2"
               >
-                Skip Step [ESC]
+                {t('bootSequence.skipStep')}
               </button>
             </div>
 
@@ -169,9 +202,20 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
               </h1>
             </div>
 
-            <h2 className="font-mono text-xl sm:text-2xl text-[#22d3ee] tracking-[0.3em] font-bold drop-shadow-[0_0_15px_rgba(34,211,238,0.5)] mt-4">
-              SELECT LANGUAGE
-            </h2>
+            <div className="h-10 mt-4 overflow-hidden flex items-center justify-center relative w-full mb-2">
+              <AnimatePresence mode="wait">
+                <motion.h2 
+                  key={langTextIndex}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.5 }}
+                  className="font-mono text-xl sm:text-2xl text-[#22d3ee] tracking-[0.3em] font-bold drop-shadow-[0_0_15px_rgba(34,211,238,0.5)] absolute"
+                >
+                  {SELECT_LANGUAGE_TEXTS[langTextIndex]}
+                </motion.h2>
+              </AnimatePresence>
+            </div>
             <div className="grid grid-cols-2 gap-6">
               {[
                 { code: 'en', label: 'ENGLISH' },
@@ -216,7 +260,7 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
               transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
             />
             {/* Core Orb */}
-            <ParticleGlobe color={'#22d3ee'} isTalking={false} mood={'idle'} />
+            <ParticleGlobe color={'#22d3ee'} isTalking={false} mood={'idle'} forceHighFPS={true} />
             
             {/* Data particles flowing up */}
             <motion.div 
@@ -242,20 +286,39 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
       {/* Title / Instructions when Ready */}
       <AnimatePresence>
         {isReady && !selectedCompanion && (
-          <motion.div
-            key="ready-text"
-            initial={{ opacity: 0, scale: 0.9, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex flex-col items-center gap-4 mb-16 z-20 mt-[-4rem]"
-          >
-            <p className="font-mono text-lg sm:text-2xl uppercase tracking-[0.2em] font-bold text-[#22d3ee] drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]">
-              CHOOSE YOUR AI COMPANION
-            </p>
-            <p className="font-mono text-xs sm:text-sm text-[#22d3ee]/60 uppercase tracking-[0.3em]">
-              Hover to preview. Click to select and initialize HUD.
-            </p>
-          </motion.div>
+          <>
+            <motion.div
+              key="back-button"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="absolute top-8 left-8 z-[100]"
+            >
+              <button
+                onClick={handleGoBack}
+                className="text-[#22d3ee] font-mono tracking-widest text-sm opacity-50 hover:opacity-100 transition-all uppercase font-bold px-4 py-2 flex items-center gap-2 group"
+              >
+                <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                {t('bootSequence.back')}
+              </button>
+            </motion.div>
+            <motion.div
+              key="ready-text"
+              initial={{ opacity: 0, scale: 0.9, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex flex-col items-center gap-4 mb-16 z-20 mt-[-4rem]"
+            >
+              <p className="font-mono text-lg sm:text-2xl uppercase tracking-[0.2em] font-bold text-[#22d3ee] drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]">
+                {t('bootSequence.chooseCompanion')}
+              </p>
+              <p className="font-mono text-xs sm:text-sm text-[#22d3ee]/60 uppercase tracking-[0.3em]">
+                {t('bootSequence.hoverToPreview')}
+              </p>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
@@ -304,6 +367,7 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
                     color={comp.color}
                     isTalking={hoveredId === comp.id || selectedCompanion === comp.id}
                     mood={hoveredId === comp.id || selectedCompanion === comp.id ? 'happy' : 'dimmed'}
+                    forceHighFPS={true}
                   />
                 </div>
                 <div 
@@ -322,7 +386,7 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
       {hasSelectedLanguage && !isReady && (
         <div className="flex flex-col items-center justify-center z-10 w-full max-w-lg px-8">
           <div className="w-full flex justify-between items-end mb-2 font-mono text-[10px] tracking-widest text-[#22d3ee]">
-            <span className="uppercase opacity-70">SYSTEM_BOOT</span>
+            <span className="uppercase opacity-70">{t('bootSequence.systemBoot')}</span>
             <span className="font-bold">{progress}%</span>
           </div>
         

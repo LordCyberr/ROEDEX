@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
+import { useGlobalTick } from '../../core/tick';
 import { useShallow } from 'zustand/react/shallow';
 import { motion, useDragControls, useMotionValue } from 'motion/react';
 import { Timer, TrendingUp, Coins } from 'lucide-react';
@@ -16,18 +17,10 @@ export const EfficiencyHUD: React.FC = () => {
     }))
   );
 
-  const [now, setNow] = useState(Date.now());
   const dragControls = useDragControls();
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-
-  useEffect(() => {
-    if (sessionActive) {
-      setNow(Date.now());
-      const interval = setInterval(() => setNow(Date.now()), 1000);
-      return () => clearInterval(interval);
-    }
-  }, [sessionActive]);
+  const now = useGlobalTick();
 
   if (!sessionActive) return null;
 
@@ -51,7 +44,7 @@ export const EfficiencyHUD: React.FC = () => {
 
   return (
     <motion.div
-      style={{ x, y }}
+      style={{ x, y, willChange: 'transform' }}
       drag
       dragMomentum={false}
       dragListener={!isUILocked}

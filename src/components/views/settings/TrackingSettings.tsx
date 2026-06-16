@@ -1,10 +1,23 @@
 import React from 'react';
 import { useTrackerStore } from '../../../store/trackerStore';
+import { useShallow } from 'zustand/react/shallow';
 import { SelectRow, ToggleRow } from './SettingsControls';
 import { useTranslation } from '../../../hooks/useTranslation';
 
 export const TrackingSettings: React.FC = () => {
-  const store = useTrackerStore();
+  const store = useTrackerStore(useShallow(state => ({
+    displayMode: state.displayMode,
+    setDisplayMode: state.setDisplayMode,
+    minimalChestHud: state.minimalChestHud,
+    setMinimalChestHud: state.setMinimalChestHud,
+    minimalChestHudLocked: state.minimalChestHudLocked,
+    setMinimalChestHudLocked: state.setMinimalChestHudLocked,
+    setMinimalChestTutorialSeen: state.setMinimalChestTutorialSeen,
+    clearSessionCache: state.clearSessionCache,
+    clearSession: state.clearSession,
+    tableSettings: state.tableSettings,
+    updateTableSettings: state.updateTableSettings
+  })));
   const { t } = useTranslation();
 
   return (

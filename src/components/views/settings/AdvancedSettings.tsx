@@ -1,9 +1,13 @@
 import React from 'react';
 import { useTrackerStore } from '../../../store/trackerStore';
+import { useShallow } from 'zustand/react/shallow';
 import { ToggleRow } from './SettingsControls';
 
 export const AdvancedSettings: React.FC = () => {
-  const store = useTrackerStore();
+  const store = useTrackerStore(useShallow(state => ({
+    developerMode: state.developerMode,
+    setDeveloperMode: state.setDeveloperMode
+  })));
 
   return (
     <>
@@ -19,9 +23,7 @@ export const AdvancedSettings: React.FC = () => {
         <button 
           onClick={() => {
             if (window.confirm("Are you sure you want to permanently erase all ROEDEX database files? This cannot be undone.")) {
-              indexedDB.deleteDatabase('roedex-db');
-              localStorage.removeItem('roedex-storage');
-              window.location.reload();
+              import('../../../store/trackerStore').then(m => m.clearAllStorageAndReload());
             }
           }}
           className="bg-red-500/10 hover:bg-red-500/30 text-red-500 border border-red-500/50 px-4 py-2 rounded font-bold text-xs transition-all w-full tracking-wider"

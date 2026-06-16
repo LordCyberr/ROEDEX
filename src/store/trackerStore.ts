@@ -21,6 +21,57 @@ const openDB = (): Promise<IDBDatabase> => {
   });
 };
 
+let writeTimeout: ReturnType<typeof setTimeout> | null = null;
+let pendingValue: string | null = null;
+let isErasing = false;
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
+    if (isErasing) return;
+    if (pendingValue) {
+      try { localStorage.setItem('roedex-storage', pendingValue); } catch(e) {}
+    }
+  });
+}
+
+export const clearAllStorageAndReload = async () => {
+  isErasing = true;
+  pendingValue = null;
+  localStorage.removeItem('roedex-storage');
+  try {
+    indexedDB.deleteDatabase('roedex-db');
+  } catch(e) {}
+  window.location.reload();
+};
+
+const originalSetItem = async (name: string, value: string): Promise<void> => {
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction('keyval', 'readwrite');
+      const store = transaction.objectStore('keyval');
+      const request = store.put(value, name);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch (e) {
+    console.warn('[ROEDEX] IndexedDB set failed, falling back to localStorage', e);
+    localStorage.setItem(name, value);
+  }
+};
+
+const debouncedSetItem = async (name: string, value: string): Promise<void> => {
+  pendingValue = value;
+  if (writeTimeout) return;
+  writeTimeout = setTimeout(async () => {
+    writeTimeout = null;
+    if (pendingValue) {
+      await originalSetItem(name, pendingValue);
+      pendingValue = null;
+    }
+  }, 5000);
+};
+
 const indexedDBStorage = {
   getItem: async (name: string): Promise<string | null> => {
     try {
@@ -29,7 +80,18 @@ const indexedDBStorage = {
         const transaction = db.transaction('keyval', 'readonly');
         const store = transaction.objectStore('keyval');
         const request = store.get(name);
-        request.onsuccess = () => resolve((request.result as string) || null);
+        request.onsuccess = () => {
+          const result = (request.result as string) || null;
+          const lsValue = localStorage.getItem(name);
+          
+          // If there's a recent emergency save in localStorage from beforeunload, prioritize it
+          if (lsValue) {
+            localStorage.removeItem(name); // Clear it so we don't accidentally use it on later loads
+            resolve(lsValue);
+          } else {
+            resolve(result);
+          }
+        };
         request.onerror = () => reject(request.error);
       });
     } catch (e) {
@@ -37,21 +99,7 @@ const indexedDBStorage = {
       return localStorage.getItem(name);
     }
   },
-  setItem: async (name: string, value: string): Promise<void> => {
-    try {
-      const db = await openDB();
-      return new Promise((resolve, reject) => {
-        const transaction = db.transaction('keyval', 'readwrite');
-        const store = transaction.objectStore('keyval');
-        const request = store.put(value, name);
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
-      });
-    } catch (e) {
-      console.warn('[ROEDEX] IndexedDB set failed, falling back to localStorage', e);
-      localStorage.setItem(name, value);
-    }
-  },
+  setItem: debouncedSetItem,
   removeItem: async (name: string): Promise<void> => {
     try {
       const db = await openDB();
@@ -91,6 +139,26 @@ export const useTrackerStore = create<TrackerState>()(
           if (dims['quests_horizontal']?.height === 400) delete dims['quests_horizontal'].height;
         }
 
+        // MIGRATION: Fix tree classification bug where trees were logged as plants
+        if (persistedState?.lifetimeStats?.plantsHarvested) {
+          const plants = persistedState.lifetimeStats.plantsHarvested;
+          const trees = persistedState.lifetimeStats.treesCut || {};
+          let modified = false;
+
+          for (const [key, value] of Object.entries(plants)) {
+            const kLow = key.toLowerCase();
+            if (kLow.includes('tree') || kLow.includes('wood') || kLow.includes('log') || kLow.includes('oak') || kLow.includes('pine') || kLow.includes('palm')) {
+              trees[key] = (trees[key] || 0) + (value as number);
+              delete plants[key];
+              modified = true;
+            }
+          }
+          if (modified) {
+            persistedState.lifetimeStats.treesCut = trees;
+            persistedState.lifetimeStats.plantsHarvested = plants;
+          }
+        }
+
         // Ensure default positions are separated
         const notifSettings = {
           ...currentState.notificationSettings,
@@ -111,6 +179,22 @@ export const useTrackerStore = create<TrackerState>()(
           notifSettings.v5PositionMigrated = true;
           if (persistedState) {
             persistedState.overlayPosition = { x: 20, y: 80 };
+          }
+        }
+        
+        if (!notifSettings.v10PositionsMigrated) {
+          notifSettings.v10PositionsMigrated = true;
+          if (persistedState) {
+            persistedState.overlayPosition = { x: 20, y: 150 };
+            persistedState.orbPosition = { x: 20, y: 100 };
+            persistedState.bobPosition = { x: typeof window !== 'undefined' ? window.innerWidth - 320 : 800, y: 30 };
+          }
+        }
+        
+        if (!notifSettings.v11PositionsMigrated) {
+          notifSettings.v11PositionsMigrated = true;
+          if (persistedState) {
+            persistedState.bobPosition = { x: typeof window !== 'undefined' ? window.innerWidth - 320 : 800, y: 120 };
           }
         }
         
@@ -135,11 +219,31 @@ export const useTrackerStore = create<TrackerState>()(
           weaponSettings.position = 'bottom-center';
         }
 
+        if (!weaponSettings.v9WeaponLayoutMigrated) {
+          weaponSettings.v9WeaponLayoutMigrated = true;
+          weaponSettings.layout = 'vertical';
+          weaponSettings.width = 20;
+          weaponSettings.height = 100;
+        }
+
+        const armorSettings = {
+          ...currentState.armorUISettings,
+          ...(persistedState?.armorUISettings || {})
+        };
+
+        if (!armorSettings.v9ArmorLayoutMigrated) {
+          armorSettings.v9ArmorLayoutMigrated = true;
+          armorSettings.layout = 'vertical';
+          armorSettings.width = 20;
+          armorSettings.height = 100;
+        }
+
         return {
           ...currentState,
           ...persistedState,
           notificationSettings: notifSettings,
           weaponUISettings: weaponSettings,
+          armorUISettings: armorSettings,
           tableSettings: {
             ...currentState.tableSettings,
             ...(persistedState?.tableSettings || {})
@@ -181,15 +285,19 @@ export const useTrackerStore = create<TrackerState>()(
         favorites: state.favorites,
         theme: state.theme,
         minimizedIcon: state.minimizedIcon,
+        minimizedIconUrl: state.minimizedIconUrl,
+        minimizeHotkey: state.minimizeHotkey,
         language: state.language,
         minimalChestHud: state.minimalChestHud,
         minimalChestHudLocked: state.minimalChestHudLocked,
         minimalChestTutorialSeen: state.minimalChestTutorialSeen,
         globalScale: state.globalScale,
         chestWidgetPositions: state.chestWidgetPositions,
+        firstTimeWizardCompleted: state.firstTimeWizardCompleted,
         
         // Session state
         sessionActive: state.sessionActive,
+        sessionPlayerName: state.sessionPlayerName,
         sessionStartTime: state.sessionStartTime,
         sessionRunes: state.sessionRunes,
         sessionLoot: state.sessionLoot,

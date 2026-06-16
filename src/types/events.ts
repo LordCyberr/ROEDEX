@@ -106,7 +106,7 @@ export interface OverlayNotification {
   id: string;
   title?: string;
   message: string;
-  type?: 'info' | 'success' | 'warning' | 'error' | 'rare' | 'mythic' | 'combat' | 'chat';
+  type?: 'info' | 'success' | 'warning' | 'error' | 'rare' | 'mythic' | 'combat' | 'chat' | 'boot-sequence' | 'system-online';
   emotion?: 'happy' | 'alert' | 'mining' | 'combat' | 'idle' | 'talking';
   timestamp: number;
 }
