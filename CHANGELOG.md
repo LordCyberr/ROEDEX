@@ -1,8 +1,10 @@
 # ROEDEX Changelog
 
-## v0.0.1 - Initial Stable Release & Hotfixes (2026-06-15)
+## v0.0.1 - Initial Stable Release & Hotfixes (2026-06-16)
 
 ### ✨ Features
+- Added a Developer Override hotkey (Ctrl+Shift+C) to instantly skip connection checks and tutorials for testing.
+- Premium boot sequence toasts now gracefully stretch to accommodate dynamic text and automatically inherit the active ROEDEX theme.
 - Replaced the placeholder flower in the tutorial with a realistic Corrupted Goblin to better demonstrate the respawn queue.
 - Added sleek ring-zoom-in beacon animations to guide users during interactive tutorial steps.
 - Introduced an AI Companion featuring four unique characters (Bob, Kaya, Lia, and Crash) with dynamic personalities and interactive CRT matrix face animations.
@@ -18,6 +20,11 @@
 - Premium Themes: Obsidian Gold, Hologram, and Ruby Glass.
 
 ### 🛠️ Fixes & Optimizations
+- Adjusted Bob's default spawn location to prevent him from overlapping with the top-right in-game settings icons.
+- Restored the premium boot sequence toasts to fire perfectly when the game establishes a connection and receives the player name.
+- Fixed an edge case where closing the changelog manually could stall the interactive tutorial.
+- Resolved a critical UI crash triggered when forcefully overriding the companion tutorial sequence.
+- Ensured that all overlay windows and the minimized orb spawn in sensible, non-obstructive default locations for new users.
 - Resolved an issue where text inside the Weapon UI would overflow horizontally when set to Vertical Layout.
 - Disabled auto-advance on the dummy timer tutorial step, ensuring users have time to read the mock data before proceeding.
 - Added a "Previous" button in the AI companion dialog box for easier navigation.
