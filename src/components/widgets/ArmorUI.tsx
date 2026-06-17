@@ -130,7 +130,7 @@ export const ArmorUI: React.FC = () => {
         }
       }}
       className={`fixed z-50 flex ${layout === 'vertical' ? 'flex-col gap-1' : 'flex-row gap-2'} items-center justify-center shadow-2xl select-none
-        ${isDraggable ? 'pointer-events-auto cursor-grab active:cursor-grabbing border-dashed border-emerald-400 p-2' : 'pointer-events-none border-solid'}
+        ${isDraggable ? 'pointer-events-auto cursor-grab active:cursor-grabbing border-dashed border-emerald-400 p-2 bg-black/20' : 'pointer-events-none border-solid'}
         ${isFlashing && enableAnimations ? 'animate-pulse' : ''}
       `}
       style={{
@@ -138,17 +138,11 @@ export const ArmorUI: React.FC = () => {
         x, y,
         scale,
         opacity,
-        backdropFilter: hasText ? `blur(${glassStrength}px)` : 'none',
-        backgroundColor: hasText ? 'rgba(0, 0, 0, 0.6)' : 'transparent',
         borderRadius: `${borderRadius}px`,
         borderWidth: isDraggable ? '2px' : '0px',
         borderColor: isDraggable ? undefined : 'transparent',
-        padding: hasText && !isDraggable ? '6px' : undefined
       }}
     >
-      {/* Lock/Unlock Icon Overlay */}
-      {/* Removed Lock/Unlock Icon Overlay */}
-
       {Object.entries(displayArmor).map(([slot, item]: [string, any]) => {
         if (!item) return null;
         
@@ -169,31 +163,33 @@ export const ArmorUI: React.FC = () => {
 
         const pctStr = `${Math.round(percentage)}%`;
         const durStr = `${item.durability} / ${item.maxDurability}`;
-        const isBarVertical = layout === 'horizontal';
+        // Automatically determine if the bar is vertical by checking dimensions
+        const isBarVertical = height > width;
         const borderColorClass = dynamicBorderColor ? borderColor : 'border-white/20';
 
         return (
           <div key={slot} className={`relative flex items-center justify-center overflow-hidden ${!isDraggable && borderWidth > 0 ? `border-solid ${borderColorClass}` : ''}`} 
             style={{ 
-              width: isBarVertical ? 'max-content' : (hasBar ? `${width}px` : 'max-content'), 
-              height: isBarVertical ? (hasBar ? `${width}px` : 'max-content') : (hasText ? `${Math.max(20, height + 12)}px` : `${height}px`), 
-              minWidth: isBarVertical ? (hasBar ? `${height}px` : undefined) : undefined,
+              width: hasBar ? `${width}px` : 'max-content', 
+              height: hasBar ? `${height}px` : (hasText ? `${Math.max(20, height + 12)}px` : `${height}px`), 
               borderRadius: `${borderRadius}px`, 
               borderWidth: borderWidth > 0 && !isDraggable ? `${borderWidth}px` : undefined, 
               borderColor: borderWidth > 0 && !isDraggable ? undefined : (hasText ? 'rgba(255,255,255,0.05)' : 'transparent'), 
-              padding: !hasBar ? (isBarVertical ? '10px 4px' : '0px 8px') : '0px',
-              flexDirection: isBarVertical ? 'column' : 'row'
+              padding: !hasBar ? (isBarVertical ? '10px 4px' : '4px 8px') : '0px',
+              flexDirection: isBarVertical ? 'column' : 'row',
+              backgroundColor: !hasBar && hasText ? `rgba(0,0,0, ${glassStrength > 0 ? 0.6 : 0.4})` : 'transparent',
+              backdropFilter: !hasBar && hasText ? `blur(${glassStrength}px)` : 'none',
             }}>
             {/* Background Health Bar */}
             {hasBar && (
               <div 
-                className={`absolute ${!isBarVertical ? 'left-0 top-0 bottom-0 w-full' : 'bottom-0 left-0 right-0 h-full flex items-end'} ${!hasText ? 'bg-black/40 border border-white/5' : 'bg-black/20'}`} 
-                style={{ borderRadius: borderRadius }}
+                className={`absolute ${isBarVertical ? 'bottom-0 left-0 right-0 h-full flex items-end' : 'left-0 top-0 bottom-0 w-full'} ${!hasText ? 'bg-black/40 border border-white/5' : 'bg-black/60 border border-white/10'}`} 
+                style={{ borderRadius: borderRadius, backdropFilter: `blur(${glassStrength}px)` }}
               >
                 <motion.div 
-                  className={`absolute ${!isBarVertical ? 'left-0 top-0 bottom-0 h-full' : 'bottom-0 left-0 right-0 w-full'} ${color} ${hasText ? 'opacity-80' : ''}`}
+                  className={`absolute ${isBarVertical ? 'bottom-0 left-0 right-0 w-full' : 'left-0 top-0 bottom-0 h-full'} ${color} ${hasText ? 'opacity-80' : ''}`}
                   initial={false}
-                  animate={!isBarVertical ? { width: `${percentage}%` } : { height: `${percentage}%` }}
+                  animate={isBarVertical ? { height: `${percentage}%` } : { width: `${percentage}%` }}
                   transition={{ duration: enableAnimations ? 0.3 : 0 }}
                   style={{ borderRadius: borderRadius }}
                 />
