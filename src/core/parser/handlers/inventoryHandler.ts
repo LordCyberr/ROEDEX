@@ -14,6 +14,7 @@ export function handleInventoryEvent(
     lastChestOpenTime: number; 
     previousInventory: Record<string, number>;
     isBlacksmithOpen: boolean;
+    loginTime: number;
   }
 ) {
   switch (eventName) {
@@ -69,7 +70,9 @@ export function handleInventoryEvent(
       const items = data?.InventoryItems;
       
       const state = useTrackerStore.getState();
-      if (!state.isChestOpen && !parserState.isBlacksmithOpen) {
+      const timeSinceLogin = Date.now() - (parserState.loginTime || 0);
+      
+      if (!state.isChestOpen && !parserState.isBlacksmithOpen && timeSinceLogin > 3000) {
         parserState.lastChestOpenTime = Date.now();
         state.setIsChestOpen(true);
         BobCompanion.onChestOpen();

@@ -11,7 +11,8 @@ let parserState = {
   previousInventory: {} as Record<string, number>,
   lastWeaponBreakTime: 0,
   lastChestOpenTime: 0,
-  isBlacksmithOpen: false
+  isBlacksmithOpen: false,
+  loginTime: Date.now()
 };
 
 // Profiling aggregation
@@ -108,6 +109,11 @@ export function parsePacket(rawMessage: string) {
     
     // Route events
     const startTime = performance.now();
+    
+    if (eventName === 'user_online') {
+      parserState.loginTime = Date.now();
+    }
+    
     handleEntityEvent(eventName, payload, store);
     handleInventoryEvent(eventName, payload, store, parserState);
     handlePlayerEvent(eventName, payload, store);
