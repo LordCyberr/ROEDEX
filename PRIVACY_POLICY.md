@@ -20,7 +20,7 @@ ROEDEX operates passively. It intercepts and reads the WebSocket traffic already
 
 ## 4. Permissions
 To function, ROEDEX requires specific permissions in your browser:
-- **Host Permissions (`*://*.curseofaros.com/*`)**: Required strictly to run on the Curse of Aros website and monitor the game's WebSocket traffic. We do not request or have access to any other websites you visit.
+- **Host Permissions (`*://embervault.ruyui.com/*`)**: Required strictly to run on the Roots of Embervault website and monitor the game's WebSocket traffic. We do not request or have access to any other websites you visit.
 - **Storage**: Required to save your settings and statistics locally on your machine.
 - **Scripting**: Required to overlay the UI onto the game window.
 
