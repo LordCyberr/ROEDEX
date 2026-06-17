@@ -59,6 +59,20 @@ export function handleInventoryEvent(
       const data = payload?.data;
       const items = data?.InventoryItems;
       
+      const state = useTrackerStore.getState();
+      if (!state.isChestOpen) {
+        parserState.lastChestOpenTime = Date.now();
+        state.setIsChestOpen(true);
+        BobCompanion.onChestOpen();
+        
+        if (state.autoMinimizeOnChest) {
+          state.setIsMinimized(true);
+          Object.keys(state.poppedOutWindows).forEach(id => {
+            state.updatePoppedOutWindow(id, { isMinimized: true });
+          });
+        }
+      }
+      
       if (Array.isArray(items)) {
         const processChest = () => {
           let bankVal = 0;
