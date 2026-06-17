@@ -66,7 +66,14 @@ methods.forEach(method => {
     
     if (stringArgs) {
       if (stringArgs.includes('[ForgeUI] case BlackSmith ENTER') || stringArgs.includes('[ForgeUI] BlackSmith: isMenuOpen=true')) {
-        isBlacksmithOpen = true;
+        if (!isBlacksmithOpen) {
+          isBlacksmithOpen = true;
+          window.postMessage({
+            source: 'ROEDEX_INTERCEPTOR',
+            type: 'WS_MESSAGE',
+            data: '42' + JSON.stringify(["blacksmith_opened", {}])
+          }, '*');
+        }
       }
       
       if (stringArgs.includes('OnMMEvent ContentChanged (ChestInventory)')) {
@@ -78,7 +85,14 @@ methods.forEach(method => {
           }, '*');
         }
       } else if (stringArgs.includes('Close Invoked')) {
-        isBlacksmithOpen = false;
+        if (isBlacksmithOpen) {
+          isBlacksmithOpen = false;
+          window.postMessage({
+            source: 'ROEDEX_INTERCEPTOR',
+            type: 'WS_MESSAGE',
+            data: '42' + JSON.stringify(["blacksmith_closed", {}])
+          }, '*');
+        }
         window.postMessage({
           source: 'ROEDEX_INTERCEPTOR',
           type: 'WS_MESSAGE',

@@ -10,7 +10,8 @@ import { handlePlayerEvent } from './handlers/playerHandler';
 let parserState = {
   previousInventory: {} as Record<string, number>,
   lastWeaponBreakTime: 0,
-  lastChestOpenTime: 0
+  lastChestOpenTime: 0,
+  isBlacksmithOpen: false
 };
 
 // Profiling aggregation

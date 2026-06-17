@@ -13,6 +13,7 @@ export function handleInventoryEvent(
     lastWeaponBreakTime: number; 
     lastChestOpenTime: number; 
     previousInventory: Record<string, number>;
+    isBlacksmithOpen: boolean;
   }
 ) {
   switch (eventName) {
@@ -40,6 +41,14 @@ export function handleInventoryEvent(
       }
       break;
     }
+    case 'blacksmith_opened': {
+      parserState.isBlacksmithOpen = true;
+      break;
+    }
+    case 'blacksmith_closed': {
+      parserState.isBlacksmithOpen = false;
+      break;
+    }
     case 'chest_closed': {
       if (Date.now() - parserState.lastChestOpenTime < 500) {
         break;
@@ -60,7 +69,7 @@ export function handleInventoryEvent(
       const items = data?.InventoryItems;
       
       const state = useTrackerStore.getState();
-      if (!state.isChestOpen) {
+      if (!state.isChestOpen && !parserState.isBlacksmithOpen) {
         parserState.lastChestOpenTime = Date.now();
         state.setIsChestOpen(true);
         BobCompanion.onChestOpen();
