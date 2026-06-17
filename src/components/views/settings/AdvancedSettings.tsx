@@ -11,7 +11,20 @@ export const AdvancedSettings: React.FC = () => {
 
   return (
     <>
-      <ToggleRow label="Developer Mode" value={store.developerMode} onChange={store.setDeveloperMode} />
+      <ToggleRow 
+        label="Developer Mode" 
+        value={store.developerMode} 
+        onChange={(val) => {
+          if (val) {
+            useTrackerStore.getState().addNotification({
+              type: 'warning',
+              title: 'Developer Mode Enabled',
+              message: 'Warning: This mode is for development and diagnostics ONLY! It enables debug overlays and logs that may impact performance. Do not enable this unless you know what you are doing!'
+            });
+          }
+          store.setDeveloperMode(val);
+        }} 
+      />
       <p className="text-[9px] text-[var(--text-muted)] px-1 mt-1 mb-2">
         Enable advanced performance tracking and socket debugging logs. Use <strong>Ctrl+Shift+D</strong> to toggle the live diagnostic panel.
       </p>

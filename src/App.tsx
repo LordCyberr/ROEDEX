@@ -85,14 +85,14 @@ function App() {
         store.setIsChestOpen(false);
       }
 
-      // Ctrl + Shift + D: Toggle Debug Panel
-      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd') {
+      // Ctrl + Shift + D: Toggle Debug Panel (Requires Developer Mode)
+      if (store.developerMode && e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd') {
         e.preventDefault();
         store.toggleDebugPanel();
       }
 
-      // Ctrl + Shift + C: Developer Force Overlay (Bypass Login)
-      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'c') {
+      // Ctrl + Shift + C: Developer Force Overlay (Bypass Login) (Requires Developer Mode)
+      if (store.developerMode && e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'c') {
         e.preventDefault();
         const newState = !store.devForceOverlay;
         store.setDevForceOverlay(newState);
