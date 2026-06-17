@@ -83,12 +83,14 @@ function App() {
       // Minimal Chest HUD: Close chest on E or Escape
       if (store.isChestOpen && (e.key === 'e' || e.key === 'E' || e.key === 'Escape')) {
         store.setIsChestOpen(false);
+        return;
       }
 
       // Ctrl + Shift + D: Toggle Debug Panel (Requires Developer Mode)
       if (store.developerMode && e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd') {
         e.preventDefault();
         store.toggleDebugPanel();
+        return;
       }
 
       // Ctrl + Shift + C: Developer Force Overlay (Bypass Login) (Requires Developer Mode)
@@ -104,6 +106,7 @@ function App() {
           store.setFirstTimeWizardCompleted(true);
           store.updateNotificationSettings({ tutorialCompleted: true, tutorialStep: -1 });
         }
+        return;
       }
       
       // Parse the custom hotkey (e.g., 'Shift+Alt+C' or 'Ctrl+Shift+M')
