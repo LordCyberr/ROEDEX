@@ -33,6 +33,17 @@ Built on **Manifest V3**, React, and Tailwind CSS, it features a deeply customiz
 
 ---
 
+## 🔒 Security & Privacy
+
+ROEDEX is built with absolute privacy in mind. **We collect ZERO user data.** 
+- **100% Local**: All loot history, statistics, and settings are saved locally on your own machine. We use no external databases or analytics.
+- **Strictly Scoped**: The extension only runs on the game domain and cannot see or access any other websites you visit.
+- **Passive Listening**: ROEDEX only reads incoming game packets. It does not inject macros, automate gameplay, or violate fair-play anti-cheat systems.
+
+Please read our full [Privacy Policy](PRIVACY_POLICY.md) for more details.
+
+---
+
 ## 🚀 Installation (Web Store)
 
 Once approved on the Google Chrome Web Store:
