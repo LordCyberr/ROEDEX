@@ -115,10 +115,11 @@ export class ResourceTracker {
           }
 
           const exactCooldown = this.lastCooldowns[key];
-          let cooldown = exactCooldown !== undefined ? exactCooldown : getFallbackCooldown(resource.resource);
-          if (resource.resource.toLowerCase().includes('witchbane')) {
-             cooldown = 5400;
-          }
+          let dbCooldown = getFallbackCooldown(resource.resource);
+          
+          // Use our local database as the absolute source of truth since the game server sometimes sends incorrect default 30m cooldowns.
+          // Only use the server's cooldown if our database doesn't know the entity (returns default 300s).
+          let cooldown = (dbCooldown !== 300) ? dbCooldown : (exactCooldown !== undefined ? exactCooldown : 300);
 
           const respawnTime = Date.now() + (cooldown * 1000);
           delete this.lastCooldowns[key];
