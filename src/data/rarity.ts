@@ -33,12 +33,15 @@ export const RARITY_DB: Record<string, ItemInfo> = {
   'rockmuncher': { id: 'rockmuncher', rarity: 'uncommon', source: 'monster' },
   'goldore': { id: 'goldore', rarity: 'uncommon', source: 'ore' },
   'titaniumore': { id: 'titaniumore', rarity: 'uncommon', source: 'ore' },
+  'ambersap': { id: 'ambersap', rarity: 'uncommon', source: 'tree' },
+  'geode': { id: 'geode', rarity: 'uncommon', source: 'ore' },
 
   // --- RARE (Green) ---
   'shadowleaf': { id: 'shadowleaf', rarity: 'rare', source: 'plant' },
   'goldleaf': { id: 'goldleaf', rarity: 'rare', source: 'tree' },
   'shadowwolf': { id: 'shadowwolf', rarity: 'rare', source: 'monster' },
   'cavecrawler': { id: 'cavecrawler', rarity: 'rare', source: 'monster' },
+  'alphawolfheart': { id: 'alphawolfheart', rarity: 'rare', source: 'monster' },
 
   // --- MYTHIC (Purple) ---
   'witchbane': { id: 'witchbane', rarity: 'mythic', source: 'plant' },
@@ -56,31 +59,6 @@ export function getItemInfo(itemName: string): ItemInfo | null {
   if (RARITY_DB[normalized]) {
     return RARITY_DB[normalized];
   }
-  
-  // Fallbacks for when only partial strings or drops match
-  
-  // Mythic
-  if (normalized.includes('golem') || normalized.includes('elemental')) return { id: normalized, rarity: 'mythic', source: 'monster' };
-  if (normalized.includes('witchbane')) return { id: normalized, rarity: 'mythic', source: 'plant' };
-  if (normalized.includes('godwood')) return { id: normalized, rarity: 'mythic', source: 'tree' };
-  if (normalized.includes('crystalrock') || normalized.includes('dinobone')) return { id: normalized, rarity: 'mythic', source: 'ore' };
-
-  // Rare
-  if (normalized.includes('wolf') || normalized.includes('crawler') || normalized.includes('fang') || normalized.includes('silk') || normalized.includes('venom')) return { id: normalized, rarity: 'rare', source: 'monster' };
-  if (normalized.includes('shadowleaf')) return { id: normalized, rarity: 'rare', source: 'plant' };
-  if (normalized.includes('goldleaf')) return { id: normalized, rarity: 'rare', source: 'tree' };
-
-  // Uncommon
-  if (normalized.includes('mushroom') || normalized.includes('rockmuncher') || normalized.includes('spore') || normalized.includes('fungal') || normalized.includes('graniteteeth')) return { id: normalized, rarity: 'uncommon', source: 'monster' };
-  if (normalized.includes('mourninglily') || normalized.includes('moonpetal') || normalized.includes('enchantedbark')) return { id: normalized, rarity: 'uncommon', source: 'plant' };
-  if (normalized.includes('cinderheart') || normalized.includes('dreadwood') || normalized.includes('ambersap')) return { id: normalized, rarity: 'uncommon', source: 'tree' };
-  if (normalized.includes('gold') || normalized.includes('titanium') || normalized.includes('geode')) return { id: normalized, rarity: 'uncommon', source: 'ore' };
-
-  // Common
-  if (normalized.includes('slime') || normalized.includes('bat') || normalized.includes('gel') || normalized.includes('echocrystal') || normalized.includes('sonicwing') || normalized.includes('elasticcore') || normalized.includes('pureessence')) return { id: normalized, rarity: 'common', source: 'monster' };
-  if (normalized.includes('bloodroot') || normalized.includes('silverleaf') || normalized.includes('mistweed')) return { id: normalized, rarity: 'common', source: 'plant' };
-  if (normalized.includes('blackoak') || normalized.includes('ironwood') || normalized.includes('bronzewood')) return { id: normalized, rarity: 'common', source: 'tree' };
-  if (normalized.includes('copper') || normalized.includes('iron') || normalized.includes('silver')) return { id: normalized, rarity: 'common', source: 'ore' };
   
   return null;
 }
