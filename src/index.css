@@ -17,6 +17,11 @@
   --font-heading: 'Outfit', sans-serif;
 }
 
+::selection {
+  background-color: var(--accent-primary);
+  color: var(--bg-base);
+}
+
 [data-theme="ocean"] {
   --bg-base: #08111e;
   --bg-panel: #0d1a2d;

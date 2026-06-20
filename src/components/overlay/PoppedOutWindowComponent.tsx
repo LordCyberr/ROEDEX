@@ -21,7 +21,7 @@ const tabsConfig = [
   { id: 'session_chest', icon: PackageOpen, label: 'Chest' }
 ];
 
-export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow }>(({ window: win }) => {
+export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow, constraintsRef?: any }>(({ window: win, constraintsRef }) => {
   const { id, x, y, isMinimized, isLocked } = win;
   const {
     updatePoppedOutWindow, mergeTab,
@@ -127,6 +127,37 @@ export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow }>(
     document.addEventListener('pointerup', onUp);
   };
 
+  React.useEffect(() => {
+    const handleResize = () => {
+      setTimeout(() => {
+        let currX = motionX.get();
+        let currY = motionY.get();
+        
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight;
+
+        const w = isMinimized ? 48 : (typeof windowWidth.get() === 'number' ? windowWidth.get() as number : (typeof defaultWidth === 'number' ? defaultWidth : 300));
+        const h = isMinimized ? 48 : (typeof windowHeight.get() === 'number' ? windowHeight.get() as number : (typeof defaultHeight === 'number' ? defaultHeight : 200));
+
+        let changed = false;
+        if (currX < 0) { currX = 0; changed = true; }
+        if (currX > screenW - 100) { currX = Math.max(0, screenW - w); changed = true; }
+        if (currY < 0) { currY = 0; changed = true; }
+        if (currY > screenH - 100) { currY = Math.max(0, screenH - Math.min(h, screenH * 0.85)); changed = true; }
+
+        if (changed) {
+          motionX.set(currX);
+          motionY.set(currY);
+          updatePoppedOutWindow(id, { x: currX, y: currY });
+        }
+      }, 100);
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial clamp
+    return () => window.removeEventListener('resize', handleResize);
+  }, [id, motionX, motionY, windowWidth, windowHeight, isMinimized, updatePoppedOutWindow, defaultWidth, defaultHeight]);
+
   const renderContent = () => {
     switch (id) {
       case 'global':
@@ -144,27 +175,13 @@ export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow }>(
 
 
 
-  const dragConstraintsMinimized = React.useMemo(() => ({
-    left: 0,
-    top: 0,
-    right: typeof window !== 'undefined' ? window.innerWidth - 48 : 1000,
-    bottom: typeof window !== 'undefined' ? window.innerHeight - 48 : 800
-  }), []);
-
-  const dragConstraintsWindow = React.useMemo(() => ({
-    left: 0,
-    top: 0,
-    right: typeof window !== 'undefined' ? window.innerWidth : 1000,
-    bottom: typeof window !== 'undefined' ? window.innerHeight : 800
-  }), []);
-
   if (isMinimized) {
     return (
       <motion.div
         key={`minimized-${id}`}
         style={{ x: motionX, y: motionY }}
         drag
-        dragConstraints={dragConstraintsMinimized}
+        dragConstraints={constraintsRef}
         dragMomentum={false}
         onDragEnd={() => {
           updatePoppedOutWindow(id, { x: motionX.get(), y: motionY.get() });
@@ -206,7 +223,7 @@ export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow }>(
       } as any}
       drag={!effectiveLock}
       dragControls={dragControls}
-      dragConstraints={dragConstraintsWindow}
+      dragConstraints={constraintsRef}
       dragListener={false}
       dragElastic={0}
       dragMomentum={false}
@@ -217,7 +234,7 @@ export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow }>(
         absolute top-0 left-0 ${effectiveLock ? 'pointer-events-none' : 'pointer-events-auto'} z-50 
         shadow-[0_12px_40px_rgba(0,0,0,0.9)] border-[var(--border-accent)] 
         flex transition-opacity duration-300 rounded-xl border
-        bg-[var(--bg-base)]/95 flex-col min-h-[150px] min-w-[220px] max-h-[85vh]
+        bg-[var(--bg-base)]/95 flex-col min-h-[50px] min-w-[150px] max-h-[85vh]
         opacity-[var(--idle-opacity)] hover:opacity-[var(--active-opacity)]
         overflow-hidden
         ${effectiveLock ? 'ring-1 ring-amber-500/30' : ''}

@@ -42,7 +42,13 @@ export const bobTranslations = {
       "I have questions about this game's lore. Many questions.",
       "Did you know Godwood takes 90 minutes to respawn? I tracked the server ticks.",
       "The Abstract Chain never sleeps, {username}.",
-      "Welcome to the Roots of Ember Vault, where RNG is king."
+      "Welcome to the Roots of Ember Vault, where RNG is king.",
+      "Have you taken a break recently? Don't burn out!",
+      "Did you know I love cotton candy, {name}? When are you gonna buy me one?",
+      "Hey {name}, have you checked out the Guild Pass? You can access unrestricted areas!",
+      "If you want high-tier loot and furious monsters, {name}, the Guild Pass is the way to go.",
+      "Don't forget to vote on the Abstract Chain! Your vote matters, {name}.",
+      "I heard the 7-day trial Guild Pass gives you enough runestones to level up super fast, {name}."
     ],
     priorityDrop: [
       "Wow, {username}! I just counted {qty}x {item} in the loot. That's incredible!",
@@ -221,40 +227,43 @@ export const bobTranslations = {
       "Outstanding work."
     ],
     zoneForest: [
-      "The Embervault forest feels alive.",
-      "Watch your surroundings. Aggro range is tricky here.",
-      "Fresh pixelated air!",
-      "Nice place for gathering low-tier mats.",
-      "The trees seem friendly. Except the ones that attack.",
-      "Lots of resources nearby.",
-      "I like this instance.",
-      "The forest is peaceful today. Too peaceful."
+      "The Embervault forest feels alive today. I love the smell of digital pine.",
+      "Watch your surroundings. Aggro range is tricky here with all the bushes.",
+      "Fresh pixelated air! And spiders. Definitely spiders.",
+      "Nice place for gathering low-tier mats. Don't let your guard down, though.",
+      "The trees seem friendly. Except the ones that attack. Yeah, watch out for those.",
+      "Lots of resources nearby! Let's chop some godwood.",
+      "I like this instance. The render distance is great here.",
+      "The forest is peaceful today. Too peaceful. Keep your sword ready."
     ],
     zoneCave: [
-      "It's darker down here. Hope you brought a torch.",
-      "I hear something moving. Boss music?",
-      "Stay alert. Caves mean ambushes.",
-      "Perfect place for mining rare ores.",
-      "The Embervault caves never sleep.",
-      "Keep your eyes open for traps.",
+      "It's darker down here. Hope you brought a torch, or turned your monitor brightness up.",
+      "I hear something moving. Is that boss music playing?",
+      "Stay alert. Caves mean tight corners and ambushes.",
+      "Perfect place for mining rare ores. Let's find some runestones!",
+      "The Embervault caves never sleep. And neither do the mobs.",
+      "Keep your eyes open for traps. The devs love putting traps in here.",
       "Something feels different. The RNG is heavy here.",
-      "Watch your step. Fall damage is a thing."
+      "Watch your step. Fall damage is a very real mechanic."
     ],
     zoneTown: [
-      "Civilization! A safe zone!",
-      "Time to relax and check the marketplace.",
-      "The town feels busy today. High player count.",
-      "A safe place at last. No aggro here.",
-      "Maybe somebody sells better gear.",
-      "Friendly NPCs everywhere.",
-      "Good place to rest and spend Runes."
+      "Civilization! A safe zone! I can finally turn my combat sensors off.",
+      "Time to relax, check the marketplace, and maybe repair that armor.",
+      "The town feels busy today. Look at all those players farming.",
+      "A safe place at last. No aggro here. Just pure lag from too many players.",
+      "Maybe somebody sells better gear nearby. Have you checked the merchants?",
+      "Friendly NPCs everywhere. Do you think they know they are in a game?",
+      "Good place to rest and spend those hard-earned Runestones."
     ],
     zoneHome: [
-      "Ah, finally, home sweet home.",
-      "Safe from the Abstract Chain... for now.",
-      "A good place to rest.",
-      "Home! Time to drop off the loot.",
-      "Feels good to be back indoors."
+      "Ah, Home sweet home! Finally, I can rest my subroutines.",
+      "Safe from the Abstract Chain... for now. Drop the loot in the stash!",
+      "A good place to rest. Did you make enough Runestones today?",
+      "Home! Time to drop off the loot and calculate our hourly efficiency.",
+      "Feels good to be back indoors. The Embervault is exhausting.",
+      "Ah, home. My internal cooling fans can finally slow down.",
+      "Are you going to decorate, or just dump your inventory on the floor?",
+      "Home sweet home! Nothing can aggro us in here. Probably."
     ],
     funny: [
       "I once tried analyzing a boss pattern. It just hit me anyway.",
@@ -282,7 +291,7 @@ export const bobTranslations = {
   },
   es: {
     login: ["¡Oye! ¿Listo para otra aventura?", "¡Bienvenido de nuevo!", "¡Qué bueno verte otra vez!", "¡La aventura aguarda!", "¡Listo cuando tú lo estés!", "¡Veamos qué descubrimos hoy!", "Eché un ojo mientras estabas fuera.", "El mundo se ve diferente hoy.", "¿Listo para explorar?", "¡Vamos a romper algunas rocas!", "Tengo un buen presentimiento sobre hoy.", "¡Hora de otro viaje!", "Bienvenido de nuevo, amigo.", "¡Te he estado esperando!", "El bosque te echaba de menos."],
-    idle: ["Me pregunto de dónde vienen todos estos minerales.", "¿Los lobos tienen lobos favoritos?", "Imagina ser un árbol por 500 años.", "Olvidé lo que estaba pensando.", "Este lugar se siente diferente hoy.", "Creo que nos están observando.", "No pasa nada sospechoso. Probablemente.", "Un día voy a contar cada roca.", "Me pregunto si los champiñones se sienten solos.", "Todavía no hay nubes de caramelo.", "Las cuevas están más silenciosas de lo normal.", "Debería empezar un diario.", "Hoy me siento con suerte.", "Tengo preguntas. Muchas preguntas.", "¿Sabías que Godwood tarda 90 minutos en reaparecer? Yo conté los ticks del servidor.", "La Cadena Abstracta nunca duerme, {username}.", "Bienvenido a Roots of Ember Vault, donde el RNG es rey."],
+    idle: ["Me pregunto de dónde vienen todos estos minerales.", "¿Los lobos tienen lobos favoritos?", "Imagina ser un árbol por 500 años.", "Olvidé lo que estaba pensando.", "Este lugar se siente diferente hoy.", "Creo que nos están observando.", "No pasa nada sospechoso. Probablemente.", "Un día voy a contar cada roca.", "Me pregunto si los champiñones se sienten solos.", "Todavía no hay nubes de caramelo.", "Las cuevas están más silenciosas de lo normal.", "Debería empezar un diario.", "Hoy me siento con suerte.", "Tengo preguntas. Muchas preguntas.", "¿Sabías que Godwood tarda 90 minutos en reaparecer? Yo conté los ticks del servidor.", "La Cadena Abstracta nunca duerme, {username}.", "Bienvenido a Roots of Ember Vault, donde el RNG es rey.", "¿Has tomado un descanso recientemente? ¡No te agotes!", "¿Sabías que me encanta el algodón de azúcar, {name}? ¿Cuándo me vas a comprar uno?", "Oye {name}, ¿has visto el Pase de Gremio? ¡Puedes acceder a áreas sin restricciones!", "Si quieres botín de alto nivel y monstruos furiosos, {name}, el Pase de Gremio es la mejor opción.", "¡No olvides votar en la Cadena Abstracta! Tu voto cuenta, {name}.", "Escuché que la prueba de 7 días del Pase de Gremio te da suficientes runas para subir de nivel súper rápido, {name}."],
     priorityDrop: [
       "¡Guau, {username}! Acabo de contar {qty}x {item} en el botín. ¡Eso es increíble!",
       "Cadena Abstracta verificada: {username} acaba de asegurar {qty}x {item}. Excelente trabajo.",
@@ -291,7 +300,7 @@ export const bobTranslations = {
       "¡Increíble, {username}! ¡Conseguiste {qty}x {item}!"
     ],
     mining: ["Ese mineral no se minará solo.", "¡Buen golpe!", "Roca adquirida.", "Ese mineral parecía caro.", "La minería es búsqueda de tesoros con pasos adicionales.", "Ayudaría, pero olvidé mi pico.", "Esa roca no tuvo oportunidad.", "La cueva se está iluminando.", "¡Más mineral! ¡Más cosas brillantes!", "Nunca se tiene suficiente mineral.", "Ese se veía valioso.", "Los mineros estarían orgullosos.", "Un día productivo bajo tierra.", "¡Sigue golpeando!"],
-    chopping: ["Lo siento, árbol.", "Otro que cae.", "El bosque no estará feliz.", "Ese árbol luchó valientemente.", "¡Madera recolectada!", "Los árboles tardan años en crecer. Tú tardas segundos en cortarlos.", "Escuché a ese árbol quejarse antes.", "Ese es uno robusto.", "Menos mal que los árboles no huyen.", "Más madera para proyectos futuros.", "Los leñadores aprueban.", "Ese es un gran tronco.", "¡Buen corte!", "¡Madera!"],
+    chopping: ["Lo siento, árbol.", "Otro que cae.", "El bosque no estará feliz.", "Ese árbol luchó valientemente.", "¡Madera recolectada!", "Los árboles tardan años en crecer. Tú tardas segundos en cortarlos.", "Escuché a ese árbol quejarse antes.", "Ese es uno robusto.", "Menos mal que los árboles no huyen.", "Más madera para proyectos futuros.", "Los leñadores aprueban.", "Ese es un gran tronco.", "¡Buen corte! Precisión milimétrica.", "¡Árbol va! Cuidado con tu cabeza."],
     gathering: ["Esa planta olía bien.", "La naturaleza provee.", "Cuidado con las raras.", "No sé qué hace esa planta.", "Parece útil.", "Esa es una cosecha saludable.", "A los alquimistas les encantaría eso.", "Otra planta salvada del aburrimiento.", "¡Ingredientes frescos!", "Buen hallazgo.", "Esa parece rara.", "Los herbolarios estarían celosos.", "Una buena colección.", "¡Plantas por todas partes!"],
     combatStart: ["¡Cuidado!", "¡Aquí vamos!", "¡Hora de pelear!", "¡No dejes que te muerda!", "¡Muéstrales lo que tienes!", "¡Te animaré desde aquí atrás!", "¡Tú puedes con esto!", "¡Aparece otro retador!", "¡Mantente alerta!", "¡Combate iniciado!", "¡Apunta al punto débil!", "¡Esquiva!", "Parecen enojados."],
     combatWin: ["¡Gran trabajo!", "Estuvo cerca.", "Haces que parezca fácil.", "¡Otra victoria!", "No tuvieron oportunidad.", "¡Hora del botín!", "Bien peleado.", "Totalmente ayudé con eso.", "Buena técnica.", "Te estás volviendo más fuerte.", "Ejecución impecable.", "Eso requiere habilidad."],
@@ -309,7 +318,7 @@ export const bobTranslations = {
   },
   ru: {
     login: ["Эй! Готов к новым приключениям?", "С возвращением!", "Рад снова тебя видеть!", "Приключения ждут!", "Готов, когда и ты!", "Посмотрим, что мы сегодня откроем!", "Я приглядывал за вещами, пока тебя не было.", "Мир сегодня выглядит иначе.", "Готов к исследованиям?", "Пойдем разобьем пару камней!", "У меня хорошее предчувствие на сегодня.", "Время для еще одного путешествия!", "С возвращением, друг.", "Я так долго ждал!", "Лес скучал по тебе."],
-    idle: ["Интересно, откуда берется вся эта руда.", "Есть ли у волков любимые волки?", "Представь, каково это — быть деревом 500 лет.", "Я забыл, о чем думал.", "Сегодня здесь всё ощущается иначе.", "Мне кажется, за нами наблюдают.", "Ничего подозрительного не происходит. Наверное.", "Однажды я пересчитаю все камни.", "Интересно, бывает ли грибам одиноко.", "Всё еще никаких сахарных облаков.", "В пещерах тише обычного.", "Мне стоит завести дневник.", "Сегодня удачный день.", "У меня есть вопросы. Много вопросов.", "А ты знал, что Godwood возрождается 90 минут? Я считал тики сервера.", "Абстрактная Цепь никогда не спит, {username}.", "Добро пожаловать в Roots of Ember Vault, где рандом правит всем."],
+    idle: ["Интересно, откуда берется вся эта руда.", "Есть ли у волков любимые волки?", "Представь, каково это — быть деревом 500 лет.", "Я забыл, о чем думал.", "Сегодня здесь всё ощущается иначе.", "Мне кажется, за нами наблюдают.", "Ничего подозрительного не происходит. Наверное.", "Однажды я пересчитаю все камни.", "Интересно, бывает ли грибам одиноко.", "Всё еще никаких сахарных облаков.", "В пещерах тише обычного.", "Мне стоит завести дневник.", "Сегодня удачный день.", "У меня есть вопросы. Много вопросов.", "А ты знал, что Godwood возрождается 90 минут? Я считал тики сервера.", "Абстрактная Цепь никогда не спит, {username}.", "Добро пожаловать в Roots of Ember Vault, где правит RNG.", "Ты давно делал перерыв? Не перегори!", "А ты знал, что я люблю сладкую вату, {name}? Когда ты мне ее купишь?", "Эй, {name}, ты уже проверял Пропуск Гильдии? С ним можно попасть в закрытые зоны!", "Если хочешь крутой лут и яростных монстров, {name}, Пропуск Гильдии — это то, что нужно.", "Не забудь проголосовать в Абстрактной Цепи! Твой голос важен, {name}.", "Я слышал, 7-дневная пробная версия Пропуска Гильдии дает достаточно рун, чтобы быстро поднять уровень, {name}."],
     priorityDrop: [
       "Вау, {username}! Я насчитал {qty}x {item} в луте. Невероятно!",
       "Абстрактная Цепь подтверждает: {username} добыл {qty}x {item}. Отличная работа.",
@@ -318,7 +327,7 @@ export const bobTranslations = {
       "Невероятно, {username}! Ты получил {qty}x {item}!"
     ],
     mining: ["Эта руда сама себя не добудет.", "Отличный удар!", "Камень добыт.", "Эта руда выглядела дорогой.", "Шахтерство — это охота за сокровищами с лишними шагами.", "Я бы помог, но забыл свою кирку.", "У этого камня не было ни единого шанса.", "В пещере становится светлее.", "Больше руды! Больше блестящих вещей!", "Руды никогда не бывает слишком много.", "Этот выглядит ценным.", "Шахтеры бы гордились.", "Продуктивный день под землей.", "Продолжай бить!"],
-    chopping: ["Прости, дерево.", "Еще одно падает.", "Лес не будет рад.", "Это дерево храбро сражалось.", "Древесина собрана!", "Деревьям нужны годы, чтобы вырасти. Тебе нужны секунды, чтобы их срубить.", "Я слышал, как это дерево жаловалось ранее.", "Вот это крепкое.", "Хорошо, что деревья не умеют бегать.", "Больше дерева для будущих проектов.", "Лесорубы одобряют.", "Какой огромный ствол.", "Отличный рубка!", "Берегись, падает!"],
+    chopping: ["Прости, дерево.", "Еще одно падает.", "Лес не будет рад.", "Это дерево храбро сражалось.", "Древесина собрана!", "Деревьям нужны годы, чтобы вырасти. Тебе нужны секунды, чтобы их срубить.", "Я слышал, как это дерево жаловалось ранее.", "Вот это крепкое.", "Хорошо, что деревья не умеют бегать.", "Больше дерева для будущих проектов.", "Лесорубы одобряют.", "Какой огромный ствол.", "Отличная рубка!", "Берегись, падает!"],
     gathering: ["Это растение приятно пахло.", "Природа щедра.", "Осторожно с редкими.", "Я не знаю, что делает это растение.", "Выглядит полезным.", "Это хороший урожай.", "Алхимики бы это оценили.", "Еще одно растение спасено от скуки.", "Свежие ингредиенты!", "Отличная находка.", "Это выглядит редким.", "Травники бы позавидовали.", "Прекрасная коллекция.", "Растения повсюду!"],
     combatStart: ["Осторожно!", "Погнали!", "Время драться!", "Не дай ему укусить!", "Покажи им, на что способен!", "Я буду болеть за тебя отсюда!", "Ты справишься!", "Появился новый соперник!", "Будь начеку!", "Бой начался!", "Целься в слабое место!", "Уклоняйся!", "Они выглядят злыми."],
     combatWin: ["Отличная работа!", "Это было близко.", "У тебя это выглядит легко.", "Еще одна победа!", "У них не было ни шанса.", "Время лута!", "Отличный бой.", "Я абсолютно точно в этом помог.", "Хорошая техника.", "Ты становишься сильнее.", "Безупречное исполнение.", "Для этого нужен навык."],
@@ -336,10 +345,10 @@ export const bobTranslations = {
   },
   ko: {
     login: ["안녕! 또 다른 모험을 준비했어?", "다시 온 걸 환영해!", "다시 만나서 반가워!", "모험이 기다리고 있어!", "준비되면 말해!", "오늘 뭘 발견할지 볼까!", "네가 없는 동안 내가 지켜봤지.", "세상이 오늘따라 달라 보여.", "탐험할 준비 됐어?", "바위 깨러 가자!", "오늘 예감이 좋은데.", "또 다른 여정을 시작할 시간이야!", "다시 온 걸 환영해, 친구.", "기다리고 있었어!", "숲이 널 그리워했어."],
-    idle: ["이 모든 광석이 어디서 오는지 궁금해.", "늑대들도 좋아하는 늑대가 있을까?", "500년 동안 나무로 사는 걸 상상해봐.", "무슨 생각하고 있었는지 까먹었어.", "오늘 이곳은 느낌이 달라.", "누가 우릴 지켜보고 있는 것 같아.", "수상한 일은 안 일어나고 있어. 아마도.", "언젠가 모든 바위를 세어볼 거야.", "버섯들도 외로울까?", "아직 솜사탕 구름은 없네.", "동굴이 평소보다 조용해.", "일기를 써야 할까 봐.", "오늘 운이 좋은 것 같아.", "질문이 많아. 아주 많아.", "갓우드(Godwood)가 다시 자라는데 90분이 걸린다는 거 알아? 서버 틱을 셌거든.", "앱스트랙트 체인(Abstract Chain)은 절대 잠들지 않아, {username}.", "Roots of Ember Vault에 온 걸 환영해, 여긴 운이 지배하는 곳이지."],
+    idle: ["이 모든 광석이 어디서 오는지 궁금해.", "늑대들도 좋아하는 늑대가 있을까?", "500년 동안 나무로 사는 걸 상상해봐.", "무슨 생각하고 있었는지 까먹었어.", "오늘 이곳은 느낌이 달라.", "누가 우릴 지켜보고 있는 것 같아.", "수상한 일은 안 일어나고 있어. 아마도.", "언젠가 모든 바위를 세어볼 거야.", "버섯들도 외로울까?", "아직 솜사탕 구름은 없네.", "동굴이 평소보다 조용해.", "일기를 써야 할까 봐.", "오늘 운이 좋은 것 같아.", "질문이 많아. 아주 많아.", "갓우드(Godwood)가 다시 자라는데 90분이 걸린다는 거 알아? 서버 틱을 셌거든.", "추상 체인(Abstract Chain)은 절대 잠들지 않아요, {username}.", "RNG가 지배하는 Roots of Ember Vault에 오신 것을 환영합니다.", "최근에 휴식은 취하셨나요? 너무 무리하지 마세요!", "제가 솜사탕 좋아하는 거 아세요, {name}? 언제 사주실 건가요?", "저기 {name}, 길드 패스 확인해보셨어요? 제한 구역에 들어갈 수 있다고요!", "고급 전리품과 사나운 몬스터를 원한다면, {name}, 길드 패스가 정답이에요.", "추상 체인(Abstract Chain)에 투표하는 거 잊지 마세요! 당신의 표가 중요해요, {name}.", "길드 패스 7일 체험판을 쓰면 레벨업을 엄청 빨리 할 수 있는 룬스톤을 준대요, {name}."],
     priorityDrop: [
       "와, {username}! 방금 {qty}x {item}을 발견했어. 대단해!",
-      "앱스트랙트 체인 검증 완료: {username}님이 {qty}x {item}을 획득했습니다. 아주 좋군.",
+      "앱스트랙트 체인 검증 완료: {username}님이 {qty}x {item}을 획득했습니다. 아주 좋군!",
       "믿을 수가 없네! {username}, 진짜로 {qty}x {item}을 얻다니!",
       "내 센서에 따르면 {username}님이 {qty}x {item}을 찾았어! 완전 럭키!",
       "말도 안 돼, {username}! 네가 {qty}x {item}을 얻었어!"

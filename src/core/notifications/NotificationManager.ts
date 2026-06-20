@@ -72,13 +72,13 @@ export class NotificationManager {
       message: 'Initializing ROEDEX interface...'
     });
 
-    // Wait 5 seconds, then send the connection established / welcome toast
+    // Wait 8 seconds (instead of 5) to let the loading animation loop smoothly before sending the connection established / welcome toast
     setTimeout(() => {
       store.addNotification({
         type: 'system-online',
         title: 'CONNECTION ESTABLISHED',
         message: username ? `Welcome, ${username}!` : `Welcome to ROEDEX!`
       });
-    }, 5000);
+    }, 8000);
   }
 }

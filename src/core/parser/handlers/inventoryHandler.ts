@@ -73,15 +73,20 @@ export function handleInventoryEvent(
       const timeSinceLogin = Date.now() - (parserState.loginTime || 0);
       
       if (!state.isChestOpen && !parserState.isBlacksmithOpen && timeSinceLogin > 3000) {
-        parserState.lastChestOpenTime = Date.now();
-        state.setIsChestOpen(true);
-        BobCompanion.onChestOpen();
-        
-        if (state.autoMinimizeOnChest) {
-          state.setIsMinimized(true);
-          Object.keys(state.poppedOutWindows).forEach(id => {
-            state.updatePoppedOutWindow(id, { isMinimized: true });
-          });
+        // Prevent opening the chest HUD if the packet was triggered by a weapon break or tool swap
+        if (Date.now() - parserState.lastWeaponBreakTime < 2000) {
+          // Do nothing
+        } else {
+          parserState.lastChestOpenTime = Date.now();
+          state.setIsChestOpen(true);
+          BobCompanion.onChestOpen();
+          
+          if (state.autoMinimizeOnChest) {
+            state.setIsMinimized(true);
+            Object.keys(state.poppedOutWindows).forEach(id => {
+              state.updatePoppedOutWindow(id, { isMinimized: true });
+            });
+          }
         }
       }
       

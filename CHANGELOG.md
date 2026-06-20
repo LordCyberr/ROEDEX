@@ -1,9 +1,14 @@
 # ROEDEX Changelog
 
-## v0.0.1 - Initial Stable Release & Hotfixes (2026-06-16)
+## v0.0.1 - Initial Stable Release & Hotfixes (2026-06-20)
 
 ### ✨ Features
-- Added a Developer Override hotkey (Ctrl+Shift+C) to instantly skip connection checks and tutorials for testing.
+- **Unrestricted Window Resizing:** Removed minimum height and width limits on pop-out windows, allowing users to tightly crop windows exactly around their content (supports full 8-way custom resizing).
+- **Auto-Expand Intelligence:** Reduced minimum boundaries seamlessly integrate with the auto-expand logic, snapping perfectly to your data when the Reset Size button is clicked.
+- **Improved Global Hotkeys:** Changed the core hotkeys (Layout, Reset, Lock) from requiring `Ctrl+Shift` to simply `Shift` (`Shift+H`, `Shift+R`, `Shift+U`) to prevent conflicts with standard browser actions like hard reloads or opening history.
+- **Sleek Text Selection:** Added dynamic `::selection` CSS styling. Highlighting text now perfectly matches the active theme's accent color while keeping the text highly visible, completely fixing illegible white-on-white text selection in dark themes.
+- **Updated Socials:** X (formerly Twitter) links and icons have been updated in the About tab.
+- Added a Developer Override hotkey (Alt+Shift+D) to instantly skip connection checks and tutorials for testing.
 - Premium boot sequence toasts now gracefully stretch to accommodate dynamic text and automatically inherit the active ROEDEX theme.
 - Replaced the placeholder flower in the tutorial with a realistic Corrupted Goblin to better demonstrate the respawn queue.
 - Added sleek ring-zoom-in beacon animations to guide users during interactive tutorial steps.
@@ -20,6 +25,9 @@
 - Premium Themes: Obsidian Gold, Hologram, and Ruby Glass.
 
 ### 🛠️ Fixes & Optimizations
+- **Memory Leak Audit Passed:** Conducted a deep architectural audit. Every React `useEffect`, `setInterval`, and `addEventListener` is now rigorously garbage-collected, ensuring zero memory bloat over extreme 12+ hour gaming sessions.
+- **Build Pipeline Optimization:** Increased Vite's `chunkSizeWarningLimit` and removed unnecessary warnings to deliver a leaner, faster production build.
+- **True Asset Optimization:** Fully purged all rogue `.jpg` files from the repository and hard-converted all UI assets into perfectly optimized transparent `.png` icons via PowerShell scripts.
 - Adjusted Bob's default spawn location to prevent him from overlapping with the top-right in-game settings icons.
 - Restored the premium boot sequence toasts to fire perfectly when the game establishes a connection and receives the player name.
 - Fixed an edge case where closing the changelog manually could stall the interactive tutorial.

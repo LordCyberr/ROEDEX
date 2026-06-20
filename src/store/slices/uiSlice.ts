@@ -42,17 +42,17 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
     return { poppedOutWindows: newWindows };
   }),
   mergeAllTabs: () => set({ poppedOutWindows: {} }),
-  updatePoppedOutWindow: (id, updates) => set((state) => {
-    const win = state.poppedOutWindows[id];
-    if (!win) return state;
-    return {
+  updatePoppedOutWindow: (id: string, updates: any) =>
+    set((state) => ({
       poppedOutWindows: {
         ...state.poppedOutWindows,
-        [id]: { ...win, ...updates }
+        [id]: { ...state.poppedOutWindows[id], ...updates }
       }
-    };
-  }),
-
+    })),
+    
+  currentNpcDialogue: null,
+  setCurrentNpcDialogue: (dialogue) => set({ currentNpcDialogue: dialogue }),
+  
   language: 'en',
   setLanguage: (lang) => set({ language: lang }),
   firstTimeWizardCompleted: false,
@@ -110,7 +110,13 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
   globalScale: 1.0,
   setGlobalScale: (val: number) => set({ globalScale: val }),
   minimizeHotkey: 'Ctrl+Shift+M',
+  toggleLayoutHotkey: 'Shift+H',
+  resetSizeHotkey: 'Shift+R',
+  lockUiHotkey: 'Shift+U',
   setMinimizeHotkey: (key: string) => set({ minimizeHotkey: key }),
+  setToggleLayoutHotkey: (key: string) => set({ toggleLayoutHotkey: key }),
+  setResetSizeHotkey: (key: string) => set({ resetSizeHotkey: key }),
+  setLockUiHotkey: (key: string) => set({ lockUiHotkey: key }),
   
   displayDensity: 'standard',
   setDisplayDensity: (density) => set({ displayDensity: density }),

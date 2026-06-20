@@ -99,7 +99,11 @@ export const HotkeyRow: React.FC<{ label: string; description?: string; value: s
       if (e.altKey) parts.push('Alt');
       if (e.metaKey) parts.push('Meta');
       
-      const keyStr = e.key === ' ' ? 'Space' : e.key;
+      let keyStr = e.code;
+      if (keyStr.startsWith('Key')) keyStr = keyStr.replace('Key', '');
+      else if (keyStr.startsWith('Digit')) keyStr = keyStr.replace('Digit', '');
+      else if (e.key === ' ') keyStr = 'Space';
+      
       parts.push(keyStr.toUpperCase());
       
       onChange(parts.join('+'));

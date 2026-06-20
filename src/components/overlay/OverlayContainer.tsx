@@ -24,6 +24,7 @@ import { CompanionGuideOverlay } from './CompanionGuideOverlay';
 import { FocusHighlight } from './FocusHighlight';
 import { LifetimeStatsWindow } from './LifetimeStatsWindow';
 import { RunHistoryWindow } from './RunHistoryWindow';
+import { NPCTranslationBubble } from './NPCTranslationBubble';
 import { Profiler, ProfilerOnRenderCallback } from 'react';
 
 export const OverlayContainer: React.FC = () => {
@@ -117,8 +118,8 @@ export const OverlayContainer: React.FC = () => {
         }
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, []);
 
   React.useEffect(() => {
@@ -129,15 +130,21 @@ export const OverlayContainer: React.FC = () => {
         
         const screenW = window.innerWidth;
         const screenH = window.innerHeight;
+        
+        const w = overlayRef.current ? overlayRef.current.getBoundingClientRect().width : 260;
+        const h = overlayRef.current ? overlayRef.current.getBoundingClientRect().height : 200;
 
-        if (currX < 0) currX = 0;
-        if (currX > screenW - 100) currX = screenW - 260;
-        if (currY < 0) currY = 0;
-        if (currY > screenH - 100) currY = screenH - 200;
+        let changed = false;
+        if (currX < 0) { currX = 0; changed = true; }
+        if (currX > screenW - w) { currX = Math.max(0, screenW - w); changed = true; }
+        if (currY < 0) { currY = 0; changed = true; }
+        if (currY > screenH - h) { currY = Math.max(0, screenH - h); changed = true; }
 
-        x.set(currX);
-        y.set(currY);
-        setOverlayPosition({ x: currX, y: currY });
+        if (changed) {
+          x.set(currX);
+          y.set(currY);
+          setOverlayPosition({ x: currX, y: currY });
+        }
       }, 100);
     };
 
@@ -271,7 +278,7 @@ export const OverlayContainer: React.FC = () => {
         {isGameLoaded && (
           <>
             {isMinimized ? (
-              <MinimizedOrb />
+              <MinimizedOrb constraintsRef={containerRef} />
             ) : (
               <motion.div 
                 ref={overlayRef}
@@ -322,7 +329,7 @@ export const OverlayContainer: React.FC = () => {
             
             {Object.values(poppedOutWindows).map(win => (
               <ErrorBoundary key={win.id}>
-                <PoppedOutWindowComponent window={win} />
+                <PoppedOutWindowComponent window={win} constraintsRef={containerRef} />
               </ErrorBoundary>
             ))}
             
@@ -337,6 +344,8 @@ export const OverlayContainer: React.FC = () => {
             )}
           </>
         )}
+        
+        <NPCTranslationBubble />
       </div>
       
       <ErrorBoundary><NotificationToaster /></ErrorBoundary>

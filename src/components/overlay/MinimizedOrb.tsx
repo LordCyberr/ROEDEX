@@ -4,7 +4,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { motion, useMotionValue } from 'motion/react';
 import { Zap, Activity, Sword, Pickaxe, Shield } from 'lucide-react'; 
 
-export const MinimizedOrb: React.FC = () => {
+export const MinimizedOrb: React.FC<{ constraintsRef?: any }> = ({ constraintsRef }) => {
   const {
     connected, notifications, setIsMinimized,
     orbSize, orbBorderThickness, orbPosition, setOrbPosition,
@@ -86,21 +86,13 @@ export const MinimizedOrb: React.FC = () => {
   const iconColor = 'text-[var(--accent-primary)] drop-shadow-[0_0_10px_var(--accent-primary)]';
   
   const iconSize = Math.round(orbSize * 0.42);
-
-  const dragConstraints = React.useMemo(() => ({ 
-    left: 0, 
-    top: 0, 
-    right: typeof globalThis !== 'undefined' ? globalThis.innerWidth - orbSize : 1000, 
-    bottom: typeof globalThis !== 'undefined' ? globalThis.innerHeight - orbSize : 1000 
-  }), [orbSize]);
-
   return (
     <motion.div 
       ref={dragRef}
       style={{ x, y }}
       drag={!isUILocked}
       dragMomentum={false}
-      dragConstraints={dragConstraints}
+      dragConstraints={constraintsRef}
       onDragEnd={() => {
         setOrbPosition({ x: x.get(), y: y.get() });
       }}

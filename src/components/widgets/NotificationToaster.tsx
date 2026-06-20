@@ -7,7 +7,6 @@ import { Sparkles, Star, Info, Sword, Pickaxe, Map, CheckCircle2 } from 'lucide-
 const BootSequenceToast = ({ notif, animConfig, width, height, opacity, isTop, toastShape }: any) => {
   const [displayText, setDisplayText] = useState('');
   const [subTextIndex, setSubTextIndex] = useState(0);
-  const [cycleIndex, setCycleIndex] = useState(0);
   
   const subTexts = [
     'INITIALIZING MODULES...',
@@ -34,14 +33,9 @@ const BootSequenceToast = ({ notif, animConfig, width, height, opacity, isTop, t
       setSubTextIndex(prev => Math.min(prev + 1, subTexts.length - 1));
     }, 1500);
 
-    const blockInterval = setInterval(() => {
-      setCycleIndex(prev => (prev + 1) % dotsCount);
-    }, 400);
-
     return () => {
       clearInterval(typeInterval);
       clearInterval(subInterval);
-      clearInterval(blockInterval);
     };
   }, [notif.title]);
 
@@ -74,13 +68,11 @@ const BootSequenceToast = ({ notif, animConfig, width, height, opacity, isTop, t
         </span>
         <div className="flex gap-1.5 ml-5">
           {Array.from({ length: dotsCount }).map((_, i) => (
-            <div 
+            <motion.div 
               key={i} 
-              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                i <= cycleIndex 
-                  ? 'bg-[#22d3ee] shadow-[0_0_10px_#22d3ee] scale-110' 
-                  : 'bg-[#22d3ee]/20'
-              }`} 
+              animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1.2, 0.8] }}
+              transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2, ease: "easeInOut" }}
+              className="w-2.5 h-2.5 rounded-full bg-[#22d3ee] shadow-[0_0_10px_#22d3ee]"
             />
           ))}
         </div>

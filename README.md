@@ -30,6 +30,8 @@ Built on **Manifest V3**, React, and Tailwind CSS, it features a deeply customiz
 - ⚔️ **Quests & Combat Tracking**: View active quests and track weapon/armor durability dynamically.
 - 🌐 **Multi-Language Support**: Fully localized in **English, Spanish, Russian, and Korean**, including pinpoint MMO-style location guides.
 - 🎨 **Glassmorphism UI**: Featuring Obsidian Gold, Hologram, and Ruby Glass themes with draggable, detachable, and minimizable windows.
+- 📏 **Unrestricted Customization**: Full 8-way custom resizing for all pop-out windows with intelligent auto-expand support.
+- ⚡ **Highly Optimized**: Passed rigorous memory leak audits for 12+ hour gaming sessions, with fully compressed pure-PNG assets and lean Vite build chunks.
 
 ---
 

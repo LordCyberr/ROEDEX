@@ -54,6 +54,12 @@ export interface Quest {
   currentAmount: number; // mapped from result.currentAmount
 }
 
+export interface NpcDialogueData {
+  speaker: string;
+  originalText: string;
+  translatedText: string | null;
+}
+
 export interface UISlice {
   isChangelogOpen: boolean;
   setIsChangelogOpen: (open: boolean) => void;
@@ -67,7 +73,7 @@ export interface UISlice {
   isLifetimeStatsOpen: boolean;
   setIsLifetimeStatsOpen: (open: boolean) => void;
   isRunHistoryOpen: boolean;
-  setIsRunHistoryOpen: (open: boolean) => void;
+  setIsRunHistoryOpen: (runHistoryOpen: boolean) => void;
 
   profilerMetrics: {
     parseTime: { average: number; max: number; lastSpike: number; totalEvents: number };
@@ -86,6 +92,10 @@ export interface UISlice {
   mergeAllTabs: () => void;
   updatePoppedOutWindow: (id: string, updates: Partial<PoppedOutWindow>) => void;
   
+  // NPC Dialogue
+  currentNpcDialogue: NpcDialogueData | null;
+  setCurrentNpcDialogue: (dialogue: NpcDialogueData | null) => void;
+  
   language: Language;
   setLanguage: (lang: Language) => void;
 
@@ -100,6 +110,13 @@ export interface UISlice {
   setIsMinimized: (isMinimized: boolean) => void;
   globalScale: number; // Global UI Scale for 4K displays
   minimizeHotkey: string;
+  toggleLayoutHotkey: string;
+  resetSizeHotkey: string;
+  lockUiHotkey: string;
+  setMinimizeHotkey: (key: string) => void;
+  setToggleLayoutHotkey: (key: string) => void;
+  setResetSizeHotkey: (key: string) => void;
+  setLockUiHotkey: (key: string) => void;
   
   layoutMode: 'vertical' | 'horizontal';
   setLayoutMode: (mode: 'vertical' | 'horizontal') => void;
@@ -107,7 +124,6 @@ export interface UISlice {
   setVerticalGroupingMode: (mode: 'grouped' | 'flat') => void;
   setTabDimensions: (tab: string, width?: number, height?: number) => void;
   setGlobalScale: (val: number) => void;
-  setMinimizeHotkey: (key: string) => void;
   overlayPosition: { x: number, y: number };
   setOverlayPosition: (pos: { x: number, y: number }) => void;
   orbPosition: { x: number, y: number };

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTrackerStore } from '../../../store/trackerStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '../../../hooks/useTranslation';
-import { Heart, Copy, CheckCircle2, Youtube, Twitter } from 'lucide-react';
+import { Heart, Copy, CheckCircle2, Youtube, Github } from 'lucide-react';
 
 export const AboutSettings: React.FC = () => {
   const store = useTrackerStore(useShallow(state => ({
@@ -128,24 +128,34 @@ export const AboutSettings: React.FC = () => {
       </div>
       {/* Socials Section */}
       <div className="p-1">
-        <div className="grid grid-cols-2 gap-2">
-          <a
-            href="https://youtube.com/"
-            target="_blank"
+        <div className="grid grid-cols-3 gap-2">
+          <a 
+            href="https://www.youtube.com/@LordCyberr" 
+            target="_blank" 
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-panel)] text-[10px] font-bold text-[var(--text-primary)] hover:border-red-500 hover:text-red-500 hover:bg-red-500/10 transition-all group"
+            className="flex items-center justify-center gap-2 px-3 py-2 bg-[var(--bg-base)] border border-[var(--border-subtle)] rounded-lg hover:border-red-500/50 hover:bg-red-500/5 transition-all text-[11px] font-bold text-[var(--text-primary)] group"
           >
             <Youtube size={14} className="text-[var(--text-muted)] group-hover:text-red-500 transition-colors" />
             YouTube
           </a>
-          <a
-            href="https://twitter.com/"
-            target="_blank"
+          
+          <a 
+            href="https://x.com/LordCyberr" 
+            target="_blank" 
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-panel)] text-[10px] font-bold text-[var(--text-primary)] hover:border-blue-400 hover:text-blue-400 hover:bg-blue-400/10 transition-all group"
+            className="flex items-center justify-center gap-2 px-3 py-2 bg-[var(--bg-base)] border border-[var(--border-subtle)] rounded-lg hover:border-white/50 hover:bg-white/5 transition-all text-[11px] font-bold text-[var(--text-primary)] group"
           >
-            <Twitter size={14} className="text-[var(--text-muted)] group-hover:text-blue-400 transition-colors" />
-            Twitter
+            X
+          </a>
+
+          <a 
+            href="https://github.com/LordCyberr/ROEDEX" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 px-3 py-2 bg-[var(--bg-base)] border border-[var(--border-subtle)] rounded-lg hover:border-gray-400/50 hover:bg-gray-400/5 transition-all text-[11px] font-bold text-[var(--text-primary)] group"
+          >
+            <Github size={14} className="text-[var(--text-muted)] group-hover:text-gray-400 transition-colors" />
+            GitHub
           </a>
         </div>
       </div>

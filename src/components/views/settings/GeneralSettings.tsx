@@ -32,7 +32,13 @@ export const GeneralSettings: React.FC = () => {
     autoMinimizeOnChest: state.autoMinimizeOnChest,
     setAutoMinimizeOnChest: state.setAutoMinimizeOnChest,
     minimizeHotkey: state.minimizeHotkey,
-    setMinimizeHotkey: state.setMinimizeHotkey
+    setMinimizeHotkey: state.setMinimizeHotkey,
+    toggleLayoutHotkey: state.toggleLayoutHotkey,
+    setToggleLayoutHotkey: state.setToggleLayoutHotkey,
+    resetSizeHotkey: state.resetSizeHotkey,
+    setResetSizeHotkey: state.setResetSizeHotkey,
+    lockUiHotkey: state.lockUiHotkey,
+    setLockUiHotkey: state.setLockUiHotkey
   })));
   const { t } = useTranslation();
 
@@ -115,6 +121,9 @@ export const GeneralSettings: React.FC = () => {
       <div className="text-[9px] font-bold text-[var(--text-muted)] mt-4 mb-1 pl-1">BEHAVIOR</div>
       <ToggleRow label="Auto-Minimize on Chest Open" value={store.autoMinimizeOnChest} onChange={(v) => store.setAutoMinimizeOnChest(v)} />
       <HotkeyRow label="Minimize/Maximize Hotkey" value={store.minimizeHotkey || 'Ctrl+Shift+M'} onChange={store.setMinimizeHotkey} />
+      <HotkeyRow label="Toggle Layout Hotkey" value={store.toggleLayoutHotkey || 'Shift+H'} onChange={store.setToggleLayoutHotkey} />
+      <HotkeyRow label="Reset Size/Position Hotkey" value={store.resetSizeHotkey || 'Shift+R'} onChange={store.setResetSizeHotkey} />
+      <HotkeyRow label="Lock/Unlock UI Hotkey" value={store.lockUiHotkey || 'Shift+U'} onChange={store.setLockUiHotkey} />
     </>
   );
 };

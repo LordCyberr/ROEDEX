@@ -24,7 +24,7 @@ export const DebugPanel: React.FC = () => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const width = useMotionValue(240);
-  const height = useMotionValue(300); // Increased height to fit new section
+  const height = useMotionValue(400); // Increased height to fit new section
 
   const [fps, setFps] = React.useState(0);
   const [ram, setRam] = React.useState(0);
@@ -118,12 +118,12 @@ export const DebugPanel: React.FC = () => {
   return (
     <motion.div
       ref={panelRef}
-      style={{ x, y, width, height, minHeight: 300, minWidth: 240 }}
+      style={{ x, y, width, height, minHeight: 400, minWidth: 240 }}
       drag
       dragMomentum={false}
       dragListener={false}
       dragControls={dragControls}
-      className="fixed bottom-4 right-4 z-[100]  bg-black/90 backdrop-blur-md border border-green-500/30 rounded-lg shadow-[0_0_20px_rgba(34,197,94,0.15)] font-mono text-[10px] uppercase overflow-hidden pointer-events-auto"
+      className="fixed bottom-4 right-4 z-[100] bg-black/90 backdrop-blur-md border border-green-500/30 rounded-lg shadow-[0_0_20px_rgba(34,197,94,0.15)] font-mono text-[10px] uppercase overflow-y-auto pointer-events-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-black/40 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-green-500/30 hover:[&::-webkit-scrollbar-thumb]:bg-green-500/50 [&::-webkit-scrollbar-thumb]:rounded-full"
     >
       {/* Header */}
       <div 
@@ -206,6 +206,44 @@ export const DebugPanel: React.FC = () => {
           <div className="flex justify-between">
             <div className="flex items-center gap-1.5"><Cpu size={10} /> MOBS TRACKED:</div>
             <span className="text-green-300 font-bold">{mobCount}</span>
+          </div>
+        </div>
+
+        <div className="w-full h-px bg-green-500/20" />
+
+        {/* Mock Data Injection */}
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-green-400 font-bold mb-2">
+            <Box size={12} />
+            <span>MOCK UI TESTS</span>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                useTrackerStore.getState().setCurrentNpcDialogue({
+                  speaker: 'Tessa',
+                  originalText: "I swear...",
+                  translatedText: "¡Lo juro, por cada tronco que corto, aparecen dos más detrás de mí. O alguien está haciendo trabajo extra a escondidas... o el bosque está creciendo por despecho!"
+                });
+                setTimeout(() => useTrackerStore.getState().setCurrentNpcDialogue(null), 6000);
+              }}
+              className="flex-1 py-1 bg-blue-500/20 hover:bg-blue-500/40 border border-blue-500/50 rounded text-blue-300 transition-colors text-[9px]"
+            >
+              SPAWN TESSA
+            </button>
+            <button
+              onClick={() => {
+                useTrackerStore.getState().setCurrentNpcDialogue({
+                  speaker: 'Finn',
+                  originalText: "Shhh...",
+                  translatedText: "¡Shhh! Me estoy escondiendo de los demás. ¡Si me encuentran, tendré que ser el limo de nuevo!"
+                });
+                setTimeout(() => useTrackerStore.getState().setCurrentNpcDialogue(null), 5000);
+              }}
+              className="flex-1 py-1 bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/50 rounded text-purple-300 transition-colors text-[9px]"
+            >
+              SPAWN FINN
+            </button>
           </div>
         </div>
 

@@ -12,6 +12,7 @@ export default defineConfig({
     crx({ manifest }),
   ],
   build: {
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks: {
