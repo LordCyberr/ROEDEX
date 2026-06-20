@@ -86,14 +86,14 @@ function App() {
         return;
       }
 
-      // Ctrl + Shift + D: Toggle Debug Panel (Requires Developer Mode)
-      if (store.developerMode && e.ctrlKey && e.shiftKey && e.code === 'KeyD') {
+      // Alt + Shift + X: Toggle Debug Panel (Available for reviewer transparency)
+      if (!e.ctrlKey && e.altKey && e.shiftKey && e.code === 'KeyX') {
         e.preventDefault();
         store.toggleDebugPanel();
         return;
       }
 
-      // Alt + Shift + D: Reviewer Force Overlay (Bypass Login)
+      // Alt + Shift + D: Reviewer Force Overlay & Intro (Bypass Login)
       if (!e.ctrlKey && e.altKey && e.shiftKey && e.code === 'KeyD') {
         e.preventDefault();
         const newState = !store.devForceOverlay;
@@ -101,10 +101,10 @@ function App() {
         
         if (newState) {
           store.setConnected(true);
-          store.setIsMinimized(false); // Open the main UI immediately for the reviewer
-          // Mark all tutorials as completed to bypass splashes
-          store.setFirstTimeWizardCompleted(true);
-          store.updateNotificationSettings({ tutorialCompleted: true, tutorialStep: -1 });
+          store.setIsMinimized(false); // Open the main UI immediately
+          // Force restart all tutorials to let reviewer experience the full setup
+          store.setFirstTimeWizardCompleted(false);
+          store.updateNotificationSettings({ tutorialCompleted: false, tutorialStep: 0 });
         }
         return;
       }

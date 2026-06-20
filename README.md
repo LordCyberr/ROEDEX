@@ -24,7 +24,7 @@ Built on **Manifest V3**, React, and Tailwind CSS, it features a deeply customiz
 
 ## ✨ Key Features
 
-- 🟢 **Live Session Tracking**: Calculate your gold per hour, XP per hour, and raw loot efficiency entirely in real-time.
+- 🟢 **Live Session Tracking**: Calculate your runestones per hour, XP per hour, and raw loot efficiency entirely in real-time.
 - 🤖 **4 Unique AI Companions**: Choose between Bob, Kaya, Lia, and Crash! Highly interactive, customizable pixel-matrix companions that guide you through the overlay and react to your live game events.
 - 🗺️ **Distance & Spawns**: Tracks the exact distance of NPCs, resources, and enemies. Calculates exact respawn intervals for highly-contested resources.
 - ⚔️ **Quests & Combat Tracking**: View active quests and track weapon/armor durability dynamically.

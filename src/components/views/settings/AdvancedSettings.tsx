@@ -26,7 +26,7 @@ export const AdvancedSettings: React.FC = () => {
         }} 
       />
       <p className="text-[9px] text-[var(--text-muted)] px-1 mt-1 mb-2">
-        Enable advanced performance tracking and socket debugging logs. Use <strong>Ctrl+Shift+D</strong> to toggle the live diagnostic panel.
+        Enable advanced performance tracking and socket debugging logs. Use <strong>Alt+Shift+X</strong> to toggle the live diagnostic panel.
       </p>
       <div className="mt-8 border-t border-red-500/30 pt-4">
         <h3 className="text-red-500 font-bold mb-2 text-xs uppercase tracking-wider">Danger Zone</h3>
