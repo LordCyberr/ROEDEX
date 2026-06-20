@@ -76,6 +76,14 @@ export const OverlayContainer: React.FC = () => {
   const isHorizontal = layoutMode === 'horizontal';
 
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const [isRefReady, setIsRefReady] = React.useState(false);
+
+  React.useEffect(() => {
+    if (containerRef.current && !isRefReady) {
+      setIsRefReady(true);
+    }
+  }, [isRefReady]);
+
   const dragControls = useDragControls();
   
   const x = useMotionValue(overlayPosition.x);
@@ -272,15 +280,17 @@ export const OverlayContainer: React.FC = () => {
   return (
     <Profiler id="OverlayContainer" onRender={onRender}>
       <div ref={containerRef} className="fixed inset-0 pointer-events-none z-50 overflow-hidden text-[var(--text-primary)] font-[var(--font-body)]" data-theme={theme}>
-      <div 
-        className={`w-full h-full transition-opacity duration-1000 ${(!isGameLoaded || !isOverlayReady) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-      >
-        {isGameLoaded && (
-          <>
-            {isMinimized ? (
-              <MinimizedOrb constraintsRef={containerRef} />
-            ) : (
-              <motion.div 
+      {isRefReady && (
+        <div 
+          className={`w-full h-full transition-opacity duration-1000 ${(!isGameLoaded || !isOverlayReady) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+        >
+          {isGameLoaded && (
+            <>
+              {isMinimized ? (
+                <MinimizedOrb constraintsRef={containerRef} />
+              ) : (
+                <motion.div 
+
                 ref={overlayRef}
                 style={{ 
                   x, y, 
@@ -347,6 +357,7 @@ export const OverlayContainer: React.FC = () => {
         
         <NPCTranslationBubble />
       </div>
+      )}
       
       <ErrorBoundary><NotificationToaster /></ErrorBoundary>
       <ErrorBoundary><CompanionGuideOverlay /></ErrorBoundary>
