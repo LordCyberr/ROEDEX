@@ -8,6 +8,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA: ChangelogEntry[] = [
   {
+    version: '0.0.2',
+    date: '2026-06-23',
+    title: 'AI Companions, 8-Way Resizing & Localization',
+    features: [
+      'Introduced a fully integrated AI Companion system with four distinct personas (Bob, Kaya, Lia, and Crash), featuring dynamic reactions, animated CRT faces, and custom chat bubbles.',
+      'Overhauled the settings menu by migrating legacy Bob settings into a unified, scalable Companion Settings tab.',
+      'Massively expanded localization support, ensuring companion dialogues, settings menus, and debug panels are fully translated into Spanish and Russian.',
+      'Revamped the overlay resizing architecture: you can now seamlessly drag and resize the tracker from any of the 8 directional handles, while the auto-expand UI perfectly respects your manual minimum constraints.'
+    ],
+    fixes: [
+      'Resolved the "auto-expand paradox" by intelligently mapping fixed dimensions to CSS minimums (minHeight/minWidth), allowing the UI to grow dynamically when data arrives without breaking user-defined bounds.',
+      'Patched an issue where missing translation keys in the Debug Panel (e.g., debug.spawnTessa) would bleed into the UI as raw uppercase strings.',
+      'Fixed layout clipping on popped-out windows by ensuring they inherit the same 8-way responsive constraints as the main overlay.'
+    ]
+  },
+  {
     version: '0.0.1',
     date: '2026-06-20',
     title: 'Initial Stable Release & Hotfixes',
