@@ -1,12 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
 import { motion, useMotionValue } from 'motion/react';
 import { Shield, Shirt, Footprints, HardHat, Hand } from 'lucide-react';
 
 export const ArmorUI: React.FC = () => {
-  const { armor, settings, updateSettings } = useTrackerStore(useShallow((state) => ({
+  const { armor } = useTrackerStore(useShallow((state) => ({
     armor: state.armor,
+  })));
+
+  const { settings, updateSettings } = useSettingsStore(useShallow((state: any) => ({
     settings: state.armorUISettings,
     updateSettings: state.updateArmorUISettings,
   })));
@@ -122,15 +126,20 @@ export const ArmorUI: React.FC = () => {
       dragElastic={0}
       onDragEnd={() => {
         if (!locked) {
-          updateSettings({
-            position: 'custom',
-            customPositionX: x.get(),
-            customPositionY: y.get()
-          });
+          const rect = ref.current?.getBoundingClientRect();
+          if (rect) {
+            x.set(rect.x);
+            y.set(rect.y);
+            updateSettings({
+              position: 'custom',
+              customPositionX: rect.x,
+              customPositionY: rect.y
+            });
+          }
         }
       }}
-      className={`fixed z-50 flex ${layout === 'vertical' ? 'flex-col gap-1' : 'flex-row gap-2'} items-center justify-center shadow-2xl select-none
-        ${isDraggable ? 'pointer-events-auto cursor-grab active:cursor-grabbing border-dashed border-emerald-400 p-2 bg-black/20' : 'pointer-events-none border-solid'}
+      className={`fixed z-50 flex ${layout === 'vertical' ? 'flex-row gap-2' : 'flex-col gap-1'} items-center justify-center shadow-2xl select-none
+        ${isDraggable ? 'pointer-events-auto cursor-grab active:cursor-grabbing border-dashed border-emerald-400' : 'pointer-events-none border-solid border-transparent'}
         ${isFlashing && enableAnimations ? 'animate-pulse' : ''}
       `}
       style={{
@@ -139,8 +148,8 @@ export const ArmorUI: React.FC = () => {
         scale,
         opacity,
         borderRadius: `${borderRadius}px`,
-        borderWidth: isDraggable ? '2px' : '0px',
-        borderColor: isDraggable ? undefined : 'transparent',
+        borderWidth: '2px',
+        padding: '0.5rem',
       }}
     >
       {Object.entries(displayArmor).map(([slot, item]: [string, any]) => {
@@ -153,28 +162,30 @@ export const ArmorUI: React.FC = () => {
         
         if (percentage <= 11) {
           color = 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]';
-          textColor = 'text-red-400 drop-shadow-[0_0_4px_rgba(239,68,68,0.5)]';
           borderColor = 'border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]';
         } else if (percentage <= 50) {
           color = 'bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.3)]';
-          textColor = 'text-orange-400 drop-shadow-[0_0_4px_rgba(249,115,22,0.5)]';
           borderColor = 'border-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.3)]';
         }
 
+        textColor = 'text-white drop-shadow-[0_2px_2px_rgba(0,0,0,1)]';
+
         const pctStr = `${Math.round(percentage)}%`;
         const durStr = `${item.durability} / ${item.maxDurability}`;
-        // Automatically determine if the bar is vertical by checking dimensions
-        const isBarVertical = height > width;
+        // Automatically determine optimal bar orientation based on layout
+        const isBarVertical = layout === 'vertical';
+        const actualWidth = isBarVertical ? height : width;
+        const actualHeight = isBarVertical ? width : height;
         const borderColorClass = dynamicBorderColor ? borderColor : 'border-white/20';
 
         return (
           <div key={slot} className={`relative flex items-center justify-center overflow-hidden ${!isDraggable && borderWidth > 0 ? `border-solid ${borderColorClass}` : ''}`} 
             style={{ 
-              width: hasBar ? `${width}px` : 'max-content', 
-              height: hasBar ? `${height}px` : (hasText ? `${Math.max(20, height + 12)}px` : `${height}px`), 
+              width: hasBar ? `${actualWidth}px` : 'max-content', 
+              height: hasBar ? `${actualHeight}px` : (hasText ? `${Math.max(20, actualHeight + 12)}px` : `${actualHeight}px`), 
               borderRadius: `${borderRadius}px`, 
-              borderWidth: borderWidth > 0 && !isDraggable ? `${borderWidth}px` : undefined, 
-              borderColor: borderWidth > 0 && !isDraggable ? undefined : (hasText ? 'rgba(255,255,255,0.05)' : 'transparent'), 
+              borderWidth: borderWidth > 0 ? `${borderWidth}px` : undefined, 
+              borderColor: borderWidth > 0 ? undefined : (hasText ? 'rgba(255,255,255,0.05)' : 'transparent'), 
               padding: !hasBar ? (isBarVertical ? '10px 4px' : '4px 8px') : '0px',
               flexDirection: isBarVertical ? 'column' : 'row',
               backgroundColor: !hasBar && hasText ? `rgba(0,0,0, ${glassStrength > 0 ? 0.6 : 0.4})` : 'transparent',

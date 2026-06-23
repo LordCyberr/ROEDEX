@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
+import { OverlayNotification } from '../../types/events';
 import { useShallow } from 'zustand/react/shallow';
 import { motion, AnimatePresence, useDragControls, useMotionValue } from 'motion/react';
 import { Sparkles, Star, Info, Sword, Pickaxe, Map, CheckCircle2 } from 'lucide-react';
@@ -124,8 +125,7 @@ const SystemOnlineToast = ({ notif, animConfig, width, height, opacity, isTop, t
 
 export const NotificationToaster: React.FC = () => {
   // Single useShallow call — was 4 separate subscriptions
-  const { notifications, removeNotification, notificationSettings, updateNotificationSettings } = useTrackerStore(
-    useShallow((state) => ({
+  const { notifications, removeNotification, notificationSettings, updateNotificationSettings } = useSettingsStore(useShallow((state: any) => ({
       notifications: state.notifications,
       removeNotification: state.removeNotification,
       notificationSettings: state.notificationSettings,
@@ -146,7 +146,7 @@ export const NotificationToaster: React.FC = () => {
   const timersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   useEffect(() => {
-    const currentIds = new Set(notifications.map(n => n.id));
+    const currentIds = new Set(notifications.map((n: OverlayNotification) => n.id));
     
     // Clear timers for notifications that are gone
     Object.keys(timersRef.current).forEach(id => {
@@ -157,7 +157,7 @@ export const NotificationToaster: React.FC = () => {
     });
 
     // Start timers only for NEW notifications (not already tracked)
-    notifications.forEach(n => {
+    notifications.forEach((n: OverlayNotification) => {
       if (n.id === 'placeholder') return;
       if (!(n.id in timersRef.current)) {
         timersRef.current[n.id] = setTimeout(() => {
@@ -267,7 +267,7 @@ export const NotificationToaster: React.FC = () => {
       }}
     >
       <AnimatePresence>
-        {notifications.map((notif) => {
+        {notifications.map((notif: OverlayNotification) => {
           if (notif.type === 'boot-sequence') {
             return <BootSequenceToast key={notif.id} notif={notif} animConfig={animConfig} width={width} height={height} opacity={opacity} isTop={isTop} toastShape={getShapeClass()} />;
           }

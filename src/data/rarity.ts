@@ -10,7 +10,7 @@ export interface ItemInfo {
 // Based on user provided rarity tables:
 export const RARITY_DB: Record<string, ItemInfo> = {
   // --- COMMON (Gray) ---
-  'bloodroot': { id: 'bloodroot', rarity: 'common', source: 'plant' },
+  'bloodrootvine': { id: 'bloodrootvine', rarity: 'common', source: 'plant' },
   'silverleaf': { id: 'silverleaf', rarity: 'common', source: 'plant' },
   'mistweed': { id: 'mistweed', rarity: 'common', source: 'plant' },
   'blackoak': { id: 'blackoak', rarity: 'common', source: 'tree' },

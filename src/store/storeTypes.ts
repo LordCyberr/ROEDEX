@@ -128,8 +128,8 @@ export interface UISlice {
   setOverlayPosition: (pos: { x: number, y: number }) => void;
   orbPosition: { x: number, y: number };
   setOrbPosition: (pos: { x: number, y: number }) => void;
-  bobPosition: { x: number, y: number };
-  setBobPosition: (pos: { x: number, y: number }) => void;
+  companionPosition: { x: number, y: number };
+  setCompanionPosition: (pos: { x: number, y: number }) => void;
   developerMode: boolean;
   setDeveloperMode: (dev: boolean) => void;
   autoMinimizeOnChest: boolean;
@@ -186,9 +186,9 @@ export interface UISlice {
     width: number;
     height: number;
     compactMode: boolean;
-    bobMode: boolean;
-    bobIconScale: number;
-    bobTextScale: number;
+    companionMode: boolean;
+    companionIconScale: number;
+    companionTextScale: number;
     bobFrequency: 'rare' | 'normal' | 'chatty';
     bobGreetings: boolean;
     bobJokes: boolean;
@@ -201,12 +201,12 @@ export interface UISlice {
     bobRareResource: boolean;
     bobRareDrop: boolean;
     bobSecret: boolean;
-    bobDuration: number;
-    bobBubbleDistance: number;
-    bobBubbleOffsetY: number;
+    companionDuration: number;
+    companionBubbleDistance: number;
+    companionBubbleOffsetY: number;
     bobIcon: 'portrait' | 'bot' | 'pixel_matrix' | 'realistic_3d' | 'ghost' | 'cat' | 'wizard' | 'skull' | 'alien' | 'dog' | 'custom' | 'mini-character';
     bobIconUrl?: string;
-    bobBubbleTheme?: 'connected' | 'floating' | 'holographic';
+    companionBubbleTheme?: 'connected' | 'floating' | 'holographic';
     bobBubbleStyle?: 'glass' | 'pixel' | 'cyber' | 'fantasy' | 'minimal' | 'hologram';
     bobVoiceStyle?: 'wave' | 'eq' | 'pulse';
     v4PositionMigrated?: boolean;
@@ -218,7 +218,8 @@ export interface UISlice {
     // Tutorial & Mood State
     tutorialStep: number;
     tutorialCompleted: boolean;
-    bobMood: 'idle' | 'happy' | 'angry' | 'talking' | 'thinking';
+    companionMood: 'idle' | 'happy' | 'angry' | 'talking' | 'thinking';
+    roastLevel: 'off' | 'mild' | 'savage';
     
     neonGlow: boolean;
     glowColorTheme: 'theme' | 'rarity' | 'type';
@@ -305,7 +306,7 @@ export interface UISlice {
   notifications: OverlayNotification[];
   addNotification: (notification: Omit<OverlayNotification, 'id' | 'timestamp'>) => void;
   removeNotification: (id: string) => void;
-  bobMessages: OverlayNotification[];
+  companionMessages: OverlayNotification[];
   addBobMessage: (message: Omit<OverlayNotification, 'id' | 'timestamp'>) => void;
   removeBobMessage: (id: string) => void;
   
@@ -440,4 +441,4 @@ export interface EntitySlice {
   clearTimers: () => void;
 }
 
-export type TrackerState = UISlice & SessionSlice & PlayerSlice & EntitySlice;
+export type TrackerState = SessionSlice & PlayerSlice & EntitySlice;

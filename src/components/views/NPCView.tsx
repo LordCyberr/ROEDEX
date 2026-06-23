@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
+
 import { KNOWN_NPCS_DATA, NPCInfo } from '../../data/npcs';
 import { Users, Search, MapPin, ChevronDown, ChevronRight } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -50,8 +51,8 @@ export const NPCView: React.FC = () => {
       window.removeEventListener('keypress', handleGlobalKey, true);
     };
   }, []);
-  const layoutMode = useTrackerStore(state => state.layoutMode);
-  const tabDimensions = useTrackerStore(state => state.tabDimensions);
+  const layoutMode = useSettingsStore(state => state.layoutMode);
+  const tabDimensions = useSettingsStore(state => state.tabDimensions);
   const isHorizontal = layoutMode === 'horizontal';
 
   const activeDimKey = isHorizontal ? `npcs_horizontal` : `npcs_vertical`;
@@ -179,7 +180,7 @@ export const NPCView: React.FC = () => {
               {/* Sidebar Navigation */}
               <div className="flex flex-col w-[160px] shrink-0 bg-[var(--bg-card)] rounded-lg shadow-md border border-[var(--border-subtle)] h-fit max-h-full overflow-hidden">
                 {/* Compact Header & Search */}
-                <div className="p-1.5 border-b border-[var(--border-subtle)] bg-black/20 shrink-0">
+                <div className="p-1.5 border-b border-[var(--border-subtle)] bg-[var(--bg-panel)] shrink-0">
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <Users size={12} className="text-[#00ffcc]" />
                     <h2 className="text-[10px] font-bold text-[var(--text-primary)] uppercase tracking-widest">{t('tabs.npcTracker')}</h2>
@@ -201,7 +202,7 @@ export const NPCView: React.FC = () => {
                       onMouseDown={(e) => e.stopPropagation()}
                       onClick={(e) => { e.stopPropagation(); inputRef.current?.focus(); }}
                       placeholder={t('misc.searchNpcs')}
-                      className="w-full bg-black/40 border border-white/5 focus:border-[var(--border-accent)] text-[var(--text-primary)] text-[9px] rounded pl-5 pr-2 py-1 outline-none transition-colors"
+                      className="w-full bg-[var(--bg-card)] border border-white/5 focus:border-[var(--border-accent)] text-[var(--text-primary)] text-[9px] rounded pl-5 pr-2 py-1 outline-none transition-colors"
                     />
                   </div>
                 </div>
@@ -263,7 +264,7 @@ export const NPCView: React.FC = () => {
             </>
           ) : (
             <div className="flex flex-col gap-0.5 w-[160px] shrink-0 bg-[var(--bg-card)] rounded-lg shadow-md border border-[var(--border-subtle)] h-fit overflow-hidden">
-               <div className="p-1.5 border-b border-[var(--border-subtle)] bg-black/20 shrink-0">
+               <div className="p-1.5 border-b border-[var(--border-subtle)] bg-[var(--bg-panel)] shrink-0">
                  <div className="flex items-center gap-1.5 mb-1.5">
                    <Users size={12} className="text-[#00ffcc]" />
                    <h2 className="text-[10px] font-bold text-[var(--text-primary)] uppercase tracking-widest">{t('tabs.npcTracker')}</h2>
@@ -278,7 +279,7 @@ export const NPCView: React.FC = () => {
                      onChange={handleSearchChange}
                      ref={inputRef}
                      placeholder={t('misc.searchNpcs')}
-                     className="w-full bg-black/40 border border-white/5 text-[var(--text-primary)] text-[9px] rounded pl-5 pr-2 py-1 outline-none transition-colors"
+                     className="w-full bg-[var(--bg-card)] border border-white/5 text-[var(--text-primary)] text-[9px] rounded pl-5 pr-2 py-1 outline-none transition-colors"
                    />
                  </div>
                </div>

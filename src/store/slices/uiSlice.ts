@@ -1,8 +1,7 @@
 import { StateCreator } from 'zustand';
-import { TrackerState, UISlice } from '../storeTypes';
+import { UISlice } from '../storeTypes';
 import { OverlayNotification } from '../../types/events';
-
-export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) => ({
+export const createUISlice: StateCreator<UISlice, [], [], UISlice> = (set) => ({
   isChangelogOpen: false,
   setIsChangelogOpen: (open) => set({ isChangelogOpen: open }),
   isDebugPanelOpen: false,
@@ -95,12 +94,12 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
   setLayoutMode: (mode) => set({ layoutMode: mode }),
   verticalGroupingMode: 'grouped',
   setVerticalGroupingMode: (mode) => set({ verticalGroupingMode: mode }),
-  overlayPosition: { x: 20, y: 150 },
+  overlayPosition: { x: 103, y: 116 },
   setOverlayPosition: (pos) => set({ overlayPosition: pos }),
-  orbPosition: { x: 20, y: 100 },
+  orbPosition: { x: 91, y: 102 },
   setOrbPosition: (pos) => set({ orbPosition: pos }),
-  bobPosition: { x: typeof window !== 'undefined' ? window.innerWidth - 320 : 800, y: 120 },
-  setBobPosition: (pos) => set({ bobPosition: pos }),
+  companionPosition: { x: 1636, y: 170 },
+  setCompanionPosition: (pos) => set({ companionPosition: pos }),
   developerMode: false,
   setDeveloperMode: (dev: boolean) => set({ developerMode: dev }),
   autoMinimizeOnChest: true,
@@ -169,10 +168,10 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
     width: 280,
     height: 60,
     compactMode: false,
-    bobMode: true,
-    bobIconScale: 1.0,
+    companionMode: true,
+    companionIconScale: 1.0,
     bobIcon: 'bot',
-    bobTextScale: 1.0,
+    companionTextScale: 1.0,
     bobFrequency: 'normal',
     bobGreetings: true,
     bobJokes: true,
@@ -185,16 +184,17 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
     bobRareResource: true,
     bobRareDrop: true,
     bobSecret: true,
-    bobDuration: 5000,
-    bobBubbleDistance: 16,
-    bobBubbleOffsetY: 0,
+    companionDuration: 5000,
+    companionBubbleDistance: 16,
+    companionBubbleOffsetY: 0,
     bobTheme: 'default',
-    bobBubbleTheme: 'connected',
+    companionBubbleTheme: 'connected',
     bobBubbleStyle: 'glass',
     bobVoiceStyle: 'wave',
     tutorialStep: 0,
     tutorialCompleted: false,
-    bobMood: 'idle',
+    companionMood: 'idle',
+    roastLevel: 'mild',
     neonGlow: true,
     glowColorTheme: 'theme',
     toastShape: 'rectangle',
@@ -245,9 +245,9 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
     borderRadius: 8,
     glassStrength: 10,
     enableAnimations: true,
-    position: 'bottom-left',
-    customPositionX: 0,
-    customPositionY: 0,
+    position: 'custom',
+    customPositionX: 1519,
+    customPositionY: 882,
     layout: 'vertical',
     borderWidth: 1,
     dynamicBorderColor: true
@@ -297,19 +297,19 @@ export const createUISlice: StateCreator<TrackerState, [], [], UISlice> = (set) 
     notifications: state.notifications.filter(n => n.id !== id)
   })),
 
-  bobMessages: [],
+  companionMessages: [],
   addBobMessage: (message: Omit<OverlayNotification, 'id' | 'timestamp'>) => set((state) => ({
-    bobMessages: [...state.bobMessages, { ...message, id: Date.now().toString(), timestamp: Date.now() }].slice(-3)
+    companionMessages: [...state.companionMessages, { ...message, id: Date.now().toString(), timestamp: Date.now() }].slice(-3)
   })),
   removeBobMessage: (id: string) => set((state) => ({
-    bobMessages: state.bobMessages.filter(n => n.id !== id)
+    companionMessages: state.companionMessages.filter(n => n.id !== id)
   })),
 
   setTutorialStep: (step) => set((state) => ({
     notificationSettings: { ...state.notificationSettings, tutorialStep: step }
   })),
   setBobMood: (mood) => set((state) => ({
-    notificationSettings: { ...state.notificationSettings, bobMood: mood }
+    notificationSettings: { ...state.notificationSettings, companionMood: mood }
   })),
   hoveredTimerId: null,
   setHoveredTimerId: (id) => set({ hoveredTimerId: id })

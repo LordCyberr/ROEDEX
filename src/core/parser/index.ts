@@ -1,9 +1,17 @@
+import { z } from 'zod';
 import { useTrackerStore } from '../../store/trackerStore';
-import { BobCompanion } from '../companion/BobCompanion';
+import { useSettingsStore } from '../../store/settingsStore';
+import { AICompanion } from '../companion/AICompanion';
 import { NotificationManager } from '../notifications/NotificationManager';
 import { handleEntityEvent } from './handlers/entityHandler';
 import { handleInventoryEvent } from './handlers/inventoryHandler';
 import { handlePlayerEvent } from './handlers/playerHandler';
+
+// Zod Schema to strictly validate the incoming WebSocket shape
+const WebSocketEventSchema = z.tuple([
+  z.string(),
+  z.any() // Payload shape varies vastly per event, we just need to guarantee a string event name
+]).rest(z.any());
 
 // Parser module loaded
 
@@ -48,7 +56,7 @@ export function updateWeaponDurabilityState(d: any, defaultName: string) {
        slot: slot
      });
 
-     BobCompanion.checkDurability(name, d.weaponDurability, newMax);
+     AICompanion.checkDurability(name, d.weaponDurability, newMax);
      NotificationManager.checkDurability(name, d.weaponDurability, newMax);
    }
 }
@@ -72,17 +80,22 @@ export function parsePacket(rawMessage: string) {
     return;
   }
 
-  if (!Array.isArray(parsed) || parsed.length < 2) return;
+  // Strictly validate the tuple structure using Zod
+  const validation = WebSocketEventSchema.safeParse(parsed);
+  if (!validation.success) {
+    console.warn(`[ROEDEX Zod] Dropped malformed WebSocket event. Game data structure may have changed.`, validation.error);
+    return;
+  }
 
-  const eventName = parsed[0];
-  const payload = parsed[1];
+  const [eventName, payload] = validation.data;
 
   if (typeof rawMessage === 'string' && rawMessage.includes('Hit rejected: Enemy is already dead')) {
-    BobCompanion.onCheatDetected();
+    AICompanion.onCheatDetected();
   }
 
   try {
-    if (store.tableSettings.showDistance) {
+    const settings = useSettingsStore.getState();
+    if (settings.tableSettings.showDistance) {
       if (typeof eventName === 'string') {
         const en = eventName.toLowerCase();
         if (['move', 'm', 'walk', 'pos', 'update', 'hero', 'player', 'sync'].some(k => en.includes(k))) {
@@ -132,12 +145,12 @@ export function parsePacket(rawMessage: string) {
     const now = Date.now();
     if (now - parseTimeAggregator.lastSync > 1000) {
       const avg = parseTimeAggregator.count > 0 ? parseTimeAggregator.totalTime / parseTimeAggregator.count : 0;
-      store.updateProfilerMetrics({
+      settings.updateProfilerMetrics({
         parseTime: {
           average: Number(avg.toFixed(3)),
           max: Number(parseTimeAggregator.maxTime.toFixed(3)),
           lastSpike: Number(parseTimeAggregator.lastSpike.toFixed(3)),
-          totalEvents: store.profilerMetrics.parseTime.totalEvents + parseTimeAggregator.count
+          totalEvents: settings.profilerMetrics.parseTime.totalEvents + parseTimeAggregator.count
         }
       });
       

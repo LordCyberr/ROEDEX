@@ -1,19 +1,22 @@
 import { StateCreator } from 'zustand';
 import { TrackerState, SessionSlice } from '../storeTypes';
+import { useSettingsStore } from '../settingsStore';
 
 export const createSessionSlice: StateCreator<TrackerState, [], [], SessionSlice> = (set, get) => ({
   currentZone: 'Unknown',
   setCurrentZone: (zone: string) => {
     const state = get();
     if (state.currentZone !== zone && zone !== 'Unknown') {
-      const newCollapsedZones = { ...state.collapsedSidebarZones };
-      if (state.layoutMode === 'vertical') {
+      const settings = useSettingsStore.getState();
+      const newCollapsedZones = { ...settings.collapsedSidebarZones };
+      if (settings.layoutMode === 'vertical') {
         Object.keys(newCollapsedZones).forEach(k => {
           newCollapsedZones[k] = true;
         });
         newCollapsedZones[zone] = false;
       }
-      set({ currentZone: zone, collapsedSidebarZones: newCollapsedZones });
+      useSettingsStore.setState({ collapsedSidebarZones: newCollapsedZones });
+      set({ currentZone: zone });
     } else {
       set({ currentZone: zone });
     }

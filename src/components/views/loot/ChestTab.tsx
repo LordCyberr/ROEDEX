@@ -7,6 +7,7 @@ import { getItemInfo } from '../../../data/rarity';
 import { formatInternalName } from '../../../utils/formatters';
 import { CustomSelect } from '../../ui/CustomSelect';
 import { Tooltip } from '../../ui/Tooltip';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 const getRarityColor = (name: string) => {
   const info = getItemInfo(name);
@@ -33,6 +34,7 @@ const getRarityWeight = (name: string) => {
 };
 
 export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: string }> = ({ isHorizontal, compactHeightClass }) => {
+  const { t } = useTranslation();
   const { chestInventory, playerProfile } = useTrackerStore(useShallow((state: any) => ({
     chestInventory: state.chestInventory,
     playerProfile: state.playerProfile
@@ -114,18 +116,18 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
       {/* Summary Card */}
       {isHorizontal ? (
         <div className={`flex flex-col gap-1.5 w-[140px] shrink-0 h-full overflow-y-auto custom-scrollbar`}>
-          <div className="flex flex-col items-center justify-start bg-black/20 p-3 border border-white/5 rounded shrink-0 gap-3 h-full">
+          <div className="flex flex-col items-center justify-start bg-[var(--bg-panel)] p-3 border border-[var(--border-subtle)] rounded shrink-0 gap-3 h-full">
             <div className="flex flex-col items-center gap-3 w-full text-center mt-1">
               <Tooltip content="Total value of all items stored in your House Chest">
                 <div>
-                  <span className="text-[8px] text-slate-400 uppercase tracking-widest font-bold cursor-help">Chest Worth</span>
+                  <span className="text-[8px] text-slate-400 uppercase tracking-widest font-bold cursor-help">{t('loot.chestWorth')}</span>
                   <div className="text-cyan-400 font-mono font-black text-[12px] leading-none mt-1">{(displayTotalValue as number).toLocaleString()}</div>
                 </div>
               </Tooltip>
               <div className="w-full h-px bg-white/10 my-1" />
-              <Tooltip content="Total value of gathered resources in your Backpack (excluding tools)">
+              <Tooltip content={t('loot.chestValueTooltip')}>
                 <div>
-                  <span className="text-[8px] text-slate-400 uppercase tracking-widest font-bold cursor-help text-emerald-500/80">Inventory Loot Value</span>
+                  <span className="text-[8px] text-slate-400 uppercase tracking-widest font-bold cursor-help text-emerald-500/80">{t('loot.inventoryLootValue')}</span>
                   <div className="text-emerald-400 font-mono font-black text-[12px] leading-none mt-1">{(inventoryLootValue as number).toLocaleString()}</div>
                 </div>
               </Tooltip>
@@ -143,13 +145,13 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
                     { label: 'Count', value: 'count' },
                     { label: 'Rarity', value: 'rarity' }
                   ]}
-                  className="w-full h-[26px] bg-black/40 text-[9px] text-slate-300 uppercase tracking-widest font-bold px-2 rounded border border-white/5 hover:border-white/20 transition-colors flex items-center justify-center text-center"
+                  className="w-full h-[26px] bg-[var(--bg-card)] text-[9px] text-slate-300 uppercase tracking-widest font-bold px-2 rounded border border-[var(--border-subtle)] hover:border-white/20 transition-colors flex items-center justify-center text-center"
                 />
               </div>
               <Tooltip content="Include your current Runes balance in the 'Total Worth' calculation">
                 <button 
                   onClick={() => setIncludeRunesInChest(!includeRunesInChest)} 
-                  className={`w-full h-[26px] text-[9px] font-bold uppercase px-2 rounded border transition-colors flex items-center justify-center ${includeRunesInChest ? 'bg-purple-500/20 text-purple-400 border-purple-500/30 shadow-inner' : 'bg-black/40 text-slate-400 border-white/5 hover:border-white/20'}`}
+                  className={`w-full h-[26px] text-[9px] font-bold uppercase px-2 rounded border transition-colors flex items-center justify-center ${includeRunesInChest ? 'bg-purple-500/20 text-purple-400 border-purple-500/30 shadow-inner' : 'bg-[var(--bg-card)] text-slate-400 border-white/5 hover:border-white/20'}`}
                 >
                   Runes
                 </button>
@@ -158,17 +160,17 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-1 p-2 bg-black/20 border border-white/5 rounded shrink-0">
+        <div className="flex flex-col gap-1 p-2 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded shrink-0">
           <div className="flex justify-between items-center w-full">
             <Tooltip content="Total value of all items stored in your House Chest">
               <div>
-                <span className="text-[8px] text-slate-400 uppercase tracking-widest font-bold cursor-help">Chest Worth</span>
+                <span className="text-[8px] text-slate-400 uppercase tracking-widest font-bold cursor-help">{t('loot.chestWorth')}</span>
                 <div className="text-cyan-400 font-mono font-black text-[14px] leading-none mt-0.5">{(displayTotalValue as number).toLocaleString()}</div>
               </div>
             </Tooltip>
-            <Tooltip content="Total value of gathered resources in your Backpack (excluding tools)">
+            <Tooltip content={t('loot.chestValueTooltip')}>
               <div className="text-right">
-                <span className="text-[8px] text-slate-400 uppercase tracking-widest font-bold cursor-help text-emerald-500/80">Loot Value</span>
+                <span className="text-[8px] text-slate-400 uppercase tracking-widest font-bold cursor-help text-emerald-500/80">{t('loot.lootValue')}</span>
                 <div className="text-emerald-400 font-mono font-black text-[12px] leading-none mt-0.5">{(inventoryLootValue as number).toLocaleString()}</div>
               </div>
             </Tooltip>
@@ -183,13 +185,13 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
                   { label: 'Count', value: 'count' },
                   { label: 'Rarity', value: 'rarity' }
                 ]}
-                className="w-full h-[22px] bg-black/40 text-[9px] text-slate-300 uppercase tracking-widest font-bold px-2 rounded border border-white/5 hover:border-white/20 transition-colors flex items-center justify-center text-center"
+                className="w-full h-[22px] bg-[var(--bg-card)] text-[9px] text-slate-300 uppercase tracking-widest font-bold px-2 rounded border border-[var(--border-subtle)] hover:border-white/20 transition-colors flex items-center justify-center text-center"
               />
             </div>
             <Tooltip content="Include your current Runes balance in the 'Total Worth' calculation">
               <button 
                 onClick={() => setIncludeRunesInChest(!includeRunesInChest)} 
-                className={`w-1/2 h-[22px] text-[9px] font-bold uppercase px-2 rounded border transition-colors flex items-center justify-center ${includeRunesInChest ? 'bg-purple-500/20 text-purple-400 border-purple-500/30 shadow-inner' : 'bg-black/40 text-slate-400 border-white/5 hover:border-white/20'}`}
+                className={`w-1/2 h-[22px] text-[9px] font-bold uppercase px-2 rounded border transition-colors flex items-center justify-center ${includeRunesInChest ? 'bg-purple-500/20 text-purple-400 border-purple-500/30 shadow-inner' : 'bg-[var(--bg-card)] text-slate-400 border-white/5 hover:border-white/20'}`}
               >
                 Runes
               </button>
@@ -199,7 +201,7 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
       )}
 
       {/* Right Card: Chest List */}
-      <div className="flex-1 flex flex-col gap-0.5 bg-black/20 border border-white/[0.05] p-2 rounded-lg overflow-hidden h-full">
+      <div className="flex-1 flex flex-col gap-0.5 bg-[var(--bg-panel)] border border-[var(--border-subtle)] p-2 rounded-lg overflow-hidden h-full">
         <div className={`flex flex-col gap-0.5 overflow-y-auto custom-scrollbar flex-1 min-h-0 ${compactHeightClass}`}>
           {chestItemsListUI.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-[#3a3f47] italic text-[9px] gap-1 py-4">
@@ -209,18 +211,18 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
           ) : (
             <>
               <div className="flex justify-between items-center px-1.5 py-0.5 mt-1 border-b border-white/5">
-                <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest pl-5">Item</span>
+                <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest pl-5">{t('loot.item')}</span>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest w-12 text-right">Count</span>
-                  <Tooltip content="Total Value"><span className="text-[8px] text-purple-400/80 font-bold uppercase tracking-widest w-14 text-right">Total</span></Tooltip>
+                  <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest w-12 text-right">{t('loot.count')}</span>
+                  <Tooltip content="Total Value"><span className="text-[8px] text-purple-400/80 font-bold uppercase tracking-widest w-14 text-right">{t('loot.total')}</span></Tooltip>
                 </div>
               </div>
               {chestItemsListUI.map((item) => {
                 const isExcluded = excludedItems.has(item.name);
                 return (
-                  <div key={item.name} className={`flex justify-between items-center px-1.5 py-1 rounded border hover:bg-white/[0.04] transition-colors ${isExcluded ? 'bg-white/[0.01] border-transparent opacity-50' : 'bg-white/[0.02] border-white/[0.02]'}`}>
+                  <div key={item.name} className={`flex justify-between items-center px-1.5 py-1 rounded border hover:bg-white/[0.04] transition-colors ${isExcluded ? 'bg-white/[0.01] border-transparent opacity-50' : 'bg-[var(--bg-hover)] border-[var(--border-subtle)]'}`}>
                     <div className="flex items-center gap-1.5 overflow-hidden pr-1 flex-1">
-                      <button onClick={() => toggleExclude(item.name)} className="shrink-0 w-3.5 h-3.5 flex items-center justify-center rounded bg-black/40 border border-white/10 hover:border-white/30 transition-colors">
+                      <button onClick={() => toggleExclude(item.name)} className="shrink-0 w-3.5 h-3.5 flex items-center justify-center rounded bg-[var(--bg-card)] border border-white/10 hover:border-white/30 transition-colors">
                         <div className={`w-1.5 h-1.5 rounded-full ${isExcluded ? 'bg-transparent' : 'bg-emerald-500'}`}></div>
                       </button>
                       <div className="flex flex-col truncate">

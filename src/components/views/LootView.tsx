@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
+
 import { useShallow } from 'zustand/react/shallow';
 import { PackageOpen, Activity, User, ArrowUpRight } from 'lucide-react';
 import { ProfileTab } from './loot/ProfileTab';
@@ -7,16 +8,18 @@ import { SessionTab } from './loot/SessionTab';
 import { ChestTab } from './loot/ChestTab';
 import { Tooltip } from '../ui/Tooltip';
 
+
 interface LootViewProps {
   forcedTab?: 'profile' | 'session' | 'chest';
   hideNavigation?: boolean;
 }
 
 export const LootView: React.FC<LootViewProps> = ({ forcedTab, hideNavigation }) => {
+  
   const { 
     layoutMode,
     popOutTab, poppedOutWindows, tabDimensions
-  } = useTrackerStore(useShallow(state => ({
+  } = useSettingsStore(useShallow(state => ({
     layoutMode: state.layoutMode,
     popOutTab: state.popOutTab,
     poppedOutWindows: state.poppedOutWindows,
@@ -41,7 +44,7 @@ export const LootView: React.FC<LootViewProps> = ({ forcedTab, hideNavigation })
 
       {/* Tab Navigation */}
       {!hideNavigation && (
-        <div className="flex p-1 gap-1 border-b border-white/[0.04] bg-black/20 shrink-0 pointer-events-auto">
+        <div className="flex p-1 gap-1 border-b border-white/[0.04] bg-[var(--bg-panel)] shrink-0 pointer-events-auto">
           <div className="flex-1 flex relative">
             <button 
               onClick={() => !poppedOutWindows['session_profile'] && setActiveTab('profile')}

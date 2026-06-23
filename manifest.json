@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ROEDEX",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Real-time overlay for Roots of Embervault! Live loot tracking, spawn timers, categorized NPC locations, and multi-language support.",
   "icons": {
     "16": "icon16.png",

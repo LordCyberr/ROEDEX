@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
+
 import { useShallow } from 'zustand/react/shallow';
 import { motion, AnimatePresence } from 'motion/react';
 import { Bot, Globe, Check, ChevronRight, Activity, Sparkles, Wand2 } from 'lucide-react';
 import { CompanionId } from '../../data/companions';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const FirstTimeWizard: React.FC = () => {
   const { 
@@ -13,7 +15,7 @@ export const FirstTimeWizard: React.FC = () => {
     setActiveCompanion,
     activeCompanion,
     setTutorialStep
-  } = useTrackerStore(useShallow(state => ({
+  } = useSettingsStore(useShallow(state => ({
     setFirstTimeWizardCompleted: state.setFirstTimeWizardCompleted, 
     setLanguage: state.setLanguage, 
     language: state.language,
@@ -22,6 +24,7 @@ export const FirstTimeWizard: React.FC = () => {
     setTutorialStep: state.setTutorialStep
   })));
 
+  const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [hoverProgress, setHoverProgress] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
@@ -71,8 +74,8 @@ export const FirstTimeWizard: React.FC = () => {
               <Sparkles size={20} />
             </div>
             <div>
-              <h2 className="text-xl font-bold font-mono tracking-tight text-white">ROEDEX Initialization</h2>
-              <p className="text-sm text-[var(--text-muted)]">Setup Wizard - Step {step} of 3</p>
+              <h2 className="text-xl font-bold font-mono tracking-tight text-white">{t('wizard.init')}</h2>
+              <p className="text-sm text-[var(--text-muted)]">{t('wizard.step')} {step} {t('wizard.of')} 3</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -128,7 +131,7 @@ export const FirstTimeWizard: React.FC = () => {
                     {testPassed ? (
                       <>
                         <Check size={24} className="text-emerald-400" />
-                        <span className="font-bold text-emerald-400">Calibration Complete!</span>
+                        <span className="font-bold text-emerald-400">{t('wizard.calibrationComplete')}</span>
                       </>
                     ) : (
                       <>
@@ -219,12 +222,12 @@ export const FirstTimeWizard: React.FC = () => {
                 </div>
 
                 <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-3">
-                  <h4 className="font-bold text-white text-sm">Quick Starting Guide:</h4>
+                  <h4 className="font-bold text-white text-sm">{t('wizard.quickGuide')}</h4>
                   <ul className="text-sm text-[var(--text-muted)] space-y-2 list-disc pl-4">
-                    <li>Use the <strong>Sidebar / Header Tabs</strong> to navigate between modules.</li>
-                    <li>Toggle the <strong>Lock icon</strong> to enable or disable click-through mode.</li>
-                    <li>Your <strong>AI Companion</strong> will pop up to guide you through specific menus.</li>
-                    <li>Remember to pop-out windows if you have multiple monitors!</li>
+                    <li>{t('wizard.useThe')} <strong>{t('wizard.guide1_mid')}</strong> {t('wizard.toNavigate')}</li>
+                    <li>{t('wizard.toggleThe')} <strong>{t('wizard.guide2_mid')}</strong> {t('wizard.toEnable')}</li>
+                    <li>{t('wizard.your')} <strong>{t('wizard.guide3_mid')}</strong> {t('wizard.willPopUp')}</li>
+                    <li>{t('wizard.guide4')}</li>
                   </ul>
                 </div>
 

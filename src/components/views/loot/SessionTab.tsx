@@ -1,14 +1,23 @@
 import React, { useMemo } from 'react';
 import { useTrackerStore } from '../../../store/trackerStore';
+import { useSettingsStore } from '../../../store/settingsStore';
+
+// @ts-ignore
+import { FixedSizeList as List } from 'react-window';
+// @ts-ignore
+import { AutoSizer } from 'react-virtualized-auto-sizer';
+
 import { useShallow } from 'zustand/react/shallow';
-import { PackageOpen, Play, Square, Coins, Diamond, Sword, Pickaxe, Axe, Leaf, Trash2, History } from 'lucide-react';
+import { motion } from 'motion/react';
+import { PackageOpen, Play, Square, Diamond, Sword, Pickaxe, Axe, Leaf, Trash2, History } from 'lucide-react';
 
 import { getResellValue } from '../../../data/prices';
 import { getItemInfo } from '../../../data/rarity';
 import { useGlobalTick } from '../../../core/tick';
-import { BobCompanion } from '../../../core/companion/BobCompanion';
+import { AICompanion } from '../../../core/companion/AICompanion';
 import { Tooltip } from '../../ui/Tooltip';
 import { formatDuration } from '../../../utils/formatters';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 const getRarityColor = (name: string) => {
   const info = getItemInfo(name);
@@ -22,13 +31,9 @@ const getRarityColor = (name: string) => {
   }
 };
 
-const isResource = (name: string) => {
-  const lowerName = name.toLowerCase();
-  const keywords = ['ore', 'rock', 'copper', 'iron', 'gold', 'tree', 'wood', 'log', 'leaf', 'weed', 'vine', 'petal', 'lily', 'spore', 'flower', 'mushroom'];
-  return keywords.some(kw => lowerName.includes(kw));
-};
 
 export const SessionTab: React.FC<{ isHorizontal: boolean; compactHeightClass: string }> = ({ isHorizontal, compactHeightClass }) => {
+  const { t } = useTranslation();
   const { 
     sessionActive, setSessionActive, 
     sessionRunes, sessionLoot, 
@@ -60,10 +65,7 @@ export const SessionTab: React.FC<{ isHorizontal: boolean; compactHeightClass: s
 
   const durationMs = sessionActive && sessionStartTime ? now - sessionStartTime : 0;
   
-  const mobDropsValue = useMemo(() => sortedLoot.reduce((acc, [name, qty]) => {
-    if (!isResource(name)) return acc + getResellValue(name, qty);
-    return acc;
-  }, 0), [sortedLoot]);
+  
 
   const handleToggleSession = () => {
     if (sessionActive) {
@@ -81,7 +83,7 @@ export const SessionTab: React.FC<{ isHorizontal: boolean; compactHeightClass: s
   return (
     <div className={`flex ${isHorizontal ? 'flex-row' : 'flex-col'} gap-2 h-full w-full`}>
       {/* Left Card: Session Controls */}
-      <div className={`flex flex-col gap-2 ${isHorizontal ? 'w-[180px]' : 'w-full'} shrink-0 h-fit bg-black/20 border border-white/[0.05] p-2 rounded-lg relative overflow-y-auto custom-scrollbar`}>
+      <div className={`flex flex-col gap-2 ${isHorizontal ? 'w-[180px]' : 'w-full'} shrink-0 h-fit bg-[var(--bg-panel)] border border-[var(--border-subtle)] p-2 rounded-lg relative overflow-y-auto custom-scrollbar`}>
         {(isTimeGoalMet || isLootGoalMet) && sessionActive && (
           <div className="absolute inset-0 pointer-events-none rounded border-2 border-emerald-500/50 animate-pulse z-0"></div>
         )}
@@ -96,13 +98,13 @@ export const SessionTab: React.FC<{ isHorizontal: boolean; compactHeightClass: s
                   : 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 border border-emerald-500/30'
               }`}
             >
-              {sessionActive ? <><Square size={10} fill="currentColor" /> Finish Run</> : <><Play size={10} fill="currentColor" /> Start New Run</>}
+              {sessionActive ? <><Square size={10} fill="currentColor" /> {t('sessionTab.finishRun')}</> : <><Play size={10} fill="currentColor" /> {t('sessionTab.startNewRun')}</>}
             </button>
             <Tooltip content="Reset Current Loot">
               <button
                 onClick={() => {
                   clearSession();
-                  BobCompanion.onClearLoot();
+                  AICompanion.onClearLoot();
                 }}
                 className="flex items-center justify-center px-2 py-1.5 rounded bg-[var(--bg-panel)] hover:bg-[var(--bg-card)] text-[#cfd2d5] border border-[var(--border-subtle)] transition-all shadow-md"
               >
@@ -111,7 +113,7 @@ export const SessionTab: React.FC<{ isHorizontal: boolean; compactHeightClass: s
             </Tooltip>
             <Tooltip content="View Past Runs">
               <button
-                onClick={() => useTrackerStore.getState().setIsRunHistoryOpen(true)}
+                onClick={() => useSettingsStore.getState().setIsRunHistoryOpen(true)}
                 className="flex items-center justify-center px-2 py-1.5 rounded bg-[var(--bg-panel)] hover:bg-[var(--bg-card)] text-[#cfd2d5] border border-[var(--border-subtle)] transition-all shadow-md"
               >
                 <History size={10} />
@@ -119,51 +121,44 @@ export const SessionTab: React.FC<{ isHorizontal: boolean; compactHeightClass: s
             </Tooltip>
           </div>
 
-          <div className="flex items-center justify-between px-2 py-1 bg-black/30 rounded border border-white/[0.04] shrink-0">
+          <div className="flex items-center justify-between px-2 py-1 bg-[var(--bg-card)] rounded border border-white/[0.04] shrink-0">
             <div className="text-[14px] font-mono font-black text-white tracking-widest drop-shadow">
               {formatDuration(durationMs)}
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-1 shrink-0">
-            <div className="bg-black/40 border border-white/[0.04] rounded flex items-center justify-between px-2 py-1.5 hover:bg-black/60 transition-colors">
+            <div className="bg-[var(--bg-card)] border border-white/[0.04] rounded flex items-center justify-between px-2 py-1.5 hover:bg-[var(--bg-hover)] transition-colors">
               <Sword size={12} className="text-rose-400" />
               <span className="text-white font-mono font-black text-[11px]">{sessionMobsKilled as number}</span>
             </div>
-            <div className="bg-black/40 border border-white/[0.04] rounded flex items-center justify-between px-2 py-1.5 hover:bg-black/60 transition-colors">
+            <div className="bg-[var(--bg-card)] border border-white/[0.04] rounded flex items-center justify-between px-2 py-1.5 hover:bg-[var(--bg-hover)] transition-colors">
               <Axe size={12} className="text-amber-600" />
               <span className="text-white font-mono font-black text-[11px]">{sessionTreesCut as number}</span>
             </div>
-            <div className="bg-black/40 border border-white/[0.04] rounded flex items-center justify-between px-2 py-1.5 hover:bg-black/60 transition-colors">
+            <div className="bg-[var(--bg-card)] border border-white/[0.04] rounded flex items-center justify-between px-2 py-1.5 hover:bg-[var(--bg-hover)] transition-colors">
               <Pickaxe size={12} className="text-slate-400" />
               <span className="text-white font-mono font-black text-[11px]">{sessionOresMined as number}</span>
             </div>
-            <div className="bg-black/40 border border-white/[0.04] rounded flex items-center justify-between px-2 py-1.5 hover:bg-black/60 transition-colors">
+            <div className="bg-[var(--bg-card)] border border-white/[0.04] rounded flex items-center justify-between px-2 py-1.5 hover:bg-[var(--bg-hover)] transition-colors">
               <Leaf size={12} className="text-emerald-500" />
               <span className="text-white font-mono font-black text-[11px]">{sessionPlantsHarvested as number}</span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-1 shrink-0 pt-0.5">
-            <div className="bg-black/30 border border-[var(--border-accent)] rounded px-2 py-1.5 flex items-center justify-between relative overflow-hidden">
+            <div className="bg-[var(--bg-card)] border border-[var(--border-accent)] rounded px-2 py-1.5 flex items-center justify-between relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-transparent"></div>
-              <span className="text-cyan-400/80 text-[7px] uppercase tracking-wider flex items-center gap-1 z-10 font-bold"><Diamond size={8} /> Total Worth</span>
+              <span className="text-cyan-400/80 text-[7px] uppercase tracking-wider flex items-center gap-1 z-10 font-bold"><Diamond size={8} /> {t('sessionTab.totalWorth')}</span>
               <span className="text-cyan-400 font-mono font-black text-[12px] z-10">{totalWorth.toLocaleString()}</span>
             </div>
-            <div className="bg-black/30 border border-white/[0.04] rounded px-2 py-1 flex items-center justify-between">
-              <span className="text-[#5a6270] text-[7px] uppercase tracking-wider flex items-center gap-1"><Coins size={8} className="text-yellow-500" /> Runes Drop By Mobs</span>
-              <span className="text-yellow-400 font-mono font-black text-[10px]">{sessionRunes.toLocaleString()}</span>
-            </div>
-            <div className="bg-black/30 border border-white/[0.04] rounded px-2 py-1 flex items-center justify-between">
-              <span className="text-[#5a6270] text-[7px] uppercase tracking-wider flex items-center gap-1"><Sword size={8} className="text-rose-400" /> Value of Mob Drops</span>
-              <span className="text-rose-400 font-mono font-black text-[10px]">{mobDropsValue.toLocaleString()}</span>
-            </div>
+
           </div>
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col gap-0.5 bg-black/20 border border-white/[0.05] p-2 rounded-lg overflow-hidden h-full z-10">
-        <div className={`flex flex-col gap-0.5 overflow-y-auto custom-scrollbar flex-1 min-h-[60px] ${compactHeightClass}`}>
+      <div className="flex-1 flex flex-col gap-0.5 bg-[var(--bg-panel)] border border-[var(--border-subtle)] p-2 rounded-lg overflow-hidden h-full z-10">
+        <div className={`flex flex-col gap-0.5 overflow-hidden flex-1 min-h-[60px] ${compactHeightClass}`}>
           {sortedLoot.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-[#3a3f47] italic text-[9px] gap-1">
               <PackageOpen size={16} className="opacity-50" />
@@ -171,29 +166,31 @@ export const SessionTab: React.FC<{ isHorizontal: boolean; compactHeightClass: s
             </div>
           ) : (
             <>
-              <div className="flex justify-between items-center px-1.5 py-0.5 mt-1 border-b border-white/5">
-                <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">Item</span>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest w-12 text-right">Count</span>
-                  <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest w-14 text-right">Total</span>
+              <div className="flex justify-between items-center px-1.5 py-0.5 mt-1 border-b border-white/5 mb-1 shrink-0">
+                <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">{t('loot.item')}</span>
+                <div className="flex items-center gap-2 shrink-0 pr-2">
+                  <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest w-12 text-right">{t('loot.count')}</span>
+                  <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest w-14 text-right">{t('loot.total')}</span>
                 </div>
               </div>
-              {sortedLoot.map(([name, quantity]) => {
-                const totalRunes = getResellValue(name, quantity);
-                const unitPrice = getResellValue(name, 1);
-                const displayTotal = totalRunes >= 1000 ? (totalRunes / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : totalRunes;
-                return (
-                  <div key={name} className="flex justify-between items-center bg-white/[0.02] px-1.5 py-[2px] rounded border border-white/[0.02]">
-                    <Tooltip content={name}><span className={`truncate pr-1 ${getRarityColor(name)}`}>{name}</span></Tooltip>
-                    <Tooltip content={`Unit Value: ${unitPrice > 0 ? unitPrice : '-'}`}>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="font-mono text-emerald-400 font-bold text-[10px] w-12 text-right">x{quantity}</span>
-                        <Tooltip content={totalRunes.toLocaleString()}><span className="text-[#5a6270] font-mono text-[9px] w-14 text-right">{displayTotal}</span></Tooltip>
-                      </div>
-                    </Tooltip>
-                  </div>
-                );
-              })}
+              <ul className="flex-1 overflow-y-auto custom-scrollbar h-full pr-1 pb-1 flex flex-col gap-0.5">
+                {sortedLoot.map(([name, quantity]) => {
+                  const totalRunes = getResellValue(name, quantity);
+                  const unitPrice = getResellValue(name, 1);
+                  const displayTotal = totalRunes >= 1000 ? (totalRunes / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : totalRunes;
+                  return (
+                    <motion.li layout key={name} className="flex justify-between items-center bg-[var(--bg-hover)] px-1.5 py-1 rounded border border-[var(--border-subtle)] shrink-0">
+                      <Tooltip content={name}><span className={`truncate pr-1 ${getRarityColor(name)}`}>{name}</span></Tooltip>
+                      <Tooltip content={`Unit Value: ${unitPrice > 0 ? unitPrice : '-'}`}>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="font-mono text-emerald-400 font-bold text-[10px] w-12 text-right">x{quantity}</span>
+                          <Tooltip content={totalRunes.toLocaleString()}><span className="text-[#5a6270] font-mono text-[9px] w-14 text-right">{displayTotal}</span></Tooltip>
+                        </div>
+                      </Tooltip>
+                    </motion.li>
+                  );
+                })}
+              </ul>
             </>
           )}
         </div>

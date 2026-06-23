@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
+
 import { COMPANIONS } from '../../data/companions';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -13,7 +14,7 @@ interface WelcomeSplashProps {
 
 export const WelcomeSplash: React.FC<WelcomeSplashProps> = ({ onStart, onSkip }) => {
   const { t } = useTranslation();
-  const { theme, activeCompanion } = useTrackerStore(useShallow(state => ({
+  const { theme, activeCompanion } = useSettingsStore(useShallow(state => ({
     theme: state.theme,
     activeCompanion: state.activeCompanion
   })));

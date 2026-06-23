@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const NPCTranslationBubble: React.FC = () => {
-  const currentDialogue = useTrackerStore((state) => state.currentNpcDialogue);
-  const language = useTrackerStore((state) => state.language);
+  const currentDialogue = useSettingsStore((state) => state.currentNpcDialogue);
+  const language = useSettingsStore((state) => state.language);
   const [displayedText, setDisplayedText] = useState('');
   
   useEffect(() => {

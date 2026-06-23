@@ -1,9 +1,10 @@
 import React, { useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useTrackerStore } from '../../store/trackerStore';
 import { useShallow } from 'zustand/react/shallow';
 import { X, Sword, Pickaxe, Axe, Leaf, Search, Package } from 'lucide-react';
 import { formatInternalName } from '../../utils/formatters';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const LifetimeStatsWindow: React.FC = () => {
   const { lifetimeStats, isLifetimeStatsOpen, setIsLifetimeStatsOpen } = useTrackerStore(useShallow((state: any) => ({
@@ -14,6 +15,7 @@ export const LifetimeStatsWindow: React.FC = () => {
 
   const dragConstraintsRef = useRef(null);
   const [activeCategory, setActiveCategory] = useState<'combat' | 'mining' | 'logging' | 'plants' | 'mob drops'>('combat');
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
 
   if (!isLifetimeStatsOpen) return null;
@@ -45,18 +47,18 @@ export const LifetimeStatsWindow: React.FC = () => {
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="fixed z-[1000] flex flex-col pointer-events-auto bg-[#0a0a0f]/95 backdrop-blur-xl border border-white/10 shadow-2xl rounded-xl overflow-hidden"
+        className="fixed z-[1000] flex flex-col pointer-events-auto bg-[var(--bg-panel)] glass-panel border border-[var(--border-accent)] shadow-2xl rounded-xl overflow-hidden"
         style={{ width: 450, height: 600, top: 'calc(50% - 300px)', left: 'calc(50% - 225px)' }}
       >
         {/* Header - Draggable */}
         <div className="flex items-center justify-between p-3 border-b border-white/10 bg-white/[0.02] cursor-grab active:cursor-grabbing">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-            <h2 className="text-xs font-black tracking-widest text-white uppercase">Lifetime Statistics</h2>
+            <h2 className="text-xs font-black tracking-widest text-white uppercase">{t('lifetimeStats.title')}</h2>
           </div>
           <button 
             onClick={() => setIsLifetimeStatsOpen(false)}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded transition-colors"
+            className="p-1.5 text-slate-400 hover:text-white hover:bg-[var(--bg-hover)] rounded transition-colors"
           >
             <X size={14} />
           </button>
@@ -105,33 +107,24 @@ export const LifetimeStatsWindow: React.FC = () => {
             </div>
 
             {/* List */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
-              <div className="flex flex-col gap-1">
-                <AnimatePresence mode="popLayout">
-                  {sortedData.map(([key, value]) => (
-                    <motion.div
-                      layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      key={key}
-                      className="flex items-center justify-between p-2.5 rounded-lg bg-white/5 border border-white/[0.02] hover:bg-white/10 transition-colors group"
-                    >
-                      <span className="text-xs font-medium text-slate-300 group-hover:text-white transition-colors">
-                        {formatInternalName(key)}
-                      </span>
-                      <span className={`font-mono text-sm font-black ${categories[activeCategory].color}`}>
-                        {value.toLocaleString()}
-                      </span>
-                    </motion.div>
-                  ))}
-                  {sortedData.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-10 text-slate-500">
-                      <span className="text-xs">No records found.</span>
-                    </div>
-                  )}
-                </AnimatePresence>
-              </div>
+            <div className="flex-1 p-2 relative overflow-hidden min-h-0">
+              <ul className="absolute inset-0 overflow-y-auto custom-scrollbar p-2 flex flex-col gap-1 pr-3">
+                {sortedData.map(([key, value]) => (
+                  <motion.li layout key={key} className="flex items-center justify-between p-2.5 rounded-lg bg-[var(--bg-hover)] border border-[var(--border-subtle)] hover:bg-[var(--bg-hover)] transition-colors group shrink-0">
+                    <span className="text-xs font-medium text-slate-300 group-hover:text-white transition-colors">
+                      {formatInternalName(key)}
+                    </span>
+                    <span className={`font-mono text-sm font-black ${categories[activeCategory].color}`}>
+                      {value.toLocaleString()}
+                    </span>
+                  </motion.li>
+                ))}
+              </ul>
+              {sortedData.length === 0 && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center py-10 text-slate-500 pointer-events-none">
+                  <span className="text-xs">{t('lifetimeStats.noRecords')}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>

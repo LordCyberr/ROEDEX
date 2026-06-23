@@ -1,22 +1,18 @@
 import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
 import { ResourceRespawnEvent, ResourceNode } from '../../types/events';
 import { getFallbackCooldown } from '../../data/cooldowns';
-import { BobCompanion } from '../companion/BobCompanion';
+import { AICompanion } from '../companion/AICompanion';
 
 export class ResourceTracker {
   static sanitizeResourceName(raw: string): string {
     let clean = raw.trim();
-    const noSpaceClean = clean.toLowerCase().replace(/\s+/g, '');
-    if (noSpaceClean === 'crystalrock') return 'Crystal';
-    if (noSpaceClean === 'dinobones' || noSpaceClean === 'dinobone') return 'Dino Bone';
     
-    // Remove common suffixes case-insensitively (handles "Silverore" or "Silver ore")
-    clean = clean.replace(/\s*(ore|node|flower|tree)$/i, '').trim();
-    
-    // Format camelCase to Title Case if needed
+    // Format camelCase to Title Case if needed (e.g., bloodrootVine -> Bloodroot Vine)
     clean = clean.replace(/([a-z])([A-Z])/g, '$1 $2');
     
-    return clean.replace(/^./, (str) => str.toUpperCase());
+    // Capitalize the first letter of every word
+    return clean.replace(/\b\w/g, (c) => c.toUpperCase());
   }
 
   static parseSpawn(event: ResourceRespawnEvent, zone: string): ResourceNode {
@@ -28,7 +24,7 @@ export class ResourceTracker {
     return {
       idx: event.idx,
       type: event.type || existing?.type || 'Unknown',
-      resource: this.sanitizeResourceName(rawResource),
+      resource: rawResource,
       rarity: event.rarity || existing?.rarity || 'Common',
       hp: event.hp !== undefined ? event.hp : (existing ? existing.hp : 1),
       maxHp: event.maxHp !== undefined ? event.maxHp : (existing ? existing.maxHp : 1),
@@ -52,11 +48,12 @@ export class ResourceTracker {
       const name = node.resource.toLowerCase();
       const isRare = name.includes('rare') || name.includes('crystal') || name.includes('gem') || name.includes('titanium') || name.includes('goldleaf') || name.includes('moonpetal');
       
+      const settings = useSettingsStore.getState();
       if (isRare) {
-        BobCompanion.onRareResource();
+        AICompanion.onRareResource();
         
-        if (store.notificationSettings.enabled && store.notificationSettings.toasts && store.notificationSettings.rareDrop) {
-          store.addNotification({ 
+        if (settings.notificationSettings.enabled && settings.notificationSettings.toasts && settings.notificationSettings.rareDrop) {
+          settings.addNotification({ 
             type: 'mythic', 
             title: 'Rare Node Spotted!', 
             message: `A highly valuable ${node.resource} has spawned in ${zone}!` 

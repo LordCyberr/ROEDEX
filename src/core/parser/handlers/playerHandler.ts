@@ -1,8 +1,9 @@
 import { useTrackerStore } from '../../../store/trackerStore';
+import { useSettingsStore } from '../../../store/settingsStore';
 import { TrackerValidator } from '../../../utils/trackerValidator';
 import { MobTracker } from '../../trackers/MobTracker';
 import { ResourceTracker } from '../../trackers/ResourceTracker';
-import { BobCompanion } from '../../companion/BobCompanion';
+import { AICompanion } from '../../companion/AICompanion';
 import { NotificationManager } from '../../notifications/NotificationManager';
 import { SpawnStateEvent, EnemyRespawnEvent, ResourceRespawnEvent } from '../../../types/events';
 import { getRunesRequired } from '../../../data/levelRequirements';
@@ -22,7 +23,7 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any) {
                   state.setSessionPlayerName(payload.username);
                   state.setPlayerProfile({ name: payload.username });
                }
-               BobCompanion.greetUser(payload.username);
+               AICompanion.greetUser(payload.username);
                NotificationManager.greetUser(payload.username);
            }
        }
@@ -34,7 +35,7 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any) {
       const currentZone = data.zone || 'Unknown';
       store.setCurrentZone(currentZone);
       if (currentZone !== 'Unknown') {
-        BobCompanion.zoneChange(currentZone);
+        AICompanion.zoneChange(currentZone);
       }
 
       if (data.enemies) {
@@ -64,7 +65,11 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any) {
 
     case 'player:damage:taken': {
       if (payload?.damageAmount === 0) {
-        BobCompanion.onParry();
+        AICompanion.onParry();
+      } else {
+        const sourceName = payload?.sourceName || payload?.sourceId || '';
+        const isBoss = payload?.isBoss || false;
+        AICompanion.onPlayerDamage(sourceName, payload?.damageAmount || 0, isBoss);
       }
       
       if (payload?.stats) {
@@ -136,7 +141,7 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any) {
                  state.setSessionPlayerName(newName);
                  profileUpdate.name = newName;
               }
-              BobCompanion.greetUser(newName);
+              AICompanion.greetUser(newName);
               NotificationManager.greetUser(newName);
            }
         }
@@ -148,6 +153,10 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any) {
         if (d.nextLevelExp !== undefined || d.next_exp !== undefined || d.NextExp !== undefined || d.nextLevel !== undefined) {
            profileUpdate.runesRequired = d.nextLevelExp ?? d.next_exp ?? d.NextExp ?? d.nextLevel;
         }
+
+        if (d.hp === 0 || d.Hp === 0 || d.health === 0 || d.Health === 0) {
+           AICompanion.onPlayerDeath();
+        }
         
         if (Object.keys(profileUpdate).length > 0) {
            const finalLevel = profileUpdate.level || storeState.playerProfile.level || 1;
@@ -157,7 +166,7 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any) {
            }
            
            if (profileUpdate.name && profileUpdate.name !== storeState.playerProfile.name) {
-             BobCompanion.greetUser(profileUpdate.name);
+             AICompanion.greetUser(profileUpdate.name);
              NotificationManager.greetUser(profileUpdate.name);
            }
            
@@ -165,7 +174,12 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any) {
            
            const updatedProfile = useTrackerStore.getState().playerProfile;
            if (updatedProfile.currentRunes >= updatedProfile.runesRequired && updatedProfile.runesRequired > 0) {
-             BobCompanion.onLevelUpReady(updatedProfile.level);
+             AICompanion.onLevelUpReady(updatedProfile.level);
+           } else if (updatedProfile.runesRequired > 0) {
+             const remaining = updatedProfile.runesRequired - updatedProfile.currentRunes;
+             if (remaining > 0 && remaining < updatedProfile.runesRequired * 0.05) {
+               AICompanion.onLevelUpNear();
+             }
            }
         }
 
@@ -215,11 +229,11 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any) {
         if (d.t && typeof d.t === 'string') {
           const resourceType = d.t.toLowerCase();
           if (resourceType.includes('ore') || resourceType.includes('rock') || resourceType.includes('copper') || resourceType.includes('iron') || resourceType.includes('gold')) {
-             BobCompanion.onMine();
+             AICompanion.onMine();
           } else if (resourceType.includes('tree') || resourceType.includes('wood') || resourceType.includes('log')) {
-             BobCompanion.onChop();
+             AICompanion.onChop();
           } else {
-             BobCompanion.onGather();
+             AICompanion.onGather();
           }
         }
       }
@@ -260,10 +274,15 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any) {
     case 'join_zone': {
        const zone = payload?.zone || payload?.data?.zone;
        if (zone) {
-          store.setCurrentZone(zone);
-          BobCompanion.zoneChange(zone);
-          if (store.notificationSettings.enabled && store.notificationSettings.toasts && store.notificationSettings.zoneChange) {
-            store.addNotification({ type: 'info', title: 'System', message: `Entered Zone: ${zone}` });
+          const currentZone = store.currentZone;
+          AICompanion.zoneChange(zone);
+          if (currentZone !== zone && zone !== 'Unknown') {
+            useSettingsStore.getState().addNotification({ type: 'info', title: 'System', message: `Entered Zone: ${zone}` });
+            
+            // Only update currentZone after 1 second to avoid UI flicker during transitions
+            setTimeout(() => {
+              useTrackerStore.getState().setCurrentZone(zone);
+            }, 1000);
           }
        }
        break;
@@ -272,7 +291,7 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any) {
     case 'level_up':
     case 'achievement':
     case 'milestone': {
-      BobCompanion.onLevelUp();
+      AICompanion.onLevelUp();
       break;
     }
   }

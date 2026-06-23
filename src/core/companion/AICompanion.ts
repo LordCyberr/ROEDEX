@@ -1,10 +1,10 @@
 import { useTrackerStore } from '../../store/trackerStore';
-import { bobTranslations } from '../../i18n/bobTranslations';
+import { useSettingsStore } from '../../store/settingsStore';
 import { companionTranslations } from '../../i18n/companionTranslations';
 import { formatInternalName } from '../../utils/formatters';
 import { playSound } from '../../utils/sound';
 
-export class BobCompanion {
+export class AICompanion {
   private static lastZone: string = '';
   private static warnedTools: Set<string> = new Set();
   private static hasGreeted: boolean = false;
@@ -28,11 +28,11 @@ export class BobCompanion {
   private static idleTimer: any = null;
 
   private static getQuotes() {
-    const store = useTrackerStore.getState();
-    const lang = store.language || 'en';
-    const baseQuotes = (bobTranslations as any)[lang] || bobTranslations.en;
+    const settings = useSettingsStore.getState();
+    const lang = settings.language || 'en';
+    const baseQuotes = (companionTranslations as any)[lang] || companionTranslations.en;
     
-    const activeCompId = store.activeCompanion || 'bob';
+    const activeCompId = settings.activeCompanion || 'bob';
     if (activeCompId === 'bob') return baseQuotes;
     
     const premiumQuotes = (companionTranslations as any)[lang] || companionTranslations.en;
@@ -48,8 +48,8 @@ export class BobCompanion {
   }
   
   public static getAlerts() {
-    const store = useTrackerStore.getState();
-    const lang = store.language || 'en';
+    const settings = useSettingsStore.getState();
+    const lang = settings.language || 'en';
     
     // The alerts are shared across all companions and are defined in companionTranslations
     const premiumQuotes = (companionTranslations as any)[lang] || companionTranslations.en;
@@ -57,8 +57,8 @@ export class BobCompanion {
   }
 
   private static getFrequencyMs() {
-    const store = useTrackerStore.getState();
-    const freq = store.notificationSettings.bobFrequency;
+    const settings = useSettingsStore.getState();
+    const freq = settings.notificationSettings.bobFrequency;
     if (freq === 'rare') return this.randomBetween(15 * 60000, 25 * 60000);
     if (freq === 'chatty') return this.randomBetween(3 * 60000, 8 * 60000);
     return this.randomBetween(8 * 60000, 15 * 60000);
@@ -80,24 +80,40 @@ export class BobCompanion {
     if (this.idleTimer) clearTimeout(this.idleTimer);
     const nextMs = this.getFrequencyMs();
     this.idleTimer = setTimeout(() => {
+      this.checkGrindingFatigue();
       this.fireRandomIdleMessage();
       this.resetIdleTimer();
     }, nextMs);
   }
 
+  private static checkGrindingFatigue() {
+    const store = useTrackerStore.getState();
+    if (!store.sessionActive || !store.sessionStartTime) return;
+    const hoursElapsed = (Date.now() - store.sessionStartTime) / (1000 * 60 * 60);
+    if (hoursElapsed > 2) {
+      this.triggerCategory('fatigue', [
+        "You've been grinding for over 2 hours straight! Don't forget to hydrate!",
+        "Take a quick break, champion. Even the best need to rest their eyes.",
+        "Your dedication is insane, but maybe stretch your legs for a minute?",
+        "Two hours of non-stop action! Grab some water!"
+      ], 3600000, 'bobTips', true); // 1 hour cooldown for fatigue
+    }
+  }
+
   private static fireRandomIdleMessage() {
     const store = useTrackerStore.getState();
-    if (!store.notificationSettings.bobMode) return;
-    if (store.notificationSettings.tutorialStep > 0 && !store.notificationSettings.tutorialCompleted) return;
+    const settings = useSettingsStore.getState();
+    if (!settings.notificationSettings.companionMode) return;
+    if (settings.notificationSettings.tutorialStep > 0 && !settings.notificationSettings.tutorialCompleted) return;
     
     // 1% chance for ultra rare
-    if (Math.random() < 0.01 && store.notificationSettings.bobSecret) {
+    if (Math.random() < 0.01 && settings.notificationSettings.bobSecret) {
       this.triggerCategory('ultraRare', this.getQuotes().ultraRare, 0, 'bobSecret');
       return;
     }
 
     // 20% chance for funny if enabled
-    if (Math.random() < 0.20 && store.notificationSettings.bobJokes) {
+    if (Math.random() < 0.20 && settings.notificationSettings.bobJokes) {
       this.triggerCategory('funny', this.getQuotes().funny, 0, 'bobJokes');
       return;
     }
@@ -105,6 +121,26 @@ export class BobCompanion {
     const currentZone = store.currentZone.toLowerCase();
     const quotes = this.getQuotes();
     
+    // 15% chance for Zone Lore
+    if (Math.random() < 0.15 && quotes.zoneLore) {
+      if (currentZone.includes('forest') && quotes.zoneLore.forest) {
+         this.triggerCategory('zoneLore', quotes.zoneLore.forest, 0, 'bobTips');
+         return;
+      }
+      if ((currentZone.includes('cave') || currentZone.includes('mine')) && quotes.zoneLore.cave) {
+         this.triggerCategory('zoneLore', quotes.zoneLore.cave, 0, 'bobTips');
+         return;
+      }
+      if ((currentZone.includes('town') || currentZone.includes('bank')) && quotes.zoneLore.town) {
+         this.triggerCategory('zoneLore', quotes.zoneLore.town, 0, 'bobTips');
+         return;
+      }
+      if (currentZone.includes('guild') && quotes.zoneLore.guild) {
+         this.triggerCategory('zoneLore', quotes.zoneLore.guild, 0, 'bobTips');
+         return;
+      }
+    }
+
     // Check if there are zone specific quotes
     if (currentZone.includes('forest') && quotes.zoneForest) {
        this.triggerCategory('zoneForest', quotes.zoneForest, 0, 'bobTips');
@@ -131,8 +167,8 @@ export class BobCompanion {
     if (this.hasGreeted) return;
     this.hasGreeted = true;
     
-    const store = useTrackerStore.getState();
-    if (!store.notificationSettings.enabled || !store.notificationSettings.toasts || !store.notificationSettings.bobMode || !store.notificationSettings.bobGreetings) {
+    const settings = useSettingsStore.getState();
+    if (!settings.notificationSettings.enabled || !settings.notificationSettings.toasts || !settings.notificationSettings.companionMode || !settings.notificationSettings.bobGreetings) {
       this.startTimers();
       return;
     }
@@ -224,15 +260,15 @@ export class BobCompanion {
   static onRareDrop() {
     this.triggerCategory('rareDrop', this.getQuotes().rareDrop, 5000, 'bobRareDrop', true);
     this.onActivity();
-    const store = useTrackerStore.getState();
-    if (store.notificationSettings.audio) playSound('rare');
+    const settings = useSettingsStore.getState();
+    if (settings.notificationSettings.audio) playSound('rare');
   }
 
   static onMythicDrop() {
     this.triggerCategory('mythicDrop', this.getQuotes().mythicDrop, 5000, 'bobRareDrop', true);
     this.onActivity();
-    const store = useTrackerStore.getState();
-    if (store.notificationSettings.audio) playSound('mythic');
+    const settings = useSettingsStore.getState();
+    if (settings.notificationSettings.audio) playSound('mythic');
   }
 
   static onLevelUp() {
@@ -254,14 +290,70 @@ export class BobCompanion {
     this.onActivity();
   }
 
+  static onLevelUpNear() {
+    this.triggerCategory('levelUpNear', [
+      "You're almost there! Just a few more to level up!",
+      "I can feel the power growing! So close to the next level!",
+      "Push it! You're about to level up!",
+      "Just a tiny bit more XP to go!",
+      "Level up incoming! Keep grinding!"
+    ], 300000, 'bobAchievement', false); // 5 minutes cooldown
+  }
+
+  // Roasting Tracking
+  private static deathTimestamps: number[] = [];
+
+  static onPlayerDeath() {
+    this.onActivity();
+    const settings = useSettingsStore.getState();
+    const roastLevel = settings.notificationSettings.roastLevel || 'mild';
+    if (roastLevel === 'off') return;
+
+    const now = Date.now();
+    this.deathTimestamps.push(now);
+    // Keep deaths within the last 10 minutes
+    this.deathTimestamps = this.deathTimestamps.filter(t => now - t < 10 * 60000);
+
+    const quotes = this.getQuotes() as any;
+
+    if (this.deathTimestamps.length >= 3) {
+      const lines = roastLevel === 'savage' ? quotes.deathRoastsSavage : quotes.deathRoastsMild;
+      if (lines) {
+        this.triggerCategory('deathRoast', lines, 60000, 'bobTips', true);
+      }
+    }
+  }
+
+  static onPlayerDamage(sourceName: string, damageAmount: number, isBoss: boolean = false) {
+    this.onActivity();
+    const settings = useSettingsStore.getState();
+    const roastLevel = settings.notificationSettings.roastLevel || 'mild';
+    if (roastLevel === 'off') return;
+
+    const quotes = this.getQuotes() as any;
+    const lowerSource = sourceName.toLowerCase();
+
+    if (isBoss && damageAmount >= 50) {
+      const lines = roastLevel === 'savage' ? quotes.bossRoastsSavage : quotes.bossRoastsMild;
+      if (lines) {
+        this.triggerCategory('bossRoast', lines, 60000, 'bobCombat', false);
+      }
+    } else if (lowerSource.includes('slime') || lowerSource.includes('mushroom')) {
+      const lines = roastLevel === 'savage' ? quotes.slimeRoastsSavage : quotes.slimeRoastsMild;
+      if (lines) {
+        this.triggerCategory('slimeRoast', lines, 60000, 'bobCombat', false);
+      }
+    }
+  }
+
   static zoneChange(zoneName: string) {
     this.onActivity();
     if (this.lastZone === zoneName) return;
     this.lastZone = zoneName;
 
-    const store = useTrackerStore.getState();
+    const settings = useSettingsStore.getState();
 
-    if (!store.notificationSettings.bobMode) {
+    if (!settings.notificationSettings.companionMode) {
       return;
     }
 
@@ -290,7 +382,7 @@ export class BobCompanion {
     } else if (lowerZone === 'tavern') {
       this.triggerCategory('zone', quotes.zoneTavern || quotes.zoneTown || [this.getAlerts().zoneEnter.replace('{zone}', zoneName)], 60000, 'bobZone');
     } else {
-      if (store.notificationSettings.bobZone) {
+      if (settings.notificationSettings.bobZone) {
          this.sendBobMessage('zone', this.getAlerts().zoneEnter.replace('{zone}', zoneName));
       }
     }
@@ -310,10 +402,16 @@ export class BobCompanion {
          this.sendBobMessage('chat', `Your ${toolName} broke! Equip another one from your bag.`);
       }
       this.warnedTools.add(toolName);
+      // Contextual Crisis Mode
+      useSettingsStore.getState().setBobMood('angry');
+      setTimeout(() => useSettingsStore.getState().setBobMood('idle'), 15000);
     } else if (percentage < 0.1 && current < 50) {
       if (!this.warnedTools.has(toolName)) {
         this.warnedTools.add(toolName);
         this.triggerCategory('lowDurability', this.getQuotes().lowDurability, 60000, 'bobTips', true);
+        // Contextual Crisis Mode
+        useSettingsStore.getState().setBobMood('angry');
+        setTimeout(() => useSettingsStore.getState().setBobMood('idle'), 15000);
       }
     } else if (current > 50 || percentage > 0.1) {
       this.warnedTools.delete(toolName);
@@ -336,12 +434,13 @@ export class BobCompanion {
 
   private static triggerCategory(categoryKey: string, lines: string[], cooldownMs: number, settingKey: string, bypassCooldownCheck = false) {
     const store = useTrackerStore.getState();
-    if (!store.notificationSettings.enabled || !store.notificationSettings.toasts) return;
-    if (store.notificationSettings.tutorialStep > 0 && !store.notificationSettings.tutorialCompleted) return;
+    const settings = useSettingsStore.getState();
+    if (!settings.notificationSettings.enabled || !settings.notificationSettings.toasts) return;
+    if (settings.notificationSettings.tutorialStep > 0 && !settings.notificationSettings.tutorialCompleted) return;
     
     // Check if Bob is enabled globally and for this category
-    if (!store.notificationSettings.bobMode) return;
-    const settingValue = store.notificationSettings[settingKey as keyof typeof store.notificationSettings];
+    if (!settings.notificationSettings.companionMode) return;
+    const settingValue = settings.notificationSettings[settingKey as keyof typeof settings.notificationSettings];
     if (settingValue === false) return; // Note: using explicit false check in case it's undefined
     
     const now = Date.now();
@@ -378,8 +477,8 @@ export class BobCompanion {
   }
 
   private static sendBobMessage(type: string, message: string) {
-    const store = useTrackerStore.getState();
-    store.addBobMessage({
+    const settingsStore = useSettingsStore.getState();
+    settingsStore.addBobMessage({
       title: 'Bob',
       message: message,
       type: type as any

@@ -1,16 +1,17 @@
 import React from 'react';
+import { useTranslation } from '../../hooks/useTranslation';
 import { Header } from '../layout/Header';
 import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
 import { TrackingView } from '../views/TrackingView';
 import { LootView } from '../views/LootView';
-
 import { NPCView } from '../views/NPCView';
 import { SettingsView } from '../views/SettingsView';
 import { WeaponUI } from '../widgets/WeaponUI';
 import { ArmorUI } from '../widgets/ArmorUI';
 import { NotificationToaster } from '../widgets/NotificationToaster';
-import { BobOverlay } from '../widgets/BobOverlay';
+import { CompanionOverlay } from '../widgets/CompanionOverlay';
 import { EfficiencyHUD } from '../widgets/EfficiencyHUD';
 import { DebugPanel } from '../widgets/DebugPanel';
 import { MinimizedOrb } from './MinimizedOrb';
@@ -19,7 +20,7 @@ import { ErrorBoundary } from '../widgets/ErrorBoundary';
 import { ChangelogModal } from '../ui/ChangelogModal';
 import { motion, useMotionValue, useDragControls } from 'motion/react';
 import { MinimalChestHUD } from '../widgets/MinimalChestHUD';
-
+import { PoppedOutWindow } from '../../store/storeTypes';
 import { CompanionGuideOverlay } from './CompanionGuideOverlay';
 import { FocusHighlight } from './FocusHighlight';
 import { LifetimeStatsWindow } from './LifetimeStatsWindow';
@@ -28,12 +29,17 @@ import { NPCTranslationBubble } from './NPCTranslationBubble';
 import { Profiler, ProfilerOnRenderCallback } from 'react';
 
 export const OverlayContainer: React.FC = () => {
+  const { currentZone } = useTrackerStore(useShallow((state: any) => ({
+    currentZone: state.currentZone
+  })));
+
   const {
     activeTab, isMinimized, layoutMode, poppedOutWindows,
     mergeTab, overlayPosition, setOverlayPosition,
     activeOpacity, idleOpacity, isUILocked, globalScale,
-    tabDimensions, theme, tutorialStep, tutorialCompleted, currentZone, devForceOverlay
-  } = useTrackerStore(useShallow((state) => ({
+    tabDimensions, theme, tutorialStep, tutorialCompleted,
+    devForceOverlay
+  } = useSettingsStore(useShallow((state: any) => ({
     activeTab: state.activeTab,
     isMinimized: state.isMinimized,
     layoutMode: state.layoutMode,
@@ -47,11 +53,11 @@ export const OverlayContainer: React.FC = () => {
     tabDimensions: state.tabDimensions,
     theme: state.theme,
     globalScale: state.globalScale,
-    tutorialStep: state.notificationSettings.tutorialStep,
-    tutorialCompleted: state.notificationSettings.tutorialCompleted,
-    currentZone: state.currentZone,
+    tutorialStep: state.notificationSettings?.tutorialStep || 0,
+    tutorialCompleted: state.notificationSettings?.tutorialCompleted || false,
     devForceOverlay: state.devForceOverlay
   })));
+  const { t } = useTranslation();
 
   const isGameLoaded = devForceOverlay || (!!currentZone && currentZone !== 'Unknown');
   const [isOverlayReady, setIsOverlayReady] = React.useState(false);
@@ -86,8 +92,8 @@ export const OverlayContainer: React.FC = () => {
 
   const dragControls = useDragControls();
   
-  const x = useMotionValue(overlayPosition.x);
-  const y = useMotionValue(overlayPosition.y);
+  const x = useMotionValue(overlayPosition?.x ?? 103);
+  const y = useMotionValue(overlayPosition?.y ?? 116);
 
   // Sync initial position and handle hydration bounding
   React.useEffect(() => {
@@ -108,7 +114,7 @@ export const OverlayContainer: React.FC = () => {
 
     x.set(safeX);
     y.set(safeY);
-  }, [overlayPosition.x, overlayPosition.y, x, y]);
+  }, [overlayPosition?.x, overlayPosition?.y, x, y]);
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -122,7 +128,7 @@ export const OverlayContainer: React.FC = () => {
         
         if (tabId) {
           e.preventDefault();
-          useTrackerStore.getState().popOutTab(tabId, window.innerWidth / 2 - 150, window.innerHeight / 2 - 200);
+          useSettingsStore.getState().popOutTab(tabId, window.innerWidth / 2 - 150, window.innerHeight / 2 - 200);
         }
       }
     };
@@ -164,7 +170,7 @@ export const OverlayContainer: React.FC = () => {
     if (poppedOutWindows[activeTab]) {
       return (
         <div className="flex flex-col items-center justify-center h-full w-full opacity-50 p-4 text-center">
-          <div className="text-[var(--text-primary)] font-bold mb-2">This tab is popped out</div>
+          <div className="text-[var(--text-primary)] font-bold mb-2">{t('overlayContainer.poppedOut')}</div>
           <button 
             onClick={() => mergeTab(activeTab)}
             className="px-3 py-1.5 bg-[var(--accent-primary)]/20 hover:bg-[var(--accent-primary)]/40 text-[var(--accent-primary)] rounded transition-colors text-xs font-bold uppercase tracking-wider border border-[var(--accent-primary)]/30"
@@ -238,8 +244,15 @@ export const OverlayContainer: React.FC = () => {
         newY = startOverlayY + (startH - newH);
       }
       
-      if (dir.includes('e') || dir.includes('w')) el.style.width = `${newW}px`;
-      if (dir.includes('s') || dir.includes('n')) el.style.height = `${newH}px`;
+      if (dir.includes('e') || dir.includes('w')) {
+        el.style.width = `${newW}px`;
+      }
+      if (dir.includes('s') || dir.includes('n')) {
+        // Apply height changes during drag. Even in vertical mode, this works because
+        // on drag end, it converts to minHeight!
+        el.style.height = `${newH}px`;
+      }
+      
       if (dir.includes('w')) x.set(newX);
       if (dir.includes('n')) y.set(newY);
     };
@@ -250,15 +263,15 @@ export const OverlayContainer: React.FC = () => {
       const finalW = (w && w.endsWith('px')) ? parseInt(w) : undefined;
       const finalH = (h && h.endsWith('px')) ? parseInt(h) : undefined;
       
-      const currentDimObj = useTrackerStore.getState().tabDimensions[activeDimKey] || {};
+      const currentDimObj = useSettingsStore.getState().tabDimensions[activeDimKey] || {};
       
       const saveW = (dir.includes('e') || dir.includes('w')) ? finalW : currentDimObj.width;
       const saveH = (dir.includes('s') || dir.includes('n')) ? finalH : currentDimObj.height;
       
       if (saveW || saveH) {
-        useTrackerStore.getState().setTabDimensions(activeDimKey, saveW, saveH);
+        useSettingsStore.getState().setTabDimensions(activeDimKey, saveW, saveH);
       }
-      useTrackerStore.getState().setOverlayPosition({ x: x.get(), y: y.get() });
+      useSettingsStore.getState().setOverlayPosition({ x: x.get(), y: y.get() });
       
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerup', onUp);
@@ -269,7 +282,7 @@ export const OverlayContainer: React.FC = () => {
   };
 
   const onRender: ProfilerOnRenderCallback = (_id, _phase, actualDuration) => {
-    const state = useTrackerStore.getState();
+    const state = useSettingsStore.getState();
     const currentAvg = state.profilerMetrics.renderTime.average;
     const newAvg = currentAvg === 0 ? actualDuration : (currentAvg * 0.9) + (actualDuration * 0.1);
     
@@ -295,8 +308,14 @@ export const OverlayContainer: React.FC = () => {
                 style={{ 
                   x, y, 
                   opacity: tutorialStep > 0 ? 1.0 : (isHovered ? activeOpacity : idleOpacity),
-                  width: currentWidth ? currentWidth : undefined,
-                  height: currentHeight ? currentHeight : undefined,
+                  width: isHorizontal ? "" : (currentWidth || ""),
+                  height: isHorizontal ? (currentHeight || "") : "",
+                  // To satisfy the paradox of "user can resize from any direction" AND "auto-expand always works", 
+                  // we apply the fixed dimension to the dominant axis, but we apply it as a MINIMUM to the auto-expand axis!
+                  // In Vertical mode: width is fixed, height is minHeight (so it can still grow!)
+                  // In Horizontal mode: height is fixed, width is minWidth (so it can still grow!)
+                  minHeight: !isHorizontal ? (currentHeight || "") : undefined,
+                  minWidth: isHorizontal ? (currentWidth || "") : undefined,
                   zoom: globalScale || 1
                 }}
                 onMouseEnter={() => setIsHovered(true)}
@@ -337,7 +356,7 @@ export const OverlayContainer: React.FC = () => {
               </motion.div>
             )}
             
-            {Object.values(poppedOutWindows).map(win => (
+            {(Object.values(poppedOutWindows) as PoppedOutWindow[]).map(win => (
               <ErrorBoundary key={win.id}>
                 <PoppedOutWindowComponent window={win} constraintsRef={containerRef} />
               </ErrorBoundary>
@@ -350,7 +369,7 @@ export const OverlayContainer: React.FC = () => {
             <ErrorBoundary><MinimalChestHUD /></ErrorBoundary>
             <ErrorBoundary><FocusHighlight /></ErrorBoundary>
             {(tutorialCompleted || tutorialStep > 0) && (
-              <ErrorBoundary><BobOverlay constraintsRef={containerRef} /></ErrorBoundary>
+              <ErrorBoundary><CompanionOverlay constraintsRef={containerRef} /></ErrorBoundary>
             )}
           </>
         )}

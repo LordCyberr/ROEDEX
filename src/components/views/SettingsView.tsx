@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
 import { Shield, ShieldAlert, Palette, Bell, Sword, ChevronDown, ChevronRight, Database, Bot } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -9,7 +9,7 @@ import { TrackingSettings } from './settings/TrackingSettings';
 import { WeaponSettings } from './settings/WeaponSettings';
 import { ArmorSettings } from './settings/ArmorSettings';
 import { NotificationSettings } from './settings/NotificationSettings';
-import { BobSettings } from './settings/BobSettings';
+import { CompanionSettings } from './settings/CompanionSettings';
 import { AdvancedSettings } from './settings/AdvancedSettings';
 import { AboutSettings } from './settings/AboutSettings';
 import { Tooltip } from '../ui/Tooltip';
@@ -63,15 +63,10 @@ const AccordionSection: React.FC<{
 
 export const SettingsView: React.FC = () => {
   const { t } = useTranslation();
-  const store = useTrackerStore(useShallow(state => {
-    const { 
-      enemies, resources, loot, timers, 
-      playerPosition, throttledPlayerPosition, slotDurabilities,
-      weapon, armor, sessionLoot,
-      ...safeState 
-    } = state;
-    return safeState;
-  }));
+  const store = useSettingsStore(useShallow((state: any) => ({
+    developerMode: state.developerMode,
+    layoutMode: state.layoutMode
+  })));
   const [activeTab, setActiveTab] = useState('');
 
   const sections = [
@@ -80,7 +75,7 @@ export const SettingsView: React.FC = () => {
     { id: 'weapon', title: t('settings.weaponOverlay'), description: t('settings.descWeapon'), icon: <Sword size={14} />, content: <WeaponSettings /> },
     { id: 'armor', title: t('settings.armorOverlay'), description: t('settings.descArmor'), icon: <Shield size={14} />, content: <ArmorSettings /> },
     { id: 'notifications', title: t('settings.uiNotifications'), description: t('settings.descNotifications'), icon: <Bell size={14} />, content: <NotificationSettings /> },
-    { id: 'companion', title: t('settings.aiCompanion'), description: t('settings.descCompanion'), icon: <Bot size={14} />, content: <BobSettings /> },
+    { id: 'companion', title: t('settings.aiCompanion'), description: t('settings.descCompanion'), icon: <Bot size={14} />, content: <CompanionSettings /> },
     { id: 'advanced', title: t('settings.advanced'), description: t('settings.descAdvanced'), icon: <ShieldAlert size={14} className={store.developerMode ? 'text-amber-400' : ''} />, content: <AdvancedSettings /> },
     { id: 'about', title: t('settings.aboutMe'), description: t('settings.descAbout'), icon: <span className="text-[14px]">✧</span>, content: <AboutSettings /> }
   ];

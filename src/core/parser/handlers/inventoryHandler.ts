@@ -1,7 +1,8 @@
 import { useTrackerStore } from '../../../store/trackerStore';
+import { useSettingsStore } from '../../../store/settingsStore';
 import { LootTracker } from '../../trackers/LootTracker';
 import { getResellValue } from '../../../data/prices';
-import { BobCompanion } from '../../companion/BobCompanion';
+import { AICompanion } from '../../companion/AICompanion';
 import { NotificationManager } from '../../notifications/NotificationManager';
 import { DropSpawnEvent } from '../../../types/events';
 
@@ -20,6 +21,7 @@ export function handleInventoryEvent(
   switch (eventName) {
     case 'chest_opened': {
       const state = useTrackerStore.getState();
+      const settings = useSettingsStore.getState();
       if (Date.now() - parserState.lastWeaponBreakTime < 2000) {
         break;
       }
@@ -32,12 +34,12 @@ export function handleInventoryEvent(
       
       parserState.lastChestOpenTime = Date.now();
       state.setIsChestOpen(true);
-      BobCompanion.onChestOpen();
+      AICompanion.onChestOpen();
       
-      if (state.autoMinimizeOnChest) {
-        state.setIsMinimized(true);
-        Object.keys(state.poppedOutWindows).forEach(id => {
-          state.updatePoppedOutWindow(id, { isMinimized: true });
+      if (settings.autoMinimizeOnChest) {
+        settings.setIsMinimized(true);
+        Object.keys(settings.poppedOutWindows).forEach(id => {
+          settings.updatePoppedOutWindow(id, { isMinimized: true });
         });
       }
       break;
@@ -56,11 +58,12 @@ export function handleInventoryEvent(
       }
 
       const state = useTrackerStore.getState();
+      const settings = useSettingsStore.getState();
       state.setIsChestOpen(false);
-      if (state.autoMinimizeOnChest) {
-        state.setIsMinimized(false);
-        Object.keys(state.poppedOutWindows).forEach(id => {
-          state.updatePoppedOutWindow(id, { isMinimized: false });
+      if (settings.autoMinimizeOnChest) {
+        settings.setIsMinimized(false);
+        Object.keys(settings.poppedOutWindows).forEach(id => {
+          settings.updatePoppedOutWindow(id, { isMinimized: false });
         });
       }
       break;
@@ -70,6 +73,7 @@ export function handleInventoryEvent(
       const items = data?.InventoryItems;
       
       const state = useTrackerStore.getState();
+      const settings = useSettingsStore.getState();
       const timeSinceLogin = Date.now() - (parserState.loginTime || 0);
       
       if (!state.isChestOpen && !parserState.isBlacksmithOpen && timeSinceLogin > 3000) {
@@ -79,12 +83,12 @@ export function handleInventoryEvent(
         } else {
           parserState.lastChestOpenTime = Date.now();
           state.setIsChestOpen(true);
-          BobCompanion.onChestOpen();
+          AICompanion.onChestOpen();
           
-          if (state.autoMinimizeOnChest) {
-            state.setIsMinimized(true);
-            Object.keys(state.poppedOutWindows).forEach(id => {
-              state.updatePoppedOutWindow(id, { isMinimized: true });
+          if (settings.autoMinimizeOnChest) {
+            settings.setIsMinimized(true);
+            Object.keys(settings.poppedOutWindows).forEach(id => {
+              settings.updatePoppedOutWindow(id, { isMinimized: true });
             });
           }
         }
@@ -289,7 +293,7 @@ export function handleInventoryEvent(
           const oldWeapon = state.weapon?.name;
           state.setWeapon(null);
           if (oldWeapon) {
-             BobCompanion.onWeaponUnequipped(oldWeapon);
+             AICompanion.onWeaponUnequipped(oldWeapon);
              NotificationManager.onWeaponUnequipped(oldWeapon);
           }
        } else if (payload?.equipSlot?.startsWith('armor')) {

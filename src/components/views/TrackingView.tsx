@@ -2,6 +2,8 @@ import React, { useMemo } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { useThrottledEntities } from '../../hooks/useThrottledEntities';
 import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
+import { useTranslation } from '../../hooks/useTranslation';
 import { GlobalTableHeader, CategorySection, CategoryCard, TableRowData } from '../ui/CategoryTable';
 import { Tooltip } from '../ui/Tooltip';
 import { Vector2 } from '../../types/events';
@@ -48,27 +50,32 @@ interface TrackingViewProps {
 }
 
 export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
+  const { t } = useTranslation();
+  const { currentZone } = useTrackerStore(useShallow((state) => ({
+    currentZone: state.currentZone
+  })));
+  
   const {
     activeTab, 
-    favorites, layoutMode, displayMode, currentZone,
+    favorites,
+    layoutMode, displayMode,
     collapsedCategories, toggleCategory,
     collapsedSidebarZones, toggleSidebarZone,
     verticalGroupingMode, tableSettings,
     tutorialStep, tutorialCompleted
-  } = useTrackerStore(useShallow((state) => ({
+  } = useSettingsStore(useShallow((state: any) => ({
     activeTab: state.activeTab,
     favorites: state.favorites,
     layoutMode: state.layoutMode,
     verticalGroupingMode: state.verticalGroupingMode,
     displayMode: state.displayMode,
-    currentZone: state.currentZone,
     collapsedCategories: state.collapsedCategories,
     toggleCategory: state.toggleCategory,
     collapsedSidebarZones: state.collapsedSidebarZones,
     toggleSidebarZone: state.toggleSidebarZone,
     tableSettings: state.tableSettings,
-    tutorialStep: state.notificationSettings.tutorialStep,
-    tutorialCompleted: state.notificationSettings.tutorialCompleted
+    tutorialStep: state.notificationSettings?.tutorialStep || 0,
+    tutorialCompleted: state.notificationSettings?.tutorialCompleted || false
   })));
   
   const { enemies, resources, timers, throttledPlayerPosition } = useThrottledEntities(300);
@@ -82,7 +89,8 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
 
     const addOrUpdate = (
       zone: string,
-      category: string,
+      categoryKey: string,
+      categoryDisplayName: string,
       name: string,
       dist: number,
       pos: Vector2,
@@ -92,14 +100,14 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
     ) => {
       // Normalize zone name
       const zoneDisplay = zone.replace(/^./, (str) => str.toUpperCase());
-      const groupId = `${zoneDisplay}_${category}`;
+      const groupId = `${zoneDisplay}_${categoryKey}`;
 
       if (!groups[groupId]) {
         groups[groupId] = {
           id: groupId,
-          title: `${zoneDisplay} ${category}`,
+          title: `${zoneDisplay} ${categoryDisplayName}`,
           zone: zoneDisplay,
-          category,
+          category: categoryKey,
           items: {}
         };
       }
@@ -158,8 +166,9 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
       if (displayMode === 'current_zone' && zone !== currentZone) return;
 
       const dist = tableSettings.showDistance ? calculateDistance(throttledPlayerPosition, pos) : -1;
-      const category = getCategoryName(typeRaw, isResource);
-      addOrUpdate(zone, category, name, dist, pos, isAlive, isTimerInjection, respawnTimeMs);
+      const categoryKey = getCategoryName(typeRaw, isResource).toLowerCase();
+      const categoryDisplayName = t(`categories.${categoryKey}`) || getCategoryName(typeRaw, isResource);
+      addOrUpdate(zone, categoryKey, categoryDisplayName, name, dist, pos, isAlive, isTimerInjection, respawnTimeMs);
     };
 
     // 1. Process Enemies
@@ -202,7 +211,7 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
     };
 
     // Convert to sorted arrays
-    const catOrderMap: Record<string, number> = { 'Mobs': 1, 'Ores': 2, 'Trees': 3, 'Plants': 4 };
+    const catOrderMap: Record<string, number> = { 'mobs': 1, 'ores': 2, 'trees': 3, 'plants': 4 };
 
     const sortedGroups = Object.values(groups).map(g => ({
       id: g.id,
@@ -265,7 +274,7 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
           return (
             <div key={zone} className="flex flex-col">
               {/* Zone Header */}
-              <Tooltip content={`Toggle ${zone}`}>
+              <Tooltip content={`${t('ui.toggle')} ${zone}`}>
                 <button
                   onClick={() => toggleSidebarZone(zone)}
                   className="flex items-center justify-start gap-1 py-1 px-3 mx-1.5 my-1 text-[11px] font-black text-yellow-400 uppercase tracking-[0.2em] select-none hover:text-yellow-300 hover:bg-[var(--bg-hover)] transition-all border border-[var(--border-accent)] rounded-full font-[var(--font-heading)] bg-[var(--bg-panel)] shadow-md min-w-0 overflow-hidden"
@@ -308,7 +317,7 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
             const isZoneCollapsed = collapsedSidebarZones[zone];
             return (
               <div key={zone} className="flex flex-col gap-0.5">
-                <Tooltip content={`Toggle ${zone}`}>
+                <Tooltip content={`${t('ui.toggle')} ${zone}`}>
                   <button 
                     onClick={() => toggleSidebarZone(zone)}
                     className="flex items-center justify-between text-[9px] font-black text-yellow-400 hover:text-yellow-300 transition-colors uppercase tracking-widest px-2 py-1 border-b border-[var(--border-subtle)] mb-0.5 min-w-0 overflow-hidden gap-1"
@@ -320,7 +329,7 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
                 {!isZoneCollapsed && cats.map(cat => {
                 const isExpanded = !collapsedCategories[cat.id];
                 return (
-                  <Tooltip content={`Toggle ${cat.category}`}>
+                  <Tooltip content={`${t('ui.toggle')} ${cat.category}`}>
                     <button
                       key={cat.id}
                       onClick={() => toggleCategory(cat.id)}

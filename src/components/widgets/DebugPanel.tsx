@@ -1,17 +1,37 @@
 import React from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
 import { motion, useDragControls, useMotionValue } from 'motion/react';
 import { Terminal, Activity, Server, Users, Box, Cpu, Download } from 'lucide-react';
 import { Tooltip } from '../ui/Tooltip';
 
 export const DebugPanel: React.FC = () => {
-  const { isDebugPanelOpen, debugStats, connected, profilerMetrics } = useTrackerStore(
+  const { t } = useTranslation();
+  const { connected } = useTrackerStore(
     useShallow((state) => ({
+      connected: state.connected,
+    }))
+  );
+  
+  const { 
+    isDebugPanelOpen, 
+    debugStats, 
+    profilerMetrics,
+    overlayPosition,
+    orbPosition,
+    companionPosition,
+    weaponUISettings,
+    armorUISettings
+  } = useSettingsStore(useShallow((state: any) => ({
       isDebugPanelOpen: state.isDebugPanelOpen,
       debugStats: state.debugStats,
-      connected: state.connected,
-      profilerMetrics: state.profilerMetrics
+      profilerMetrics: state.profilerMetrics,
+      overlayPosition: state.overlayPosition,
+      orbPosition: state.orbPosition,
+      companionPosition: state.companionPosition,
+      weaponUISettings: state.weaponUISettings,
+      armorUISettings: state.armorUISettings
     }))
   );
 
@@ -60,32 +80,33 @@ export const DebugPanel: React.FC = () => {
   const handleExportData = () => {
     try {
       const state = useTrackerStore.getState();
+      const settings = useSettingsStore.getState();
       const safeData = {
         timestamp: new Date().toISOString(),
         appState: {
-          layoutMode: state.layoutMode,
-          verticalGroupingMode: state.verticalGroupingMode,
-          isMinimized: state.isMinimized,
-          globalScale: state.globalScale,
-          theme: state.theme,
+          layoutMode: settings.layoutMode,
+          verticalGroupingMode: settings.verticalGroupingMode,
+          isMinimized: settings.isMinimized,
+          globalScale: settings.globalScale,
+          theme: settings.theme,
           connected: state.connected,
-          developerMode: state.developerMode,
-          language: state.language
+          developerMode: settings.developerMode,
+          language: settings.language
         },
         diagnostics: {
           fps,
           ram,
-          debugStats: state.debugStats,
-          profilerMetrics: state.profilerMetrics,
+          debugStats: settings.debugStats,
+          profilerMetrics: settings.profilerMetrics,
           packetCounts: state.packetCounts
         },
         overlaySettings: {
-          poppedOutWindows: state.poppedOutWindows,
-          weaponUISettings: state.weaponUISettings,
-          armorUISettings: state.armorUISettings,
-          notificationSettings: state.notificationSettings,
-          tableSettings: state.tableSettings,
-          activeTab: state.activeTab
+          poppedOutWindows: settings.poppedOutWindows,
+          weaponUISettings: settings.weaponUISettings,
+          armorUISettings: settings.armorUISettings,
+          notificationSettings: settings.notificationSettings,
+          tableSettings: settings.tableSettings,
+          activeTab: settings.activeTab
         },
         gameStateMetrics: {
           currentZone: state.currentZone,
@@ -134,7 +155,7 @@ export const DebugPanel: React.FC = () => {
         }}
       >
         <Terminal size={14} className="text-green-400" />
-        <span className="text-green-400 font-bold tracking-widest flex-1">ROEDEX // DIAGNOSTICS</span>
+        <span className="text-green-400 font-bold tracking-widest flex-1">{t('debug.title')}</span>
         <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500 shadow-[0_0_8px_#22c55e]' : 'bg-red-500 shadow-[0_0_8px_#ef4444]'}`} />
       </div>
 
@@ -145,14 +166,14 @@ export const DebugPanel: React.FC = () => {
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-green-400 font-bold mb-2">
             <Activity size={12} />
-            <span>NETWORK</span>
+            <span>{t('debug.network')}</span>
           </div>
           <div className="flex justify-between">
-            <span>SOCKET STATUS:</span>
-            <span className={connected ? 'text-green-400' : 'text-red-400'}>{connected ? 'ACTIVE' : 'OFFLINE'}</span>
+            <span>{t('debug.socketStatus')}</span>
+            <span className={connected ? 'text-green-400' : 'text-red-400'}>{connected ? (t('debug.active') || 'ACTIVE') : (t('debug.offline') || 'OFFLINE')}</span>
           </div>
           <div className="flex justify-between">
-            <span>PACKETS/SEC:</span>
+            <span>{t('debug.packetsSec')}</span>
             <span className="text-green-300 font-bold">{debugStats.pps}</span>
           </div>
         </div>
@@ -163,26 +184,26 @@ export const DebugPanel: React.FC = () => {
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-green-400 font-bold mb-2">
             <Cpu size={12} />
-            <span>SYSTEM USAGE</span>
+            <span>{t('debug.systemUsage')}</span>
           </div>
           <div className="flex justify-between">
-            <span>FPS:</span>
+            <span>{t('debug.fps')}</span>
             <span className="text-green-300 font-bold">{fps}</span>
           </div>
           <div className="flex justify-between">
-            <span>RAM (JS HEAP):</span>
+            <span>{t('debug.ram')}</span>
             <span className="text-green-300 font-bold">{ram > 0 ? `${ram} MB` : 'N/A'}</span>
           </div>
           <div className="flex justify-between">
-            <Tooltip content="Average duration to parse a WebSocket event"><span>PARSE AVG:</span></Tooltip>
+            <Tooltip content="Average duration to parse a WebSocket event"><span>{t('debug.parseAvg')}</span></Tooltip>
             <span className={`${(profilerMetrics?.parseTime?.average || 0) > 2 ? 'text-red-400' : 'text-green-300'} font-bold`}>{profilerMetrics?.parseTime?.average || 0} ms</span>
           </div>
           <div className="flex justify-between">
-            <Tooltip content="Max spike duration in parse processing"><span>PARSE MAX:</span></Tooltip>
+            <Tooltip content="Max spike duration in parse processing"><span>{t('debug.parseMax')}</span></Tooltip>
             <span className={`${(profilerMetrics?.parseTime?.max || 0) > 5 ? 'text-red-400' : 'text-green-300'} font-bold`}>{profilerMetrics?.parseTime?.max || 0} ms</span>
           </div>
           <div className="flex justify-between">
-            <Tooltip content="Average duration for main overlay React render"><span>RENDER AVG:</span></Tooltip>
+            <Tooltip content="Average duration for main overlay React render"><span>{t('debug.renderAvg')}</span></Tooltip>
             <span className={`${(profilerMetrics?.renderTime?.average || 0) > 16 ? 'text-red-400' : 'text-green-300'} font-bold`}>{profilerMetrics?.renderTime?.average || 0} ms</span>
           </div>
         </div>
@@ -193,18 +214,18 @@ export const DebugPanel: React.FC = () => {
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-green-400 font-bold mb-2">
             <Server size={12} />
-            <span>STORE MEMORY</span>
+            <span>{t('debug.storeMemory')}</span>
           </div>
           <div className="flex justify-between">
-            <div className="flex items-center gap-1.5"><Users size={10} /> PLAYERS IN ZONE:</div>
+            <div className="flex items-center gap-1.5"><Users size={10} /> {t('debug.playersInZone') || 'PLAYERS IN ZONE:'}</div>
             <span className="text-green-300 font-bold">{playerCount}</span>
           </div>
           <div className="flex justify-between">
-            <div className="flex items-center gap-1.5"><Box size={10} /> NODES TRACKED:</div>
+            <div className="flex items-center gap-1.5"><Box size={10} /> {t('debug.nodesTracked') || 'NODES TRACKED:'}</div>
             <span className="text-green-300 font-bold">{resourceCount}</span>
           </div>
           <div className="flex justify-between">
-            <div className="flex items-center gap-1.5"><Cpu size={10} /> MOBS TRACKED:</div>
+            <div className="flex items-center gap-1.5"><Cpu size={10} /> {t('debug.mobsTracked') || 'MOBS TRACKED:'}</div>
             <span className="text-green-300 font-bold">{mobCount}</span>
           </div>
         </div>
@@ -215,35 +236,65 @@ export const DebugPanel: React.FC = () => {
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-green-400 font-bold mb-2">
             <Box size={12} />
-            <span>MOCK UI TESTS</span>
+            <span>{t('debug.mockUiTests')}</span>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => {
-                useTrackerStore.getState().setCurrentNpcDialogue({
+                useSettingsStore.getState().setCurrentNpcDialogue({
                   speaker: 'Tessa',
                   originalText: "I swear...",
                   translatedText: "¡Lo juro, por cada tronco que corto, aparecen dos más detrás de mí. O alguien está haciendo trabajo extra a escondidas... o el bosque está creciendo por despecho!"
                 });
-                setTimeout(() => useTrackerStore.getState().setCurrentNpcDialogue(null), 6000);
+                setTimeout(() => useSettingsStore.getState().setCurrentNpcDialogue(null), 6000);
               }}
               className="flex-1 py-1 bg-blue-500/20 hover:bg-blue-500/40 border border-blue-500/50 rounded text-blue-300 transition-colors text-[9px]"
             >
-              SPAWN TESSA
+              {t('debug.spawnTessa') || 'SPAWN TESSA'}
             </button>
             <button
               onClick={() => {
-                useTrackerStore.getState().setCurrentNpcDialogue({
+                useSettingsStore.getState().setCurrentNpcDialogue({
                   speaker: 'Finn',
                   originalText: "Shhh...",
                   translatedText: "¡Shhh! Me estoy escondiendo de los demás. ¡Si me encuentran, tendré que ser el limo de nuevo!"
                 });
-                setTimeout(() => useTrackerStore.getState().setCurrentNpcDialogue(null), 5000);
+                setTimeout(() => useSettingsStore.getState().setCurrentNpcDialogue(null), 5000);
               }}
               className="flex-1 py-1 bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/50 rounded text-purple-300 transition-colors text-[9px]"
             >
-              SPAWN FINN
+              {t('debug.spawnFinn') || 'SPAWN FINN'}
             </button>
+          </div>
+        </div>
+
+        <div className="w-full h-px bg-green-500/20" />
+
+        {/* Overlay Positions */}
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-green-400 font-bold mb-2">
+            <Box size={12} />
+            <span>{t('debug.overlayPositions')}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>{t('debug.mainOverlay')}</span>
+            <span className="text-green-300 font-bold">X:{Math.round(overlayPosition?.x || 0)} Y:{Math.round(overlayPosition?.y || 0)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>{t('debug.minimizedOrb')}</span>
+            <span className="text-green-300 font-bold">X:{Math.round(orbPosition?.x || 0)} Y:{Math.round(orbPosition?.y || 0)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>{t('debug.companion')}</span>
+            <span className="text-green-300 font-bold">X:{Math.round(companionPosition?.x || 0)} Y:{Math.round(companionPosition?.y || 0)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>{t('debug.weaponUi')}</span>
+            <span className="text-green-300 font-bold">X:{Math.round(weaponUISettings?.customPositionX || 0)} Y:{Math.round(weaponUISettings?.customPositionY || 0)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>{t('debug.armorUi')}</span>
+            <span className="text-green-300 font-bold">X:{Math.round(armorUISettings?.customPositionX || 0)} Y:{Math.round(armorUISettings?.customPositionY || 0)}</span>
           </div>
         </div>
 
@@ -257,7 +308,7 @@ export const DebugPanel: React.FC = () => {
               className="flex items-center gap-2 px-4 py-1.5 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 hover:border-green-500/60 rounded text-green-400 font-bold transition-colors w-full justify-center"
             >
               <Download size={12} />
-              <span>EXPORT SAFE DEBUG REPORT</span>
+              <span>{t('debug.exportReport')}</span>
             </button>
           </Tooltip>
         </div>
@@ -293,3 +344,4 @@ export const DebugPanel: React.FC = () => {
 
   );
 };
+import { useTranslation } from '../../hooks/useTranslation'; 

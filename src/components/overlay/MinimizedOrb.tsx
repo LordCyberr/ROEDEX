@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
 import { motion, useMotionValue } from 'motion/react';
 import { Zap, Activity, Sword, Pickaxe, Shield } from 'lucide-react'; 
@@ -9,7 +9,7 @@ export const MinimizedOrb: React.FC<{ constraintsRef?: any }> = ({ constraintsRe
     connected, notifications, setIsMinimized,
     orbSize, orbBorderThickness, orbPosition, setOrbPosition,
     minimizedIcon, minimizedIconUrl, isUILocked,
-  } = useTrackerStore(useShallow((state) => ({
+  } = useSettingsStore(useShallow((state: any) => ({
     connected: state.connected,
     notifications: state.notifications,
     setIsMinimized: state.setIsMinimized,
@@ -24,13 +24,13 @@ export const MinimizedOrb: React.FC<{ constraintsRef?: any }> = ({ constraintsRe
   const [pulse, setPulse] = useState(false);
   const dragRef = useRef<HTMLDivElement>(null);
 
-  const x = useMotionValue(orbPosition.x);
-  const y = useMotionValue(orbPosition.y);
+  const x = useMotionValue(orbPosition?.x ?? 16);
+  const y = useMotionValue(orbPosition?.y ?? 16);
 
   // Sync initial position and handle hydration bounding
   useEffect(() => {
-    let safeX = orbPosition.x;
-    let safeY = orbPosition.y;
+    let safeX = orbPosition?.x ?? 16;
+    let safeY = orbPosition?.y ?? 16;
 
     const screenW = globalThis.innerWidth;
     const screenH = globalThis.innerHeight;
@@ -42,7 +42,7 @@ export const MinimizedOrb: React.FC<{ constraintsRef?: any }> = ({ constraintsRe
 
     x.set(safeX);
     y.set(safeY);
-  }, [orbPosition.x, orbPosition.y, x, y, orbSize]);
+  }, [orbPosition?.x, orbPosition?.y, x, y, orbSize]);
 
   useEffect(() => {
     const handleResize = () => {

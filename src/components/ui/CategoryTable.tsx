@@ -1,10 +1,13 @@
 import React, { memo } from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
+
 import { useShallow } from 'zustand/react/shallow';
+import { motion } from 'motion/react';
 import { ChevronDown, ChevronRight, Clock, Sword, Pickaxe, Leaf, Axe, Box, PawPrint } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useGlobalTick } from '../../core/tick';
-import { BobCompanion } from '../../core/companion/BobCompanion';
+import { AICompanion } from '../../core/companion/AICompanion';
 import { Tooltip } from './Tooltip';
 
 export interface TableRowData {
@@ -18,9 +21,7 @@ export interface TableRowData {
 
 import { Vector2 } from '../../types/events';
 import { getItemInfo } from '../../data/rarity';
-
-
-
+import { ResourceTracker } from '../../core/trackers/ResourceTracker';
 
 // ── Rarity Colors ──────────────────────────────────────────────
 export const getRarityColor = (name: string) => {
@@ -38,7 +39,7 @@ export const getRarityColor = (name: string) => {
 
 // ── Global Table Header (used by TrackingView) ─────────────────
 export const GlobalTableHeader: React.FC = () => {
-  const tableSettings = useTrackerStore((state) => state.tableSettings);
+  const tableSettings = useSettingsStore((state: any) => state.tableSettings);
   const { t } = useTranslation();
 
   let gridCols = '1fr';
@@ -94,9 +95,10 @@ const getTimerColor = (targetMs: number, now: number): string => {
 
 
 const TimerDisplay = memo(({ targetMsArray, textSmall }: { targetMsArray: number[], textSmall: string }) => {
+  const { t } = useTranslation();
   const now = useGlobalTick();
-  const maxTooltips = useTrackerStore(state => state.tableSettings.maxRespawnTooltips) || 5;
-  const tutorialStep = useTrackerStore(state => state.notificationSettings.tutorialStep);
+  const maxTooltips = useSettingsStore(state => state.tableSettings.maxRespawnTooltips) || 5;
+  const tutorialStep = useSettingsStore(state => state.notificationSettings.tutorialStep);
 
   // Sort ascending and filter out past timers
   let validTimers = targetMsArray.filter(t => t > now).sort((a, b) => a - b);
@@ -115,7 +117,7 @@ const TimerDisplay = memo(({ targetMsArray, textSmall }: { targetMsArray: number
   const tooltipContent = (
     <div className="flex flex-col gap-0.5 w-fit min-w-[60px]">
       <div className="text-[9px] text-[var(--text-muted)] border-b border-[var(--border-subtle)] pb-0.5 mb-0.5 font-bold tracking-widest uppercase text-center leading-tight">
-        Respawns
+        {t('categories.respawns')}
       </div>
       {validTimers.slice(0, maxTooltips).map((t, idx) => (
         <div key={idx} className="flex justify-between items-center text-[10px] font-mono gap-3">
@@ -136,8 +138,8 @@ const TimerDisplay = memo(({ targetMsArray, textSmall }: { targetMsArray: number
       <div 
         id="tutorial-timer-row" 
         className={`text-right ${textSmall} ${timerColor} cursor-help`}
-        onMouseEnter={() => useTrackerStore.getState().setHoveredTimerId('tutorial-timer-row')}
-        onMouseLeave={() => useTrackerStore.getState().setHoveredTimerId(null)}
+        onMouseEnter={() => useSettingsStore.getState().setHoveredTimerId('tutorial-timer-row')}
+        onMouseLeave={() => useSettingsStore.getState().setHoveredTimerId(null)}
       >
         {timerStr}
       </div>
@@ -179,12 +181,12 @@ const getCategoryIcon = (categoryId: string | undefined, isCompact: boolean, isF
 // ── Single Data Row ────────────────────────────────────────────
 const DataRow = memo(({ row, categoryId }: { row: TableRowData, categoryId?: string }) => {
   // Single useShallow call instead of 4 separate subscriptions — 4x fewer listeners
-  const { toggleFavorite, isFav, density, tableSettings, tutorialStep } = useTrackerStore(useShallow((state) => ({
+  const { toggleFavorite, isFav, density, tableSettings, tutorialStep } = useSettingsStore(useShallow((state: any) => ({
     toggleFavorite: state.toggleFavorite,
     isFav: state.favorites.includes(row.name),
     density: state.displayDensity,
     tableSettings: state.tableSettings,
-    tutorialStep: state.notificationSettings.tutorialStep,
+    tutorialStep: state.notificationSettings?.tutorialStep || 0,
   })));
 
   const alive = row.counts?.alive ?? 0;
@@ -208,7 +210,8 @@ const DataRow = memo(({ row, categoryId }: { row: TableRowData, categoryId?: str
   }
 
   return (
-    <div 
+    <motion.div 
+      layout
       id={`row-${row.name.replace(/\s+/g, '-')}`}
       data-category={categoryId} 
       className={rowClasses} 
@@ -217,13 +220,13 @@ const DataRow = memo(({ row, categoryId }: { row: TableRowData, categoryId?: str
       <div className="flex items-center gap-1.5 min-w-0">
         {getCategoryIcon(categoryId, isCompact, isFav, () => {
           if (!isFav) {
-            BobCompanion.onAddFavorite(row.name);
+            AICompanion.onAddFavorite(row.name);
           }
           toggleFavorite(row.name);
         })}
-        <Tooltip content={row.name}>
+        <Tooltip content={ResourceTracker.sanitizeResourceName(row.name)}>
           <span className={`truncate flex-1 min-w-0 ${getRarityColor(row.name)} ${isCompact ? '' : 'font-semibold drop-shadow-sm'}`}>
-            {row.name}
+            {ResourceTracker.sanitizeResourceName(row.name)}
           </span>
         </Tooltip>
       </div>
@@ -246,7 +249,7 @@ const DataRow = memo(({ row, categoryId }: { row: TableRowData, categoryId?: str
           <div className={`text-right ${textSmall} text-[var(--text-muted)]`}>--</div>
         )
       )}
-    </div>
+    </motion.div>
   );
 });
 
@@ -264,7 +267,7 @@ const CategoryList: React.FC<{ data: TableRowData[]; collapsed: boolean; categor
 
 // ── Category Section (vertical flat mode) ──────────────────────
 export const CategorySection = memo(({ categoryId, title, data, align = 'center' }: { categoryId: string; title: string; data: TableRowData[]; align?: 'left' | 'center' }) => {
-  const { toggleCategory, collapsed, density } = useTrackerStore(useShallow((state) => ({
+  const { toggleCategory, collapsed, density } = useSettingsStore(useShallow((state: any) => ({
     toggleCategory: state.toggleCategory,
     collapsed: state.collapsedCategories[categoryId],
     density: state.displayDensity,
@@ -296,7 +299,7 @@ export const CategorySection = memo(({ categoryId, title, data, align = 'center'
 
 // ── Category Card (horizontal card mode) ───────────────────────
 export const CategoryCard = memo(({ categoryId, title, data, showHeader = false }: { categoryId: string; title: string; data: TableRowData[]; showHeader?: boolean }) => {
-  const { toggleCategory, collapsed, density } = useTrackerStore(useShallow((state) => ({
+  const { toggleCategory, collapsed, density } = useSettingsStore(useShallow((state: any) => ({
     toggleCategory: state.toggleCategory,
     collapsed: state.collapsedCategories[categoryId],
     density: state.displayDensity,

@@ -13,6 +13,7 @@ export function useThrottledEntities(throttleMs = 300) {
 
     const unsub = useTrackerStore.subscribe((currentState) => {
       const now = Date.now();
+      const currentThrottleMs = document.hidden ? 2000 : throttleMs;
       
       const updateState = () => {
         setState({
@@ -24,7 +25,7 @@ export function useThrottledEntities(throttleMs = 300) {
         lastUpdate = Date.now();
       };
 
-      if (now - lastUpdate > throttleMs) {
+      if (now - lastUpdate > currentThrottleMs) {
         if (timer) {
           clearTimeout(timer);
           timer = null;
@@ -35,7 +36,7 @@ export function useThrottledEntities(throttleMs = 300) {
           timer = setTimeout(() => {
             updateState();
             timer = null;
-          }, throttleMs - (now - lastUpdate));
+          }, currentThrottleMs - (now - lastUpdate));
         }
       }
     });

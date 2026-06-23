@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTrackerStore } from '../store/trackerStore';
+import { useSettingsStore } from '../store/settingsStore';
 
 type TickCallback = (now: number) => void;
 const listeners = new Set<TickCallback>();
@@ -18,11 +19,12 @@ export function onTick(cb: TickCallback) {
       if (tickCount >= 5) {
         tickCount = 0;
         const state = useTrackerStore.getState();
-        state.updateProfilerMetrics({
+        const settings = useSettingsStore.getState();
+        settings.updateProfilerMetrics({
           memory: {
             enemiesCount: Object.keys(state.enemies || {}).length,
             resourcesCount: Object.keys(state.resources || {}).length,
-            poppedOutWindows: Object.keys(state.poppedOutWindows || {}).length,
+            poppedOutWindows: Object.keys(settings.poppedOutWindows || {}).length,
             lastUpdate: now
           }
         });

@@ -1,11 +1,11 @@
 import React from 'react';
-import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
 import { PanelTop, PanelLeft, Settings } from 'lucide-react';
 import { Tooltip } from '../ui/Tooltip';
 
 export const SidebarNav: React.FC = () => {
-  const layoutMode = useTrackerStore((state) => state.layoutMode);
-  const setLayoutMode = useTrackerStore((state) => state.setLayoutMode);
+  const layoutMode = useSettingsStore((state) => state.layoutMode);
+  const setLayoutMode = useSettingsStore((state) => state.setLayoutMode);
 
   const toggleLayout = () => {
     setLayoutMode(layoutMode === 'vertical' ? 'horizontal' : 'vertical');

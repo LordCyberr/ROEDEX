@@ -1,5 +1,7 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCcw } from 'lucide-react';
+import { translations } from '../../i18n/translations';
+
 
 interface Props {
   children: ReactNode;
@@ -35,7 +37,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="flex flex-col items-center justify-center h-full w-full p-4 bg-[var(--bg-panel)] text-[var(--text-primary)] rounded-lg border border-red-500/30">
           <AlertTriangle className="text-red-500 mb-2 animate-pulse" size={32} />
-          <h2 className="text-sm font-bold text-red-400 mb-1">Component Crashed</h2>
+          <h2 className="text-sm font-bold text-red-400 mb-1">{translations.en.errorBoundary.componentCrashed}</h2>
           <p className="text-[10px] text-[var(--text-muted)] text-center mb-4 max-w-[200px]">
             {this.state.error?.message || "An unexpected error occurred rendering this view."}
           </p>

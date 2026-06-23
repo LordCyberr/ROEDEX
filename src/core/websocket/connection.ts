@@ -1,7 +1,9 @@
 import { parsePacket } from '../parser';
 import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
+
 import { NotificationManager } from '../notifications/NotificationManager';
-import { BobCompanion } from '../companion/BobCompanion';
+import { AICompanion } from '../companion/AICompanion';
 
 let packetInterval: ReturnType<typeof setInterval> | null = null;
 let messageListener: ((event: MessageEvent) => void) | null = null;
@@ -15,10 +17,10 @@ export function connectWebSocket() {
 
   // Always minimize on reload/restart
   setTimeout(() => {
-    const state = useTrackerStore.getState();
-    state.setIsMinimized(true);
-    Object.keys(state.poppedOutWindows).forEach(id => {
-      state.updatePoppedOutWindow(id, { isMinimized: true });
+    const settings = useSettingsStore.getState();
+    settings.setIsMinimized(true);
+    Object.keys(settings.poppedOutWindows).forEach(id => {
+      settings.updatePoppedOutWindow(id, { isMinimized: true });
     });
   }, 100);
   
@@ -28,24 +30,26 @@ export function connectWebSocket() {
 
     if (event.data.type === 'WS_OPEN') {
       const state = useTrackerStore.getState();
+      const settings = useSettingsStore.getState();
       
       state.setConnected(true);
-      state.setIsMinimized(true);
+      settings.setIsMinimized(true);
 
-      Object.keys(state.poppedOutWindows).forEach(id => {
-        state.updatePoppedOutWindow(id, { isMinimized: true });
+      Object.keys(settings.poppedOutWindows).forEach(id => {
+        settings.updatePoppedOutWindow(id, { isMinimized: true });
       });
 
       // Reset greeting flags so the next player packet triggers the boot sequence
-      BobCompanion.resetGreeting();
+      AICompanion.resetGreeting();
       NotificationManager.resetGreeting();
     } 
     else if (event.data.type === 'WS_CLOSE') {
       const state = useTrackerStore.getState();
+      const settings = useSettingsStore.getState();
       state.setConnected(false);
-      state.setIsMinimized(true);
-      Object.keys(state.poppedOutWindows).forEach(id => {
-        state.updatePoppedOutWindow(id, { isMinimized: true });
+      settings.setIsMinimized(true);
+      Object.keys(settings.poppedOutWindows).forEach(id => {
+        settings.updatePoppedOutWindow(id, { isMinimized: true });
       });
     }
     else if (event.data.type === 'WS_MESSAGE' || event.data.type === 'WS_MESSAGE_SEND') {
@@ -67,8 +71,8 @@ export function connectWebSocket() {
   // Track Packets Per Second
   packetInterval = setInterval(() => {
     // Only update the store if the debug panel is open to avoid unnecessary re-renders
-    if (useTrackerStore.getState().isDebugPanelOpen) {
-      useTrackerStore.getState().updateDebugStats(packetCount);
+    if (useSettingsStore.getState().isDebugPanelOpen) {
+      useSettingsStore.getState().updateDebugStats(packetCount);
     }
     packetCount = 0;
   }, 1000);
@@ -86,9 +90,10 @@ export function disconnectWebSocket() {
   }
 
   const state = useTrackerStore.getState();
+  const settings = useSettingsStore.getState();
   state.setConnected(false);
-  state.setIsMinimized(true);
-  Object.keys(state.poppedOutWindows).forEach(id => {
-    state.updatePoppedOutWindow(id, { isMinimized: true });
+  settings.setIsMinimized(true);
+  Object.keys(settings.poppedOutWindows).forEach(id => {
+    settings.updatePoppedOutWindow(id, { isMinimized: true });
   });
 }

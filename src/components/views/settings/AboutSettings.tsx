@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useTrackerStore } from '../../../store/trackerStore';
+import { useSettingsStore } from '../../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { Heart, Copy, CheckCircle2, Youtube, Github } from 'lucide-react';
 
 export const AboutSettings: React.FC = () => {
-  const store = useTrackerStore(useShallow(state => ({
+  const store = useSettingsStore(useShallow(state => ({
     setIsChangelogOpen: state.setIsChangelogOpen
   })));
   const { t } = useTranslation();
@@ -48,7 +48,7 @@ export const AboutSettings: React.FC = () => {
           </div>
           
           <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed mb-4 font-medium">
-            ROEDEX is a high-performance tracking suite built exclusively for the community. Designed from the ground up to be seamless, beautiful, and completely free. Our mission is to provide you with the most advanced set of tools to optimize your runs, track rare drops, and conquer your adventures.
+            {t('settings.aboutRoedexDesc') || "ROEDEX is a high-performance tracking suite built exclusively for the community. Designed from the ground up to be seamless, beautiful, and completely free. Our mission is to provide you with the most advanced set of tools to optimize your runs, track rare drops, and conquer your adventures."}
           </p>
 
           <button
@@ -61,11 +61,11 @@ export const AboutSettings: React.FC = () => {
                 ✨
               </div>
               <span className="text-[11px] font-bold text-[var(--text-primary)] tracking-widest uppercase">
-                View Project Changelogs
+                {t('settings.viewChangelog') || "View Project Changelogs"}
               </span>
             </div>
             <div className="text-[9px] text-[var(--text-muted)] group-hover/btn:text-[var(--accent-primary)] transition-colors">
-              Read More ➔
+              {t('settings.readMore') || "Read More ➔"}
             </div>
           </button>
         </div>
@@ -82,7 +82,7 @@ export const AboutSettings: React.FC = () => {
           }`}
         >
           <Heart size={14} className={showCrypto ? "text-black" : "text-[var(--accent-primary)]"} /> 
-          Support Development
+          {t('settings.supportDevelopment') || "Support Development"}
         </button>
 
         {showCrypto && (
@@ -90,7 +90,7 @@ export const AboutSettings: React.FC = () => {
             <div className="p-3 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl relative overflow-hidden">
               <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--accent-primary)] opacity-50" />
               <p className="text-[10px] text-[var(--text-primary)] leading-relaxed pl-2 font-medium">
-                ROEDEX is an open-source project maintained by the community. If you would like to support ongoing development and server costs, you can do so via the addresses below. Contributions are strictly optional but greatly appreciated.
+                {t('settings.donationDesc') || "ROEDEX is an open-source project maintained by the community. If you would like to support ongoing development and server costs, you can do so via the addresses below. Contributions are strictly optional but greatly appreciated."}
               </p>
             </div>
 
@@ -120,7 +120,7 @@ export const AboutSettings: React.FC = () => {
             
             <div className="text-center mt-2">
               <span className="text-[9px] text-[var(--text-muted)] italic">
-                (Note: Please verify the network before sending any crypto)
+                {t('settings.verifyNetwork') || "(Note: Please verify the network before sending any crypto)"}
               </span>
             </div>
           </div>
@@ -165,17 +165,17 @@ export const AboutSettings: React.FC = () => {
         <div className="flex items-center gap-2 mb-3">
           <div className="text-[var(--accent-primary)]">🏆</div>
           <h4 className="text-[12px] font-black text-[var(--text-primary)] tracking-wide uppercase">
-            Credits & Acknowledgements
+            {t('settings.credits') || "Credits & Acknowledgements"}
           </h4>
         </div>
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-subtle)]">
-            <span className="text-[11px] text-[var(--text-primary)] font-bold">Lord Cyberr</span>
-            <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">Lead Developer & Creator</span>
+            <span className="text-[11px] text-[var(--text-primary)] font-bold">{t('about.lordCyberr')}</span>
+            <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">{t('settings.leadDeveloper')}</span>
           </div>
           <div className="flex justify-between items-center bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-subtle)]">
-            <span className="text-[11px] text-[var(--text-primary)] font-bold">MrSnorch</span>
-            <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">Guidance & Contributions</span>
+            <span className="text-[11px] text-[var(--text-primary)] font-bold">{t('about.mrSnorch')}</span>
+            <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">{t('settings.guidanceContributions')}</span>
           </div>
         </div>
       </div>

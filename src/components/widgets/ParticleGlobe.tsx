@@ -134,6 +134,14 @@ export const ParticleGlobe: React.FC<ParticleGlobeProps> = ({
     };
 
     const render = () => {
+      if (document.hidden) {
+         // Pause heavy canvas drawing if the tab is not visible
+         throttleTimer = setTimeout(() => {
+           animationFrameId = requestAnimationFrame(render);
+         }, 500);
+         return;
+      }
+      
       ctx.clearRect(0, 0, width, height);
       
       const currentMood = moodRef.current;

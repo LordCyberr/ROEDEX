@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, useMotionValue, useDragControls } from 'motion/react';
-import { useTrackerStore, PoppedOutWindow } from '../../store/trackerStore';
+import { PoppedOutWindow } from '../../store/storeTypes';
+import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
 import { TrackingView } from '../views/TrackingView';
 import { LootView } from '../views/LootView';
@@ -27,7 +28,7 @@ export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow, co
     updatePoppedOutWindow, mergeTab,
     activeOpacity, idleOpacity, isUILocked,
     layoutMode, globalScale, tutorialStep
-  } = useTrackerStore(useShallow((state) => ({
+  } = useSettingsStore(useShallow((state: any) => ({
     updatePoppedOutWindow: state.updatePoppedOutWindow,
     mergeTab: state.mergeTab,
     activeOpacity: state.activeOpacity,
@@ -35,7 +36,7 @@ export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow, co
     isUILocked: state.isUILocked,
     layoutMode: state.layoutMode,
     globalScale: state.globalScale,
-    tutorialStep: state.notificationSettings.tutorialStep,
+    tutorialStep: state.notificationSettings?.tutorialStep || 0,
   })));
   const isHorizontal = layoutMode === 'horizontal';
 
@@ -56,6 +57,12 @@ export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow, co
   // Height defaults to 'auto' in vertical, width defaults to 'auto' in horizontal.
   const windowWidth = useMotionValue(win.width || defaultWidth);
   const windowHeight = useMotionValue(win.height || defaultHeight);
+
+  // Sync MotionValues if store gets updated externally (e.g. Shift+R Reset Size hotkey)
+  React.useEffect(() => {
+    windowWidth.set(win.width || defaultWidth);
+    windowHeight.set(win.height || defaultHeight);
+  }, [win.width, win.height, defaultWidth, defaultHeight, windowWidth, windowHeight]);
 
   const tabConfig = tabsConfig.find(t => t.id === id);
   const Icon = tabConfig?.icon || Globe2;
@@ -101,9 +108,7 @@ export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow, co
       }
       
       if (dir.includes('s') || dir.includes('n')) {
-        if (isHorizontal) {
-          windowHeight.set(newH);
-        }
+        windowHeight.set(newH);
       }
 
       if (dir.includes('w')) motionX.set(newX);
@@ -214,8 +219,10 @@ export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow, co
       style={{
         x: motionX,
         y: motionY,
-        width: windowWidth,
-        height: windowHeight,
+        width: isHorizontal ? "" : windowWidth,
+        height: isHorizontal ? windowHeight : "",
+        minWidth: isHorizontal ? windowWidth : "",
+        minHeight: isHorizontal ? "" : windowHeight,
         zIndex: win.zIndex || 40,
         '--idle-opacity': tutorialStep > 0 ? 1.0 : idleOpacity,
         '--active-opacity': tutorialStep > 0 ? 1.0 : activeOpacity,

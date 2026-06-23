@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
 import { motion, useMotionValue } from 'motion/react';
 import { Sword, Lock, Unlock, Axe, Pickaxe } from 'lucide-react';
 import { Tooltip } from '../ui/Tooltip';
 
 export const WeaponUI: React.FC = () => {
-  const { weapon, weaponUISettings, updateWeaponUISettings } = useTrackerStore(useShallow((state) => ({
+  const { weapon } = useTrackerStore(useShallow((state) => ({
     weapon: state.weapon,
+  })));
+  
+  const { weaponUISettings, updateWeaponUISettings } = useSettingsStore(useShallow((state: any) => ({
     weaponUISettings: state.weaponUISettings,
     updateWeaponUISettings: state.updateWeaponUISettings,
   })));
@@ -126,17 +130,22 @@ export const WeaponUI: React.FC = () => {
       dragElastic={0}
       onDragEnd={() => {
         if (!locked) {
-          updateWeaponUISettings({
-            position: 'custom',
-            customPositionX: x.get(),
-            customPositionY: y.get()
-          });
+          const rect = ref.current?.getBoundingClientRect();
+          if (rect) {
+            x.set(rect.x);
+            y.set(rect.y);
+            updateWeaponUISettings({
+              position: 'custom',
+              customPositionX: rect.x,
+              customPositionY: rect.y
+            });
+          }
         }
       }}
       className={`fixed z-50 flex items-center justify-center overflow-hidden shadow-2xl select-none
-        ${isDraggable ? 'pointer-events-auto cursor-grab active:cursor-grabbing border-dashed border-indigo-400' : 'pointer-events-none border-solid'}
+        ${isDraggable ? 'pointer-events-auto cursor-grab active:cursor-grabbing' : 'pointer-events-none'}
         ${isFlashing && enableAnimations ? 'animate-pulse' : ''}
-        ${!isDraggable && borderWidth > 0 ? borderColorClass : ''}
+        ${borderWidth > 0 ? borderColorClass : ''}
       `}
       style={{
         ...getPositionStyles(),
@@ -146,8 +155,10 @@ export const WeaponUI: React.FC = () => {
         backdropFilter: hasText ? `blur(${glassStrength}px)` : 'none',
         backgroundColor: hasText ? 'rgba(0, 0, 0, 0.6)' : 'transparent',
         borderRadius: `${borderRadius}px`,
-        borderWidth: isDraggable ? '2px' : (borderWidth > 0 ? `${borderWidth}px` : (hasText ? '1px' : '0px')),
-        borderColor: isDraggable ? undefined : (borderWidth > 0 ? undefined : (hasText ? 'rgba(255,255,255,0.05)' : 'transparent')),
+        borderWidth: borderWidth > 0 ? `${borderWidth}px` : (hasText ? '1px' : '0px'),
+        borderColor: borderWidth > 0 ? undefined : (hasText ? 'rgba(255,255,255,0.05)' : 'transparent'),
+        outline: isDraggable ? '2px dashed #818cf8' : 'none',
+        outlineOffset: '2px',
         padding: !hasBar ? (layout === 'horizontal' ? '4px 10px' : '10px 4px') : '0px',
         width: layout === 'horizontal'
           ? (hasBar ? `${width}px` : 'max-content') 

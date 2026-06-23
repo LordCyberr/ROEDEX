@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ParticleGlobe } from '../widgets/ParticleGlobe';
 import { COMPANIONS, CompanionId } from '../../data/companions';
 import { useTranslation } from '../../hooks/useTranslation';
-import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
+
 
 const SELECT_LANGUAGE_TEXTS = [
   "SELECT LANGUAGE",
@@ -60,7 +61,7 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
   }, [hasSelectedLanguage]);
 
   const handleSelectLanguage = (lang: string) => {
-    useTrackerStore.getState().setLanguage(lang as any);
+    useSettingsStore.getState().setLanguage(lang as any);
     setHasSelectedLanguage(true);
   };
 
@@ -309,12 +310,12 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
               initial={{ opacity: 0, scale: 0.9, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="flex flex-col items-center gap-4 mb-16 z-20 mt-[-4rem]"
+              className="absolute top-[10vh] sm:top-[12vh] flex flex-col items-center gap-6 z-20 w-full"
             >
-              <p className="font-mono text-lg sm:text-2xl uppercase tracking-[0.2em] font-bold text-[#22d3ee] drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]">
+              <p className="font-mono text-3xl sm:text-5xl md:text-6xl uppercase tracking-[0.3em] font-black text-[#22d3ee] drop-shadow-[0_0_30px_rgba(34,211,238,0.8)] text-center">
                 {t('bootSequence.chooseCompanion')}
               </p>
-              <p className="font-mono text-xs sm:text-sm text-[#22d3ee]/60 uppercase tracking-[0.3em]">
+              <p className="font-mono text-sm sm:text-lg text-[#22d3ee]/80 uppercase tracking-[0.4em] text-center max-w-2xl mt-2">
                 {t('bootSequence.hoverToPreview')}
               </p>
             </motion.div>
@@ -330,12 +331,12 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.5, duration: 0.8 }}
-            className="flex flex-wrap justify-center gap-16 sm:gap-32 md:gap-40 lg:gap-48 mb-16 z-20"
+            className="absolute top-[30vh] sm:top-[35vh] flex flex-row justify-evenly items-start z-20 w-full max-w-[95vw] px-4"
           >
             {Object.values(COMPANIONS).map(comp => (
               <motion.div 
                 key={comp.id} 
-                className="flex flex-col items-center gap-10 cursor-pointer group relative z-20"
+                className="flex flex-col items-center gap-4 cursor-pointer group relative z-20"
                 initial={false}
                 animate={{
                    opacity: selectedCompanion ? (selectedCompanion === comp.id ? 1 : 0) : 1,
@@ -362,7 +363,7 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
                 whileHover={!selectedCompanion ? { scale: 1.1 } : {}}
                 whileTap={!selectedCompanion ? { scale: 0.9 } : {}}
               >
-                <div className="w-24 h-24 sm:w-32 sm:h-32 relative">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 relative">
                   <ParticleGlobe 
                     color={comp.color}
                     isTalking={hoveredId === comp.id || selectedCompanion === comp.id}
@@ -371,10 +372,32 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
                   />
                 </div>
                 <div 
-                  className={`font-mono text-sm sm:text-lg tracking-[0.3em] uppercase transition-all duration-500 mt-4 ${(hoveredId === comp.id || selectedCompanion === comp.id) ? 'opacity-100 font-black' : 'opacity-40 font-bold'}`}
+                  className={`font-mono text-sm sm:text-2xl tracking-[0.4em] uppercase transition-all duration-500 mt-2 ${(hoveredId === comp.id || selectedCompanion === comp.id) ? 'opacity-100 font-black' : 'opacity-40 font-bold'}`}
                   style={{ color: (hoveredId === comp.id || selectedCompanion === comp.id) ? comp.color : '#888888', textShadow: (hoveredId === comp.id || selectedCompanion === comp.id) ? `0 0 20px ${comp.color}, 0 0 10px ${comp.color}` : 'none' }}
                 >
                   {comp.name}
+                </div>
+
+                {/* Personality Card */}
+                <div 
+                  className={`absolute top-full mt-8 w-48 sm:w-56 p-4 sm:p-5 rounded-2xl border transition-all duration-500 flex flex-col items-center text-center backdrop-blur-xl pointer-events-none
+                    ${(hoveredId === comp.id || selectedCompanion === comp.id) 
+                      ? 'opacity-100 translate-y-0 shadow-[0_10px_40px_rgba(0,0,0,0.5)] scale-105' 
+                      : 'opacity-0 translate-y-4 shadow-none scale-95'}`}
+                  style={{
+                    borderColor: (hoveredId === comp.id || selectedCompanion === comp.id) ? `${comp.color}80` : `${comp.color}30`, 
+                    backgroundColor: (hoveredId === comp.id || selectedCompanion === comp.id) ? `${comp.color}15` : `${comp.color}05`, 
+                    boxShadow: (hoveredId === comp.id || selectedCompanion === comp.id) ? `0 0 30px ${comp.color}20 inset` : 'none'
+                  }}
+                >
+                  <p className="text-sm font-mono tracking-wide leading-relaxed" style={{ color: `${comp.color}cc` }}>
+                    {t(`companions.${comp.id}.description` as any) || comp.description}
+                  </p>
+                  <div className="mt-4 pt-4 w-full border-t border-white/5">
+                    <p className="text-xs italic font-serif leading-relaxed text-white/50">
+                      "{t(`companions.${comp.id}.quote` as any) || comp.quotes.idle[0]}"
+                    </p>
+                  </div>
                 </div>
               </motion.div>
             ))}

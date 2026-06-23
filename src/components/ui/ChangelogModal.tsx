@@ -1,11 +1,13 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CHANGELOG_DATA } from '../../data/changelog';
-import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const ChangelogModal: React.FC = () => {
-  const isChangelogOpen = useTrackerStore(state => state.isChangelogOpen);
-  const setIsChangelogOpen = useTrackerStore(state => state.setIsChangelogOpen);
+  const { t } = useTranslation();
+  const isChangelogOpen = useSettingsStore(state => state.isChangelogOpen);
+  const setIsChangelogOpen = useSettingsStore(state => state.setIsChangelogOpen);
 
   return (
     <AnimatePresence>
@@ -75,7 +77,7 @@ export const ChangelogModal: React.FC = () => {
 
                       {entry.fixes.length > 0 && (
                         <div className="mt-2">
-                          <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1 block">Fixes & Improvements</span>
+                          <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1 block">{t('errors.fixesImprovements')}</span>
                           <ul className="flex flex-col gap-1.5">
                             {entry.fixes.map((fix, i) => (
                               <li key={i} className="text-[10px] text-[var(--text-secondary)] leading-relaxed flex items-start gap-2">

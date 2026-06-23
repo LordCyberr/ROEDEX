@@ -1,20 +1,23 @@
 import React from 'react';
-import { useTrackerStore } from '../../../store/trackerStore';
+import { useTranslation } from '../../../hooks/useTranslation';
+// import React from 'react';
+import { useSettingsStore } from '../../../store/settingsStore';
 import { ToggleRow, SliderRow, SelectRow } from './SettingsControls';
 
 
 export const ArmorSettings: React.FC = () => {
-  const store = useTrackerStore();
+  const { t } = useTranslation();
+  const store = useSettingsStore();
 
   return (
     <>
-      <ToggleRow label="Enable Armor Overlay" value={store.armorUISettings.show} onChange={(v) => store.updateArmorUISettings({ show: v })} />
-          <ToggleRow label="Lock Position" value={store.armorUISettings.locked} disabled={!store.armorUISettings.show} onChange={(v) => store.updateArmorUISettings({ locked: v })} />
+      <ToggleRow label={t('settings.enableArmorOverlay')} value={store.armorUISettings.show} onChange={(v) => store.updateArmorUISettings({ show: v })} />
+          <ToggleRow label={t('settings.lockPosition')} value={store.armorUISettings.locked} disabled={!store.armorUISettings.show} onChange={(v) => store.updateArmorUISettings({ locked: v })} />
           
           <div className={`space-y-1.5 mt-2 pt-2 border-t border-[var(--border-subtle)] ${!store.armorUISettings.show ? 'opacity-50 pointer-events-none' : ''}`}>
-            <div className="text-[9px] font-bold text-[var(--text-muted)] mt-2 mb-1 pl-1">DISPLAY & APPEARANCE</div>
+            <div className="text-[9px] font-bold text-[var(--text-muted)] mt-2 mb-1 pl-1">{t('settings.displayAppearance')}</div>
             <SelectRow 
-              label="Layout" 
+              label={t('settings.layout')} 
               value={store.armorUISettings.layout} 
               options={[
                 {label: 'Vertical Stack', value: 'vertical'},
@@ -23,7 +26,7 @@ export const ArmorSettings: React.FC = () => {
               onChange={(v) => store.updateArmorUISettings({ layout: v as 'vertical' | 'horizontal' })} 
             />
             <SelectRow 
-              label="Style" 
+              label={t('settings.style')} 
               value={store.armorUISettings.style} 
               options={[
                 {label: 'Bar Only', value: 'bar'},
@@ -34,22 +37,22 @@ export const ArmorSettings: React.FC = () => {
               ]} 
               onChange={(v) => store.updateArmorUISettings({ style: v as any })} 
             />
-            <ToggleRow label="Enable Animations" value={store.armorUISettings.enableAnimations} onChange={(v) => store.updateArmorUISettings({ enableAnimations: v })} />
-            <SliderRow label="Width" value={store.armorUISettings.width} min={20} max={300} step={10} display={`${store.armorUISettings.width}px`} onChange={(v) => store.updateArmorUISettings({ width: v })} />
-            <SliderRow label="Height (Bar)" value={store.armorUISettings.height} min={2} max={60} step={2} display={`${store.armorUISettings.height}px`} onChange={(v) => store.updateArmorUISettings({ height: v })} />
-            <SliderRow label="Scale" value={store.armorUISettings.scale} min={0.5} max={1.5} step={0.1} display={`${(store.armorUISettings.scale * 100).toFixed(0)}%`} onChange={(v) => store.updateArmorUISettings({ scale: v })} />
-            <SliderRow label="Opacity" value={store.armorUISettings.opacity} min={0.1} max={1} step={0.05} display={`${(store.armorUISettings.opacity * 100).toFixed(0)}%`} onChange={(v) => store.updateArmorUISettings({ opacity: v })} />
-            <SliderRow label="Background Radius" value={store.armorUISettings.borderRadius} min={0} max={24} step={2} display={`${store.armorUISettings.borderRadius}px`} onChange={(v) => store.updateArmorUISettings({ borderRadius: v })} />
-            <SliderRow label="Background Blur" value={store.armorUISettings.glassStrength} min={0} max={30} step={2} display={`${store.armorUISettings.glassStrength}px`} onChange={(v) => store.updateArmorUISettings({ glassStrength: v })} />
+            <ToggleRow label={t('settings.enableAnimations')} value={store.armorUISettings.enableAnimations} onChange={(v) => store.updateArmorUISettings({ enableAnimations: v })} />
+            <SliderRow label={t('settings.barWidth')} value={store.armorUISettings.width} min={20} max={300} step={10} display={`${store.armorUISettings.width}px`} onChange={(v) => store.updateArmorUISettings({ width: v })} />
+            <SliderRow label={t('settings.barHeight')} value={store.armorUISettings.height} min={2} max={60} step={2} display={`${store.armorUISettings.height}px`} onChange={(v) => store.updateArmorUISettings({ height: v })} />
+            <SliderRow label={t('settings.scale')} value={store.armorUISettings.scale} min={0.5} max={1.5} step={0.1} display={`${(store.armorUISettings.scale * 100).toFixed(0)}%`} onChange={(v) => store.updateArmorUISettings({ scale: v })} />
+            <SliderRow label={t('settings.opacity')} value={store.armorUISettings.opacity} min={0.1} max={1} step={0.05} display={`${(store.armorUISettings.opacity * 100).toFixed(0)}%`} onChange={(v) => store.updateArmorUISettings({ opacity: v })} />
+            <SliderRow label={t('settings.borderRadius')} value={store.armorUISettings.borderRadius} min={0} max={24} step={2} display={`${store.armorUISettings.borderRadius}px`} onChange={(v) => store.updateArmorUISettings({ borderRadius: v })} />
+            <SliderRow label={t('settings.glassStrength')} value={store.armorUISettings.glassStrength} min={0} max={30} step={2} display={`${store.armorUISettings.glassStrength}px`} onChange={(v) => store.updateArmorUISettings({ glassStrength: v })} />
 
-            <div className="text-[9px] font-bold text-[var(--text-muted)] mt-4 mb-1 pl-1">BORDER SETTINGS</div>
-            <SliderRow label="Border Thickness" value={store.armorUISettings.borderWidth || 0} min={0} max={10} step={1} display={`${store.armorUISettings.borderWidth || 0}px`} onChange={(v) => store.updateArmorUISettings({ borderWidth: v })} />
-            <ToggleRow label="Dynamic Color (Match Health)" value={store.armorUISettings.dynamicBorderColor ?? true} onChange={(v) => store.updateArmorUISettings({ dynamicBorderColor: v })} />
+            <div className="text-[9px] font-bold text-[var(--text-muted)] mt-4 mb-1 pl-1">{t('settings.borderSettings')}</div>
+            <SliderRow label={t('settings.borderWidth')} value={store.armorUISettings.borderWidth || 0} min={0} max={10} step={1} display={`${store.armorUISettings.borderWidth || 0}px`} onChange={(v) => store.updateArmorUISettings({ borderWidth: v })} />
+            <ToggleRow label={t('settings.dynamicBorderColor')} value={store.armorUISettings.dynamicBorderColor ?? true} onChange={(v) => store.updateArmorUISettings({ dynamicBorderColor: v })} />
 
-            <div className="text-[9px] font-bold text-[var(--text-muted)] mt-4 mb-1 pl-1">ALERTS & ANCHOR</div>
-            <ToggleRow label="Enable Alerts" value={store.armorUISettings.enableAlerts} onChange={(v) => store.updateArmorUISettings({ enableAlerts: v })} />
+            <div className="text-[9px] font-bold text-[var(--text-muted)] mt-4 mb-1 pl-1">{t('settings.alertsAndAnchor')}</div>
+            <ToggleRow label={t('settings.enableDurabilityAlerts')} value={store.armorUISettings.enableAlerts} onChange={(v) => store.updateArmorUISettings({ enableAlerts: v })} />
             <SelectRow 
-              label="Alert Threshold" 
+              label={t('settings.alertThreshold')} 
               value={store.armorUISettings.alertThreshold.toString()} 
               options={[
                 {label: '10%', value: '10'},
@@ -61,7 +64,7 @@ export const ArmorSettings: React.FC = () => {
               onChange={(v) => store.updateArmorUISettings({ alertThreshold: parseInt(v) })} 
             />
             <SelectRow 
-              label="Anchor Position" 
+              label={t('settings.position')} 
               value={store.armorUISettings.position} 
               options={[
                 {label: 'Top Left', value: 'top-left'},

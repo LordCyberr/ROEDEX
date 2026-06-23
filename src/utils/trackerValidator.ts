@@ -1,61 +1,69 @@
-import { EnemyRespawnEvent, CombatHitEvent, ResourceRespawnEvent } from '../types/events';
-import { useTrackerStore } from '../store/trackerStore';
+import { z } from 'zod';
+import { useSettingsStore } from '../store/settingsStore';
+
+const Vector2Schema = z.object({
+  x: z.number(),
+  y: z.number()
+}).passthrough();
+
+const EnemyRespawnSchema = z.object({
+  entityIndex: z.number().optional(),
+  type: z.string().optional(),
+  hp: z.number().optional(),
+  maxHp: z.number().optional(),
+  pos: Vector2Schema.optional()
+}).passthrough();
+
+const CombatHitSchema = z.object({
+  entityIndex: z.number().optional(),
+  clientDamage: z.number().optional(),
+  damage: z.number().optional()
+}).passthrough();
+
+const ResourceRespawnSchema = z.object({
+  type: z.string().optional(),
+  resource: z.string().optional(),
+  pos: Vector2Schema.optional()
+}).passthrough();
 
 export class TrackerValidator {
   
-  static validateEnemySpawn(payload: EnemyRespawnEvent): boolean {
+  static validateEnemySpawn(payload: any): boolean {
     if (!payload) return false;
+    const isDev = useSettingsStore.getState().developerMode;
     
-    const isDev = useTrackerStore.getState().developerMode;
-    
-    // Check missing HP
-    if (typeof payload.hp !== 'number' || typeof payload.maxHp !== 'number') {
-      if (isDev) console.warn(`[Validator] Enemy spawned without valid HP fields:`, payload);
-      // We don't drop the packet, just warn
+    const result = EnemyRespawnSchema.safeParse(payload);
+    if (!result.success) {
+      if (isDev) console.warn("[Zod Validator] Enemy spawn schema mismatch:", result.error);
     }
     
-    // Check broken categories
-    if (!payload.type) {
-      if (isDev) console.warn(`[Validator] Enemy spawned without a valid type:`, payload);
-    }
-    
-    // Check invalid distances (positions)
-    if (!payload.pos || typeof payload.pos.x !== 'number' || typeof payload.pos.y !== 'number') {
-      if (isDev) console.warn(`[Validator] Enemy spawned with invalid position:`, payload);
-    }
-
-    return true;
+    return true; // Fallback gracefully instead of dropping
   }
 
-  static validateCombatHit(payload: CombatHitEvent | any): boolean {
+  static validateCombatHit(payload: any): boolean {
     if (!payload) return false;
-    
     const data = payload.data || payload;
-    const isDev = useTrackerStore.getState().developerMode;
+    const isDev = useSettingsStore.getState().developerMode;
     
-    // Check negative timers or HP logic (just general sanity)
-    if (data.clientDamage < 0 || data.damage < 0) {
-      if (isDev) console.warn(`[Validator] Negative damage detected:`, payload);
+    const result = CombatHitSchema.safeParse(data);
+    if (!result.success) {
+      if (isDev) console.warn("[Zod Validator] Combat hit schema mismatch:", result.error);
     }
-    
-    if (data.entityIndex === undefined) {
-      if (isDev) console.warn(`[Validator] Combat hit missing entityIndex:`, payload);
+
+    if (data.clientDamage !== undefined && data.clientDamage < 0) {
+      if (isDev) console.warn("[Zod Validator] Negative damage detected:", payload);
     }
 
     return true;
   }
 
-  static validateResourceSpawn(payload: ResourceRespawnEvent): boolean {
+  static validateResourceSpawn(payload: any): boolean {
     if (!payload) return false;
+    const isDev = useSettingsStore.getState().developerMode;
     
-    const isDev = useTrackerStore.getState().developerMode;
-    
-    if (!payload.type || !payload.resource) {
-      if (isDev) console.warn(`[Validator] Resource spawned with broken category/type:`, payload);
-    }
-    
-    if (!payload.pos || typeof payload.pos.x !== 'number' || typeof payload.pos.y !== 'number') {
-      if (isDev) console.warn(`[Validator] Resource spawned with invalid position:`, payload);
+    const result = ResourceRespawnSchema.safeParse(payload);
+    if (!result.success) {
+      if (isDev) console.warn("[Zod Validator] Resource spawn schema mismatch:", result.error);
     }
     
     return true;
@@ -63,15 +71,15 @@ export class TrackerValidator {
   
   static validateTimer(respawnTimeMs: number | undefined): void {
     if (respawnTimeMs !== undefined && respawnTimeMs < Date.now()) {
-      const isDev = useTrackerStore.getState().developerMode;
-      if (isDev) console.warn(`[Validator] Negative or past respawn timer detected:`, new Date(respawnTimeMs));
+      const isDev = useSettingsStore.getState().developerMode;
+      if (isDev) console.warn("[Zod Validator] Negative or past respawn timer detected:", new Date(respawnTimeMs));
     }
   }
 
   static checkDuplicateEntity(entityId: string | number, existingSet: Set<string | number>): void {
     if (existingSet.has(entityId)) {
-      const isDev = useTrackerStore.getState().developerMode;
-      if (isDev) console.warn(`[Validator] Duplicate entity detected in state:`, entityId);
+      const isDev = useSettingsStore.getState().developerMode;
+      if (isDev) console.warn("[Zod Validator] Duplicate entity detected in state:", entityId);
     }
     existingSet.add(entityId);
   }

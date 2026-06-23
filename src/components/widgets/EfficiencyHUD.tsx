@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
 import { useGlobalTick } from '../../core/tick';
 import { useShallow } from 'zustand/react/shallow';
 import { motion, useDragControls, useMotionValue } from 'motion/react';
@@ -7,12 +8,16 @@ import { Timer, TrendingUp, Coins } from 'lucide-react';
 import { getResellValue } from '../../data/prices';
 
 export const EfficiencyHUD: React.FC = () => {
-  const { sessionActive, sessionStartTime, sessionRunes, sessionLoot, isUILocked } = useTrackerStore(
+  const { sessionActive, sessionStartTime, sessionRunes, sessionLoot } = useTrackerStore(
     useShallow((state) => ({
       sessionActive: state.sessionActive,
       sessionStartTime: state.sessionStartTime,
       sessionRunes: state.sessionRunes,
       sessionLoot: state.sessionLoot,
+    }))
+  );
+  
+  const { isUILocked } = useSettingsStore(useShallow((state: any) => ({
       isUILocked: state.isUILocked
     }))
   );

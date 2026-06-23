@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
 import { Minus, Maximize2, PanelLeft, PanelTop, Globe2, Star, PackageOpen, Settings, Users, ExternalLink, RefreshCw, ArrowDownLeft, Lock, Unlock } from 'lucide-react';
 import { Tooltip } from '../ui/Tooltip';
@@ -12,6 +12,7 @@ export interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
   const { t } = useTranslation();
+  const { addBobMessage } = useSettingsStore(useShallow((state: any) => ({ addBobMessage: state.addBobMessage })));
   const {
     isMinimized, setIsMinimized,
     isUILocked, setIsUILocked,
@@ -24,8 +25,7 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
     tutorialCompleted,
     seenTabs,
     updateNotificationSettings,
-    addBobMessage,
-  } = useTrackerStore(useShallow((state) => ({
+  } = useSettingsStore(useShallow((state: any) => ({
     isMinimized: state.isMinimized,
     setIsMinimized: state.setIsMinimized,
     isUILocked: state.isUILocked,
@@ -39,11 +39,10 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
     mergeAllTabs: state.mergeAllTabs,
     tabDimensions: state.tabDimensions,
     setTabDimensions: state.setTabDimensions,
-    tutorialStep: state.notificationSettings.tutorialStep,
-    tutorialCompleted: state.notificationSettings.tutorialCompleted,
-    seenTabs: state.notificationSettings.seenTabs || {},
+    tutorialStep: state.notificationSettings?.tutorialStep || 0,
+    tutorialCompleted: state.notificationSettings?.tutorialCompleted || false,
+    seenTabs: state.notificationSettings?.seenTabs || {},
     updateNotificationSettings: state.updateNotificationSettings,
-    addBobMessage: state.addBobMessage,
   })));
 
   const handleTabHover = (tabId: string) => {
