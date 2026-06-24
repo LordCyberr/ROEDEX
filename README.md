@@ -4,8 +4,12 @@
   <p><strong>The Ultimate Real-Time Tracker & Companion Suite for Roots of Embervault</strong></p>
   
   <p>
-    <img src="https://img.shields.io/badge/version-v0.0.1-blue.svg?style=for-the-badge" alt="Version" />
-    <img src="https://img.shields.io/badge/chrome-extension-success.svg?style=for-the-badge" alt="Chrome Extension" />
+    <a href="https://chromewebstore.google.com/detail/roedex/fgdehjebfkbdefdnenpgjejjnhlkchjh" target="_blank">
+      <img src="https://img.shields.io/chrome-web-store/v/fgdehjebfkbdefdnenpgjejjnhlkchjh?label=Download%20on%20Chrome%20Web%20Store&style=for-the-badge&color=success&logo=googlechrome" alt="Download on Chrome Web Store" />
+    </a>
+  </p>
+  <p>
+    <img src="https://img.shields.io/badge/version-v0.0.2-blue.svg?style=for-the-badge" alt="Version" />
     <img src="https://img.shields.io/badge/react-19.0.0-61dafb.svg?style=for-the-badge" alt="React" />
     <img src="https://img.shields.io/badge/typescript-5.7-blue.svg?style=for-the-badge" alt="TypeScript" />
     <img src="https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge" alt="License" />
