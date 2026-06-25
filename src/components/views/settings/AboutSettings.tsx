@@ -42,7 +42,7 @@ export const AboutSettings: React.FC = () => {
                 {t('settings.aboutMe')}
               </h4>
               <p className="text-[10px] text-[var(--accent-primary)] font-mono tracking-widest uppercase opacity-80">
-                v0.0.1 • Open Source
+                v0.0.3 • Open Source
               </p>
             </div>
           </div>

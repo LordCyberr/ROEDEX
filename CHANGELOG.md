@@ -1,6 +1,6 @@
 # ROEDEX Changelog
 
-## v0.0.2 - AI Companions, 8-Way Resizing, Localization & Hotfixes (2026-06-25)
+## v0.0.3 - AI Companions, 8-Way Resizing, Localization & Hotfixes (2026-06-25)
 
 ### ✨ Features
 - **Integrated AI Companions:** Introduced a fully integrated AI Companion system with four distinct personas (Bob, Kaya, Lia, and Crash), featuring dynamic reactions, animated CRT faces, and custom chat bubbles.

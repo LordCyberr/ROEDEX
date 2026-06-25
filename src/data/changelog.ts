@@ -8,7 +8,7 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA: ChangelogEntry[] = [
   {
-    version: '0.0.2',
+    version: '0.0.3',
     date: '2026-06-23',
     title: 'AI Companions, 8-Way Resizing & Localization',
     features: [
