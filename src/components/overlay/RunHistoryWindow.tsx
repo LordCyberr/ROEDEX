@@ -6,13 +6,18 @@ import { X, History, Clock, Coins, Package } from 'lucide-react';
 import { formatDuration } from '../../utils/formatters';
 import { useTranslation } from '../../hooks/useTranslation';
 
+import { useSettingsStore } from '../../store/settingsStore';
+
 export const RunHistoryWindow: React.FC = () => {
   const { t } = useTranslation();
-  const { runHistory, isRunHistoryOpen, setIsRunHistoryOpen, clearRunHistory } = useTrackerStore(useShallow((state: any) => ({
+  const { runHistory, clearRunHistory } = useTrackerStore(useShallow((state: any) => ({
     runHistory: state.runHistory,
+    clearRunHistory: state.clearRunHistory,
+  })));
+  
+  const { isRunHistoryOpen, setIsRunHistoryOpen } = useSettingsStore(useShallow((state: any) => ({
     isRunHistoryOpen: state.isRunHistoryOpen,
     setIsRunHistoryOpen: state.setIsRunHistoryOpen,
-    clearRunHistory: state.clearRunHistory,
   })));
 
   const dragConstraintsRef = useRef(null);
@@ -38,7 +43,7 @@ export const RunHistoryWindow: React.FC = () => {
         <div className="flex items-center justify-between p-3 border-b border-white/10 bg-white/[0.02] cursor-grab active:cursor-grabbing">
           <div className="flex items-center gap-2">
             <History size={14} className="text-emerald-400" />
-            <h2 className="text-xs font-black tracking-widest text-white uppercase">{t('overlay.pastRuns')}</h2>
+            <h2 className="text-xs font-black tracking-widest text-white uppercase">ROEDEX // {t('overlay.pastRuns')}</h2>
           </div>
           <div className="flex items-center gap-2">
             {runHistory.length > 0 && (
@@ -50,7 +55,7 @@ export const RunHistoryWindow: React.FC = () => {
                 }}
                 className="text-[10px] uppercase font-bold text-slate-400 hover:text-red-400 transition-colors px-2"
               >
-                Clear History
+                {t('stats.clearHistory')}
               </button>
             )}
             <button 
@@ -91,7 +96,7 @@ export const RunHistoryWindow: React.FC = () => {
                       <div className="grid grid-cols-2 gap-2">
                         <div className="bg-[var(--bg-card)] rounded p-2 flex flex-col items-center justify-center border border-[var(--border-subtle)]">
                           <span className="text-[8px] text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1">
-                            <Coins size={10} /> Runes
+                            <Coins size={10} /> {t('stats.runes')}
                           </span>
                           <span className="text-yellow-400 font-mono font-black text-[13px]">
                             {run.runes.toLocaleString()}
@@ -99,7 +104,7 @@ export const RunHistoryWindow: React.FC = () => {
                         </div>
                         <div className="bg-[var(--bg-card)] rounded p-2 flex flex-col items-center justify-center border border-[var(--border-subtle)]">
                           <span className="text-[8px] text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1">
-                            <Package size={10} /> Loot Worth
+                            <Package size={10} /> {t('stats.lootWorth')}
                           </span>
                           <span className="text-cyan-400 font-mono font-black text-[13px]">
                             {run.lootWorth.toLocaleString()}

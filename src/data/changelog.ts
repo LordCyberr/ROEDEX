@@ -18,6 +18,10 @@ export const CHANGELOG_DATA: ChangelogEntry[] = [
       'Revamped the overlay resizing architecture: you can now seamlessly drag and resize the tracker from any of the 8 directional handles, while the auto-expand UI perfectly respects your manual minimum constraints.'
     ],
     fixes: [
+      'Hotfix: Resolved language persistence so your chosen language loads instantly on startup instead of defaulting to English.',
+      'Hotfix: Fixed a UI bug where the translation hooks inside the Settings tab required a full app reload to apply.',
+      'Hotfix: Fixed an issue where the overlay resizing reset button started yellow (active) by default due to hardcoded default width limits.',
+      'Hotfix: Reduced the default width of the vertical Settings, NPC, Session, and Quests tabs down to 220px for a much cleaner, tighter layout.',
       'Resolved the "auto-expand paradox" by intelligently mapping fixed dimensions to CSS minimums (minHeight/minWidth), allowing the UI to grow dynamically when data arrives without breaking user-defined bounds.',
       'Patched an issue where missing translation keys in the Debug Panel (e.g., debug.spawnTessa) would bleed into the UI as raw uppercase strings.',
       'Fixed layout clipping on popped-out windows by ensuring they inherit the same 8-way responsive constraints as the main overlay.'

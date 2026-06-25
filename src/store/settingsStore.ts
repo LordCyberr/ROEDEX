@@ -95,6 +95,12 @@ export const useSettingsStore = create<UISlice>()(
           if (dims['settings_horizontal']?.height === 500) delete dims['settings_horizontal'].height;
           if (dims['npcs_horizontal']?.height === 450) delete dims['npcs_horizontal'].height;
           if (dims['quests_horizontal']?.height === 400) delete dims['quests_horizontal'].height;
+
+          // Clear old vertical default widths so users get the new 220px default
+          if (dims['session_vertical']?.width === 300) delete dims['session_vertical'].width;
+          if (dims['settings_vertical']?.width === 340) delete dims['settings_vertical'].width;
+          if (dims['npcs_vertical']?.width === 300) delete dims['npcs_vertical'].width;
+          if (dims['quests_vertical']?.width === 300) delete dims['quests_vertical'].width;
         }
 
         const notifSettings = {

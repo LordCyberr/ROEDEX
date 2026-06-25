@@ -89,7 +89,8 @@ export class MobTracker {
           name: enemy.type,
           category: 'Mob' as const,
           expectedRespawnTime: respawnTime,
-          pos: enemy.pos
+          pos: enemy.pos,
+          zone: currentZone
         };
         updates.timers = { ...state.timers, [newTimer.id]: newTimer };
       }

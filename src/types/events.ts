@@ -93,6 +93,7 @@ export interface RespawnTimer {
   category: string; // "Mob", "Ore", "Tree", "Bush"
   expectedRespawnTime: number; // Epoch timestamp in ms
   pos: Vector2;
+  zone?: string;
 }
 
 export interface WeaponState {

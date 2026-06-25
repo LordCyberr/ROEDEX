@@ -1,6 +1,6 @@
 import { useTrackerStore } from '../../store/trackerStore';
 import { useSettingsStore } from '../../store/settingsStore';
-
+import { translations } from '../../i18n/translations';
 export class NotificationManager {
   private static lastDurabilityWarning: number = 0;
 
@@ -50,10 +50,34 @@ export class NotificationManager {
     }
   }
 
+  private static hasShownInitializing: boolean = false;
   private static hasGreeted: boolean = false;
 
   static resetGreeting() {
+    this.hasShownInitializing = false;
     this.hasGreeted = false;
+  }
+  
+  static showInitializingToast() {
+    if (this.hasShownInitializing) return;
+
+    const settingsStore = useSettingsStore.getState();
+    if (!settingsStore.notificationSettings.enabled || !settingsStore.notificationSettings.toasts) return;
+    
+    // Do not show greet toast if the boot sequence (tutorialStep 0) is still running
+    if (!settingsStore.notificationSettings.tutorialCompleted && settingsStore.notificationSettings.tutorialStep === 0) return;
+
+    this.hasShownInitializing = true;
+
+    const lang = settingsStore.language || 'en';
+    const t = (translations as any)[lang] || translations.en;
+
+    // Send the First boot sequence toast immediately
+    settingsStore.addNotification({
+      type: 'boot-sequence',
+      title: t.bootSequence?.systemBoot || 'SYSTEM BOOT',
+      message: t.bootSequence?.initializing || 'Initializing ROEDEX interface...'
+    });
   }
 
   static greetUser(username?: string) {
@@ -67,19 +91,25 @@ export class NotificationManager {
 
     this.hasGreeted = true;
 
-    // Send the First boot sequence toast
-    settingsStore.addNotification({
-      type: 'boot-sequence',
-      title: 'SYSTEM BOOT',
-      message: 'Initializing ROEDEX interface...'
-    });
+    const lang = settingsStore.language || 'en';
+    const t = (translations as any)[lang] || translations.en;
 
-    // Wait 8 seconds (instead of 5) to let the loading animation loop smoothly before sending the connection established / welcome toast
+    // Wait 8 seconds to let the game load and animation loop smoothly before sending the connection established / welcome toast
     setTimeout(() => {
+      let welcomeMsg = t.bootSequence?.welcome || 'Welcome';
+      let fullMessage = username ? `${welcomeMsg}, ${username}!` : `${welcomeMsg} to ROEDEX!`;
+      
+      // Fallback adjustments for non-English spacing
+      if (lang === 'ko' && username) {
+        fullMessage = `${username}님, 환영합니다!`; // specific natural Korean greeting
+      } else if (lang === 'ko') {
+        fullMessage = `ROEDEX에 오신 것을 환영합니다!`;
+      }
+      
       settingsStore.addNotification({
         type: 'system-online',
-        title: 'CONNECTION ESTABLISHED',
-        message: username ? `Welcome, ${username}!` : `Welcome to ROEDEX!`
+        title: t.bootSequence?.online || 'CONNECTION ESTABLISHED',
+        message: fullMessage
       });
     }, 8000);
   }

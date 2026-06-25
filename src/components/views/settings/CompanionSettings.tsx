@@ -19,7 +19,8 @@ export const CompanionSettings: React.FC = () => {
     updateNotificationSettings: state.updateNotificationSettings,
     activeCompanion: state.activeCompanion,
     setActiveCompanion: state.setActiveCompanion,
-    setTutorialStep: state.setTutorialStep
+    setTutorialStep: state.setTutorialStep,
+    companionMessages: state.companionMessages
   })));
 
   return (
@@ -33,7 +34,7 @@ export const CompanionSettings: React.FC = () => {
 
       <div className={`space-y-1 mt-3 pt-3 border-t border-[var(--border-subtle)] ${!store.notificationSettings.companionMode ? 'opacity-50 pointer-events-none' : ''}`}>
         
-        <SectionHeader title="Preview & Setup" />
+        <SectionHeader title={t('settingsGroup.previewAndSetup')} />
         
         <SelectRow
           label={t('settings.activePersona')}
@@ -77,7 +78,7 @@ export const CompanionSettings: React.FC = () => {
           }}
         />
 
-        <SectionHeader title="Appearance" />
+        <SectionHeader title={t('settingsGroup.appearance')} />
 
         <SliderRow label={t('settings.companionIconScale')} description="Scales the avatar." value={store.notificationSettings.companionIconScale || 1.0} min={0.5} max={2.5} step={0.1} display={`${((store.notificationSettings.companionIconScale || 1.0) * 100).toFixed(0)}%`} onChange={(v) => store.updateNotificationSettings({ companionIconScale: v })} />
         <SliderRow label={t('settings.speechBubbleTextScale')} description="Scales the chat bubble text." value={store.notificationSettings.companionTextScale || 1.0} min={0.5} max={2.5} step={0.1} display={`${((store.notificationSettings.companionTextScale || 1.0) * 100).toFixed(0)}%`} onChange={(v) => store.updateNotificationSettings({ companionTextScale: v })} />
@@ -93,7 +94,7 @@ export const CompanionSettings: React.FC = () => {
           onChange={(v) => store.updateNotificationSettings({ companionBubbleTheme: v as any })}
         />
 
-        <SectionHeader title="Behavior" />
+        <SectionHeader title={t('settingsGroup.behavior')} />
 
         <SelectRow
           label={t('settings.chatterFrequency')}
@@ -121,12 +122,12 @@ export const CompanionSettings: React.FC = () => {
 
         <SliderRow label={t('settings.speechBubbleDuration')} description="How long messages stay on screen." value={store.notificationSettings.companionDuration || 5000} min={1000} max={15000} step={500} display={`${((store.notificationSettings.companionDuration || 5000) / 1000).toFixed(1)}s`} onChange={(v) => store.updateNotificationSettings({ companionDuration: v })} />
 
-        <SectionHeader title="Positioning" />
+        <SectionHeader title={t('settingsGroup.positioning')} />
 
         <SliderRow label={t('settings.bubbleDistance')} description="Horizontal distance from avatar." value={store.notificationSettings.companionBubbleDistance ?? 16} min={-50} max={150} step={2} display={`${store.notificationSettings.companionBubbleDistance ?? 16}px`} onChange={(v) => store.updateNotificationSettings({ companionBubbleDistance: v })} />
         <SliderRow label={t('settings.bubbleOffset')} description="Vertical shift of the bubble." value={store.notificationSettings.companionBubbleOffsetY ?? 0} min={-100} max={100} step={2} display={`${store.notificationSettings.companionBubbleOffsetY ?? 0}px`} onChange={(v) => store.updateNotificationSettings({ companionBubbleOffsetY: v })} />
 
-        <SectionHeader title="Message Categories" description="Toggle which types of events trigger a companion response." />
+        <SectionHeader title={t('settingsGroup.messageCategories')} description="Toggle which types of events trigger a companion response." />
 
         <SelectRow
           label={t('settings.quickPreset')}

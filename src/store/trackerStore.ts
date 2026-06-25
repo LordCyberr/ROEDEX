@@ -37,10 +37,31 @@ export const clearAllStorageAndReload = async () => {
   isErasing = true;
   pendingValue = null;
   localStorage.removeItem('roedex-storage');
+  localStorage.removeItem('roedex-settings-storage');
+  
   try {
-    indexedDB.deleteDatabase('roedex-db');
+    const db1 = await openDB();
+    await new Promise(resolve => {
+       const req = db1.transaction('keyval', 'readwrite').objectStore('keyval').delete('roedex-storage');
+       req.onsuccess = resolve;
+       req.onerror = resolve;
+    });
   } catch(e) {}
-  window.location.reload();
+  
+  try {
+    const db2: any = await new Promise((resolve, reject) => {
+      const request = indexedDB.open('roedex-settings-db', 1);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    await new Promise(resolve => {
+       const req = db2.transaction('keyval', 'readwrite').objectStore('keyval').delete('roedex-settings-storage');
+       req.onsuccess = resolve;
+       req.onerror = resolve;
+    });
+  } catch(e) {}
+
+  setTimeout(() => window.location.reload(), 50);
 };
 
 const originalSetItem = async (name: string, value: string): Promise<void> => {
@@ -172,7 +193,10 @@ export const useTrackerStore = create<TrackerState>()(
         timers: state.timers,
         
         // Persist profile and stats
-        playerProfile: state.playerProfile
+        playerProfile: state.playerProfile,
+        
+        // Persist lifetime stats
+        lifetimeStats: state.lifetimeStats
       }),
     }
   )

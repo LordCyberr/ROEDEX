@@ -89,3 +89,58 @@ This file tracks all resolved bugs, their root causes, and the files modified, e
 - **Symptom:** Pressing `Ctrl+Shift+C` to trigger the developer override caused the Chrome extension to crash with `TypeError: Cannot read properties of undefined (reading 'actionRequired')`.
 - **Root Cause:** Bypassing the tutorial by setting `tutorialStep = -1` caused an out-of-bounds array access in `CompanionGuideOverlay.tsx`, which strictly checked `tutorialStep === 0` instead of `tutorialStep <= 0` before trying to read `steps[tutorialStep - 1]`.
 - **Fix:** Changed all instances of `tutorialStep === 0` to `tutorialStep <= 0` in `CompanionGuideOverlay.tsx` to safely handle negative values used for complete bypass states.
+
+### 2026-06-22: Boot Screen Layout & Companion Names
+- **Symptom:** AI companion names showed translation keys instead of actual names, and the language screen was accidentally removed.
+- **Root Cause:** Misunderstanding of layout requirements led to removing the hasSelectedLanguage flow.
+- **Fix:** Restored BootSequence.tsx to its original state. Applied translations specifically to companion labels. Ensure the hasSelectedLanguage state is NEVER removed.
+
+### 2026-06-22: Rarity Colors Overlay Inversion
+- **Symptom:** Rarity colors were inverted.
+- **Fix:** Explicitly mapped getRarityColor: Common=Grey, Uncommon=Blue, Rare=Green, Mythic=Purple.
+- **Directive:** Do not change these rarity colors without explicit user permission.
+
+### 2026-06-24: The Asynchronous Wipe Reload
+- **Symptom:** The "DRAG ME" notification gets stuck on screen after clearing data, and the boot sequence breaks.
+- **Root Cause:** Calling `location.reload()` immediately after `indexedDB.deleteDatabase()` cancelled the asynchronous wipe.
+- **Fix:** Wait for the database wipe request's `onsuccess` callback before reloading the page. Added a "Factory Reset" button to `DebugPanel.tsx`.
+- **Files to Watch:** `src/components/widgets/DebugPanel.tsx`
+
+### 2026-06-24: Zod WebSocket Array Too Small Error
+- **Symptom:** Legitimate game packets without payloads (like simple ping events) were dropped, breaking UI updates.
+- **Root Cause:** The `WebSocketEventSchema` in `parser/index.ts` strictly mandated an array of exactly 2 elements (`[eventName, payload]`). Single-element arrays (`[eventName]`) failed validation.
+- **Fix:** Relaxed the Zod schema to `z.tuple([z.string()]).rest(z.any())` to allow 1-element arrays.
+- **Files to Watch:** `src/core/parser/index.ts`
+
+### 2026-06-24: Welcome Screen Username Hijacking
+- **Symptom:** The extension welcomed a completely random user instead of the player immediately after a factory reset.
+- **Root Cause:** `playerHandler.ts` was capturing the global server broadcast `user_online` (which fires when *any* user logs in) and incorrectly assigning it to `sessionPlayerName`.
+- **Fix:** Removed `sessionPlayerName` assignment from the `user_online` switch case. Now only `stats` and `player_state` packets are used to determine the local player name.
+- **Files to Watch:** `src/core/parser/handlers/playerHandler.ts`
+
+### 2026-06-25: Lifetime Stats Persistence and Tooltip Localization
+- **Symptom:** The Lifetime Stats window was completely empty ("0" for all data), making the user think it was broken. Hovering over tabs in the Header showed English text regardless of the selected language. 
+- **Root Cause 1 (Lifetime Stats):** In `src/store/trackerStore.ts`, the `lifetimeStats` slice was omitted from the `partialize` function array, meaning its data was completely lost whenever the extension reloaded or the tab was closed.
+- **Fix 1:** Added `lifetimeStats: state.lifetimeStats` to the `partialize` whitelist in `trackerStore.ts` so IndexedDB actually saves lifetime metrics.
+- **Root Cause 2 (Tooltips):** The tab hover messages in `Header.tsx` (like "This is the Global Tab") were completely hardcoded strings, completely bypassing the `t()` translation function. The `CATEGORIES.RESPAWNS` tooltip was also missing from `translations.ts` in all languages.
+- **Fix 2:** Added a new `tabHover` object and `categories.respawns` to all four languages in `translations.ts`. Updated `Header.tsx` to correctly pass these keys through the `t()` function.
+- **Files to Watch:** `src/store/trackerStore.ts`, `src/components/layout/Header.tsx`, `src/i18n/translations.ts`
+### 2026-06-25: Localization Bugs in Boot Sequence and AI Greetings
+- **Symptom:** When a user selected a language (like Korean) on the boot screen, the initial boot toast notification and AI Companion greeting still appeared in English, or wrapped Korean quotes with hardcoded English text (e.g., "Hey Username! [Korean string]").
+- **Root Cause 1:** The `NotificationManager.ts` hardcoded the initial 'SYSTEM BOOT' and 'CONNECTION ESTABLISHED' toasts in English, completely bypassing the `i18n` translations object.
+- **Root Cause 2:** The `AICompanion.ts` `greetUser` function hardcoded English matching strings (`if (line.includes("Welcome back!"))`) and fell back to `Hey ${username}! ${line}` for all non-English localized quotes.
+- **Fix 1:** Imported `translations.ts` directly into `NotificationManager.ts` and used the saved language preference from the `settingsStore` to fetch the localized `bootSequence` strings.
+- **Fix 2:** Removed the hardcoded English logic in `AICompanion.ts` `greetUser` and replaced it with a switch-like fallback that respects the current language (e.g., `${username}님! ${line}` for Korean).
+- **Prevention:** Always use the `translations` object or `t()` function for all user-facing strings, especially in core managers that operate independently of the React component lifecycle.
+### 2026-06-24: Missing Lifetime Stats and Run History Windows
+- **Symptom:** Clicking "Lifetime Stats" or "Run History" buttons did absolutely nothing.
+- **Root Cause 1:** During the implementation of draggable "Popped Out Windows", the `<LifetimeStatsWindow />` and `<RunHistoryWindow />` elements were accidentally deleted from the main React render tree inside `OverlayContainer.tsx`.
+- **Root Cause 2:** An accidental typo caused the buttons and windows to try and pull state from the wrong Zustand store (`useTrackerStore` vs `useSettingsStore`).
+- **Fix:** Added the missing components back into `OverlayContainer.tsx` beneath the other HUD elements. Fixed all store references so the popup logic reads from the correct `settingsStore` while the stats read from `trackerStore`.
+- **Files to Watch:** `src/components/overlay/OverlayContainer.tsx`, `src/components/views/loot/ProfileTab.tsx`, `src/components/views/loot/SessionTab.tsx`, `src/components/overlay/LifetimeStatsWindow.tsx`
+
+### 2026-06-25: Stolen Username on Init
+- **Symptom:** The Boot Screen showed the correct username from local storage, but when the game initialized, the AI Companion welcomed someone else!
+- **Root Cause:** The catch-all `username` grabber inside `playerHandler.ts` was intercepting global server broadcasts like `user_online` and `chat`, accidentally stealing the names of other players who logged in or spoke before our local player's `stats` packet arrived.
+- **Fix:** Added a `GLOBAL_BROADCASTS` blacklist (`user_online`, `chat`, `message`, `player_join`, `player_leave`, `spawn_state`, `other_player_move`) to ensure the catch-all only intercepts player-specific init packets (like `stats`, `player_state`, `hero`, etc.).
+- **Files to Watch:** `src/core/parser/handlers/playerHandler.ts`

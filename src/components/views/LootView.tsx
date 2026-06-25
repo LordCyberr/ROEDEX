@@ -7,6 +7,7 @@ import { ProfileTab } from './loot/ProfileTab';
 import { SessionTab } from './loot/SessionTab';
 import { ChestTab } from './loot/ChestTab';
 import { Tooltip } from '../ui/Tooltip';
+import { useTranslation } from '../../hooks/useTranslation';
 
 
 interface LootViewProps {
@@ -15,6 +16,7 @@ interface LootViewProps {
 }
 
 export const LootView: React.FC<LootViewProps> = ({ forcedTab, hideNavigation }) => {
+  const { t } = useTranslation();
   
   const { 
     layoutMode,
@@ -54,7 +56,7 @@ export const LootView: React.FC<LootViewProps> = ({ forcedTab, hideNavigation })
               <User size={12} /> Profile
             </button>
             {!poppedOutWindows['session_profile'] && (
-              <Tooltip content="Pop out Profile tab">
+              <Tooltip content={`${t('ui.popOutTab')} - ${t('ui.profile')}`}>
                 <button 
                   onClick={(e) => { e.stopPropagation(); popOutTab('session_profile', e.clientX, e.clientY); }}
                   className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 text-slate-500 hover:text-white hover:bg-white/10 rounded transition-colors"
@@ -73,7 +75,7 @@ export const LootView: React.FC<LootViewProps> = ({ forcedTab, hideNavigation })
               <Activity size={12} /> Session
             </button>
             {!poppedOutWindows['session_session'] && (
-              <Tooltip content="Pop out Session tab">
+              <Tooltip content={`${t('ui.popOutTab')} - ${t('ui.session')}`}>
                 <button 
                   onClick={(e) => { e.stopPropagation(); popOutTab('session_session', e.clientX, e.clientY); }}
                   className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 text-slate-500 hover:text-white hover:bg-white/10 rounded transition-colors"
@@ -92,7 +94,7 @@ export const LootView: React.FC<LootViewProps> = ({ forcedTab, hideNavigation })
               <PackageOpen size={12} /> Chest
             </button>
             {!poppedOutWindows['session_chest'] && (
-              <Tooltip content="Pop out Chest tab">
+              <Tooltip content={`${t('ui.popOutTab')} - ${t('ui.chest')}`}>
                 <button 
                   onClick={(e) => { e.stopPropagation(); popOutTab('session_chest', e.clientX, e.clientY); }}
                   className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 text-slate-500 hover:text-white hover:bg-white/10 rounded transition-colors"

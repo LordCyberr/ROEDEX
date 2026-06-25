@@ -155,7 +155,7 @@ export const DebugPanel: React.FC = () => {
         }}
       >
         <Terminal size={14} className="text-green-400" />
-        <span className="text-green-400 font-bold tracking-widest flex-1">{t('debug.title')}</span>
+        <span className="text-green-400 font-bold tracking-widest flex-1">ROEDEX // {t('debug.title')}</span>
         <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500 shadow-[0_0_8px_#22c55e]' : 'bg-red-500 shadow-[0_0_8px_#ef4444]'}`} />
       </div>
 
@@ -195,15 +195,15 @@ export const DebugPanel: React.FC = () => {
             <span className="text-green-300 font-bold">{ram > 0 ? `${ram} MB` : 'N/A'}</span>
           </div>
           <div className="flex justify-between">
-            <Tooltip content="Average duration to parse a WebSocket event"><span>{t('debug.parseAvg')}</span></Tooltip>
+            <Tooltip content={t('debug.avgParseDuration')}><span>{t('debug.parseAvg')}</span></Tooltip>
             <span className={`${(profilerMetrics?.parseTime?.average || 0) > 2 ? 'text-red-400' : 'text-green-300'} font-bold`}>{profilerMetrics?.parseTime?.average || 0} ms</span>
           </div>
           <div className="flex justify-between">
-            <Tooltip content="Max spike duration in parse processing"><span>{t('debug.parseMax')}</span></Tooltip>
+            <Tooltip content={t('debug.maxSpikeDuration')}><span>{t('debug.parseMax')}</span></Tooltip>
             <span className={`${(profilerMetrics?.parseTime?.max || 0) > 5 ? 'text-red-400' : 'text-green-300'} font-bold`}>{profilerMetrics?.parseTime?.max || 0} ms</span>
           </div>
           <div className="flex justify-between">
-            <Tooltip content="Average duration for main overlay React render"><span>{t('debug.renderAvg')}</span></Tooltip>
+            <Tooltip content={t('debug.avgRenderDuration')}><span>{t('debug.renderAvg')}</span></Tooltip>
             <span className={`${(profilerMetrics?.renderTime?.average || 0) > 16 ? 'text-red-400' : 'text-green-300'} font-bold`}>{profilerMetrics?.renderTime?.average || 0} ms</span>
           </div>
         </div>
@@ -301,14 +301,28 @@ export const DebugPanel: React.FC = () => {
         <div className="w-full h-px bg-green-500/20" />
 
         {/* Export Data */}
-        <div className="flex justify-center mt-1">
-          <Tooltip content="Export safe overlay diagnostics (no personal data) to JSON">
+        <div className="flex flex-col gap-2 mt-1">
+          <Tooltip content={t('debug.exportDiagnostics')}>
             <button
               onClick={handleExportData}
               className="flex items-center gap-2 px-4 py-1.5 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 hover:border-green-500/60 rounded text-green-400 font-bold transition-colors w-full justify-center"
             >
               <Download size={12} />
               <span>{t('debug.exportReport')}</span>
+            </button>
+          </Tooltip>
+          
+          <Tooltip content={t('debug.wipeDataWarning')}>
+            <button
+              onClick={() => {
+                if (window.confirm("WARNING! This will WIPE ALL ROEDEX data including settings, custom layouts, and stats! Are you absolutely sure?")) {
+                  import('../../store/trackerStore').then(m => m.clearAllStorageAndReload());
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/50 hover:border-red-500/80 rounded text-red-400 font-bold transition-colors w-full justify-center"
+            >
+              <Activity size={12} />
+              <span>FACTORY RESET</span>
             </button>
           </Tooltip>
         </div>

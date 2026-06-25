@@ -9,7 +9,7 @@ export const useTranslation = () => {
     const keys = key.split('.');
     
     // Safely get translation from current language
-    const langDict = translations[language] || translations.en;
+    const langDict = (translations as any)[language] || translations.en;
     let current: any = langDict;
     for (const k of keys) {
       if (current && current[k] !== undefined) {

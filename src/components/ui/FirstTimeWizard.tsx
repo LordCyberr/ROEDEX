@@ -99,10 +99,10 @@ export const FirstTimeWizard: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
                     <Globe size={18} className="text-[var(--accent-primary)]" />
-                    System Language & Latency Test
+                    {t('wizard.systemLangTest')}
                   </h3>
                   <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                    Select your preferred language. Before proceeding, please hover the test block below for 5 seconds to calibrate the overlay response time.
+                    {t('wizard.langDesc')}
                   </p>
                 </div>
 
@@ -137,7 +137,7 @@ export const FirstTimeWizard: React.FC = () => {
                       <>
                         <Activity size={24} className={isHovering ? 'text-[var(--accent-primary)] animate-pulse' : 'text-[var(--text-muted)]'} />
                         <span className={`font-bold ${isHovering ? 'text-[var(--accent-primary)]' : 'text-[var(--text-muted)]'}`}>
-                          {isHovering ? 'Calibrating... Hold steady.' : 'Hover here for 5 seconds to test response time'}
+                          {isHovering ? t('wizard.calibratingHold') : t('wizard.hoverToTest')}
                         </span>
                       </>
                     )}
@@ -150,7 +150,7 @@ export const FirstTimeWizard: React.FC = () => {
                     onClick={() => setStep(2)}
                     className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-bold transition-all ${testPassed ? 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/80 shadow-[0_0_15px_var(--accent-primary)]' : 'bg-white/5 text-white/30 cursor-not-allowed'}`}
                   >
-                    Continue <ChevronRight size={16} />
+                    {t('wizard.continueBtn')} <ChevronRight size={16} />
                   </button>
                 </div>
               </motion.div>
@@ -167,10 +167,10 @@ export const FirstTimeWizard: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
                     <Bot size={18} className="text-[var(--accent-primary)]" />
-                    Select AI Companion
+                    {t('wizard.selectAiCompanion')}
                   </h3>
                   <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                    Choose the AI persona that will assist you. You can change this later in settings.
+                    {t('wizard.selectAiDesc')}
                   </p>
                 </div>
 
@@ -197,7 +197,7 @@ export const FirstTimeWizard: React.FC = () => {
                     onClick={() => setStep(3)}
                     className="flex items-center gap-2 px-6 py-2.5 rounded-lg font-bold bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/80 shadow-[0_0_15px_var(--accent-primary)] transition-all"
                   >
-                    Continue <ChevronRight size={16} />
+                    {t('wizard.continueBtn')} <ChevronRight size={16} />
                   </button>
                 </div>
               </motion.div>
@@ -214,10 +214,10 @@ export const FirstTimeWizard: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
                     <Wand2 size={18} className="text-[var(--accent-primary)]" />
-                    Ready to Explore
+                    {t('wizard.readyToExplore')}
                   </h3>
                   <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                    ROEDEX is now fully configured for your environment. 
+                    {t('wizard.readyDesc')}
                   </p>
                 </div>
 
@@ -236,7 +236,7 @@ export const FirstTimeWizard: React.FC = () => {
                     onClick={handleFinish}
                     className="flex items-center gap-2 px-8 py-3 rounded-xl font-bold bg-emerald-500 text-white hover:bg-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all"
                   >
-                    Finish Setup <Check size={18} />
+                    {t('wizard.finishSetup')} <Check size={18} />
                   </button>
                 </div>
               </motion.div>

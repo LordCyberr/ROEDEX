@@ -163,14 +163,16 @@ export const CompanionGuideOverlay: React.FC = () => {
     tutorialCompleted, 
     setTutorialStep, 
     setBobMood,
-    notificationSettings
+    notificationSettings,
+    devForceOverlay
   } = useSettingsStore(
     useShallow((state: any) => ({
       tutorialStep: state.notificationSettings?.tutorialStep || 0,
       tutorialCompleted: state.notificationSettings?.tutorialCompleted || false,
       setTutorialStep: state.setTutorialStep,
       setBobMood: state.setBobMood,
-      notificationSettings: state.notificationSettings
+      notificationSettings: state.notificationSettings,
+      devForceOverlay: state.devForceOverlay
     }))
   );
 
@@ -184,7 +186,12 @@ export const CompanionGuideOverlay: React.FC = () => {
   const playerName = useTrackerStore(state => state.playerProfile?.name);
   const sessionPlayerName = useTrackerStore(state => state.sessionPlayerName);
   const currentZone = useTrackerStore(state => state.currentZone);
-  const isGameLoaded = !!sessionPlayerName && sessionPlayerName.toLowerCase() !== 'unknown';
+  const connected = useTrackerStore(state => state.connected);
+  
+  // Only consider the game "loaded" for the tutorial if we actually have their username.
+  // This prevents the boot sequence and interactive guide from triggering on the login screen.
+  const hasName = !!sessionPlayerName && sessionPlayerName.toLowerCase() !== 'unknown';
+  const isGameLoaded = devForceOverlay || (connected && hasName);
 
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [kills, setKills] = useState(0);
@@ -405,15 +412,15 @@ export const CompanionGuideOverlay: React.FC = () => {
   };
 
   const renderContent = () => {
+    if (tutorialCompleted && (tutorialStep <= 0 || tutorialStep > steps.length)) {
+      return null;
+    }
+
+    if (!isGameLoaded) {
+      return null;
+    }
+
     if (tutorialStep <= 0 || tutorialStep > steps.length) {
-      if (tutorialCompleted) {
-        return null;
-      }
-
-      if (!isGameLoaded) {
-        return null;
-      }
-
       if (canShowBootSequence) {
         return <BootSequence 
           key="boot-sequence"
@@ -433,7 +440,6 @@ export const CompanionGuideOverlay: React.FC = () => {
           }} 
         />;
       }
-      
       return null;
     }
 
@@ -478,9 +484,7 @@ export const CompanionGuideOverlay: React.FC = () => {
             store.updateNotificationSettings({ tutorialCompleted: false });
           }}
           className="pointer-events-auto bg-blue-500 hover:bg-blue-600 text-white border border-blue-500 px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-lg"
-        >
-          Restart Intro
-        </button>
+        >{t('wizard.restartIntro')}</button>
       </div>
       
       {/* Pulsing border around the spotlight */}

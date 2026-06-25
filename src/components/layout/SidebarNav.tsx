@@ -2,8 +2,10 @@ import React from 'react';
 import { useSettingsStore } from '../../store/settingsStore';
 import { PanelTop, PanelLeft, Settings } from 'lucide-react';
 import { Tooltip } from '../ui/Tooltip';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const SidebarNav: React.FC = () => {
+  const { t } = useTranslation();
   const layoutMode = useSettingsStore((state) => state.layoutMode);
   const setLayoutMode = useSettingsStore((state) => state.setLayoutMode);
 
@@ -21,7 +23,7 @@ export const SidebarNav: React.FC = () => {
 
 
 
-      <Tooltip content="Toggle Layout">
+      <Tooltip content={t('ui.toggleLayout')}>
         <button 
           onClick={toggleLayout}
           className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors pointer-events-auto"
@@ -30,7 +32,7 @@ export const SidebarNav: React.FC = () => {
         </button>
       </Tooltip>
 
-      <Tooltip content="Settings">
+      <Tooltip content={t('ui.settings')}>
         <button 
           className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors pointer-events-auto"
         >

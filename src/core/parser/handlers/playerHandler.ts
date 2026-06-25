@@ -13,18 +13,17 @@ const RARE_RESOURCES = [
   'diamond', 'void', 'godwood', 'moonpetal', 'shadow', 'cinder', 'crystal'
 ];
 
-export function handlePlayerEvent(eventName: string, payload: any, store: any) {
+export function handlePlayerEvent(eventName: string, payload: any, store: any, parserState: any) {
   switch (eventName) {
     case 'user_online': {
        if (payload && payload.username) {
            const state = useTrackerStore.getState();
-           if (payload.username !== 'tool' && payload.username !== 'weapon' && payload.username.toLowerCase() !== 'unknown') {
-               if (!state.sessionPlayerName) {
-                  state.setSessionPlayerName(payload.username);
-                  state.setPlayerProfile({ name: payload.username });
-               }
-               AICompanion.greetUser(payload.username);
-               NotificationManager.greetUser(payload.username);
+           
+           if (!state.sessionPlayerName) {
+             // Store it temporarily for verification when stats arrive
+             if (!parserState.pendingUsername) {
+               parserState.pendingUsername = payload.username;
+             }
            }
        }
       break;
@@ -133,16 +132,24 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any) {
            profileUpdate.level = d.level ?? d.Level ?? d.lvl;
         }
         
-        if (d.name || d.playerName) {
-           const newName = d.name || d.playerName;
+        if (d.displayName || d.name || d.playerName) {
+           const newName = d.displayName || d.name || d.playerName;
            const state = useTrackerStore.getState();
            if (newName !== 'tool' && newName !== 'weapon' && newName.toLowerCase() !== 'unknown') {
               if (!state.sessionPlayerName) {
-                 state.setSessionPlayerName(newName);
-                 profileUpdate.name = newName;
+                 if (parserState.pendingUsername && newName.toLowerCase() === parserState.pendingUsername.toLowerCase()) {
+                    state.setSessionPlayerName(newName);
+                    profileUpdate.name = newName;
+                 } else if (!parserState.pendingUsername) {
+                    state.setSessionPlayerName(newName);
+                    profileUpdate.name = newName;
+                 }
               }
-              AICompanion.greetUser(newName);
-              NotificationManager.greetUser(newName);
+              // Only greet if it's actually their name
+              if (state.sessionPlayerName === newName) {
+                AICompanion.greetUser(newName);
+                NotificationManager.greetUser(newName);
+              }
            }
         }
         

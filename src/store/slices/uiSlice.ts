@@ -63,17 +63,15 @@ export const createUISlice: StateCreator<UISlice, [], [], UISlice> = (set) => ({
 
   activeTab: 'global',
   setActiveTab: (tab) => set({ activeTab: tab }),
-  tabDimensions: {
-    // We only need default widths for vertical mode. 
-    // Horizontal height is now natively handled by the smart max-h-[250px] scroll containers!
-    'session_vertical': { width: 300 },
-    'settings_vertical': { width: 340 },
-    'npcs_vertical': { width: 300 },
-    'quests_vertical': { width: 300 },
-  },
-  setTabDimensions: (tab, width, height) => set((state) => ({
-    tabDimensions: { ...state.tabDimensions, [tab]: { width, height } }
-  })),
+  tabDimensions: {},
+  setTabDimensions: (tab, width, height) => set((state) => {
+    if (width === undefined && height === undefined) {
+      const newDims = { ...state.tabDimensions };
+      delete newDims[tab];
+      return { tabDimensions: newDims };
+    }
+    return { tabDimensions: { ...state.tabDimensions, [tab]: { width, height } } };
+  }),
   collapsedCategories: {},
   toggleCategory: (categoryId: string) => set((state) => ({
     collapsedCategories: {

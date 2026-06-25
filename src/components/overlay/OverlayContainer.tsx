@@ -7,6 +7,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { TrackingView } from '../views/TrackingView';
 import { LootView } from '../views/LootView';
 import { NPCView } from '../views/NPCView';
+import { QuestView } from '../views/QuestView';
 import { SettingsView } from '../views/SettingsView';
 import { WeaponUI } from '../widgets/WeaponUI';
 import { ArmorUI } from '../widgets/ArmorUI';
@@ -29,8 +30,9 @@ import { NPCTranslationBubble } from './NPCTranslationBubble';
 import { Profiler, ProfilerOnRenderCallback } from 'react';
 
 export const OverlayContainer: React.FC = () => {
-  const { currentZone } = useTrackerStore(useShallow((state: any) => ({
-    currentZone: state.currentZone
+  const { currentZone, connected } = useTrackerStore(useShallow((state: any) => ({
+    currentZone: state.currentZone,
+    connected: state.connected
   })));
 
   const {
@@ -59,7 +61,7 @@ export const OverlayContainer: React.FC = () => {
   })));
   const { t } = useTranslation();
 
-  const isGameLoaded = devForceOverlay || (!!currentZone && currentZone !== 'Unknown');
+  const isGameLoaded = devForceOverlay || connected || (!!currentZone && currentZone !== 'Unknown');
   const [isOverlayReady, setIsOverlayReady] = React.useState(false);
 
   React.useEffect(() => {
@@ -189,6 +191,7 @@ export const OverlayContainer: React.FC = () => {
         case 'session': return <LootView />;
         case 'npcs':
           return <NPCView />;
+        case 'quests': return <QuestView />;
         case 'settings': return <SettingsView />;
         default: return null;
       }
@@ -205,6 +208,19 @@ export const OverlayContainer: React.FC = () => {
   const activeDim = tabDimensions[activeDimKey] || {};
   const currentWidth = activeDim.width ? `${activeDim.width}px` : undefined;
   const currentHeight = activeDim.height ? `${activeDim.height}px` : undefined;
+
+  React.useEffect(() => {
+    if (overlayRef.current) {
+      if (!currentWidth) {
+        overlayRef.current.style.width = '';
+        overlayRef.current.style.minWidth = '';
+      }
+      if (!currentHeight) {
+        overlayRef.current.style.height = '';
+        overlayRef.current.style.minHeight = '';
+      }
+    }
+  }, [currentWidth, currentHeight]);
 
   const handleResizeDown = (e: React.PointerEvent, dir: string) => {
     e.stopPropagation();
@@ -334,7 +350,7 @@ export const OverlayContainer: React.FC = () => {
                   bg-[var(--bg-base)]
                   ${isHorizontal 
                     ? 'h-fit min-h-fit max-h-[85vh] w-fit min-w-[400px] max-w-[calc(100vw-1rem)] flex-col' 
-                    : `h-fit min-h-fit max-h-[85vh] ${(activeTab === 'global' || activeTab === 'favorites') ? 'w-fit' : 'w-[260px]'} max-w-[360px] min-w-[180px] flex-col`
+                    : `h-fit min-h-fit max-h-[85vh] ${(activeTab === 'global' || activeTab === 'favorites') ? 'w-fit' : 'w-[220px]'} max-w-[360px] min-w-[180px] flex-col`
                   }
                 `}
               >

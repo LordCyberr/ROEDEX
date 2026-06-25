@@ -44,9 +44,7 @@ export const FocusHighlight: React.FC = () => {
         <button 
           onClick={finishTutorial}
           className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-black uppercase tracking-widest text-sm rounded transition-colors shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-        >
-          Got it, I'm ready!
-        </button>
+        >{t('wizard.gotIt')}</button>
       </div>
     </div>
   );

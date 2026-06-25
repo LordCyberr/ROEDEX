@@ -3,8 +3,10 @@ import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
 import { motion, useMotionValue } from 'motion/react';
 import { Zap, Activity, Sword, Pickaxe, Shield } from 'lucide-react'; 
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const MinimizedOrb: React.FC<{ constraintsRef?: any }> = ({ constraintsRef }) => {
+  const { t } = useTranslation();
   const {
     connected, notifications, setIsMinimized,
     orbSize, orbBorderThickness, orbPosition, setOrbPosition,
@@ -125,8 +127,7 @@ export const MinimizedOrb: React.FC<{ constraintsRef?: any }> = ({ constraintsRe
         {minimizedIcon === 'rx' && <span className={`font-black italic ${iconColor}`} style={{ fontSize: iconSize * 0.7, marginTop: 1 }}>RX</span>}
         {minimizedIcon === 'custom' && minimizedIconUrl && <img src={minimizedIconUrl} alt="orb" style={{ width: iconSize, height: iconSize, objectFit: 'cover', borderRadius: '50%' }} />}
 
-        <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 px-2 py-1 bg-black/90 border border-[var(--border-subtle)] text-[var(--text-primary)] text-[10px] rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[100] font-bold tracking-wider uppercase shadow-xl">
-          Double tap to open
+        <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 px-2 py-1 bg-black/90 border border-[var(--border-subtle)] text-[var(--text-primary)] text-[10px] rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[100] font-bold tracking-wider uppercase shadow-xl">{t('ui.doubleTapToOpen')}
         </div>
       </div>
     </motion.div>

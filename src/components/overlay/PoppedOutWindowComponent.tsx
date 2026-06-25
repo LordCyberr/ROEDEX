@@ -9,6 +9,7 @@ import { NPCView } from '../views/NPCView';
 import { SettingsView } from '../views/SettingsView';
 import { Tooltip } from '../ui/Tooltip';
 import { Globe2, Star, PackageOpen, Users, Settings, Minus, X, RefreshCw, ScrollText, Lock, Unlock, User, Activity } from 'lucide-react';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const tabsConfig = [
   { id: 'global', icon: Globe2, label: 'Global Data' },
@@ -23,6 +24,7 @@ const tabsConfig = [
 ];
 
 export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow, constraintsRef?: any }>(({ window: win, constraintsRef }) => {
+  const { t } = useTranslation();
   const { id, x, y, isMinimized, isLocked } = win;
   const {
     updatePoppedOutWindow, mergeTab,
@@ -257,11 +259,11 @@ export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow, co
       >
         <div className="flex items-center gap-2 text-[var(--text-primary)]">
           <Icon size={14} className="text-[var(--accent-primary)]" />
-          <span className="text-[11px] font-bold tracking-wider uppercase">{label}</span>
+          <span className="text-[11px] font-bold tracking-wider uppercase">ROEDEX // {label}</span>
         </div>
 
         <div className="flex items-center gap-1">
-          <Tooltip content="Reset Size">
+          <Tooltip content={t('ui.resetSize')}>
             <button
               onClick={() => {
                 windowWidth.set(defaultWidth);

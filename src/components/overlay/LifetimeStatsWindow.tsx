@@ -1,20 +1,24 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTrackerStore } from '../../store/trackerStore';
+import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
 import { X, Sword, Pickaxe, Axe, Leaf, Search, Package } from 'lucide-react';
 import { formatInternalName } from '../../utils/formatters';
 import { useTranslation } from '../../hooks/useTranslation';
 
 export const LifetimeStatsWindow: React.FC = () => {
-  const { lifetimeStats, isLifetimeStatsOpen, setIsLifetimeStatsOpen } = useTrackerStore(useShallow((state: any) => ({
+  const { lifetimeStats } = useTrackerStore(useShallow((state: any) => ({
     lifetimeStats: state.lifetimeStats,
+  })));
+  
+  const { isLifetimeStatsOpen, setIsLifetimeStatsOpen } = useSettingsStore(useShallow((state: any) => ({
     isLifetimeStatsOpen: state.isLifetimeStatsOpen,
     setIsLifetimeStatsOpen: state.setIsLifetimeStatsOpen,
   })));
 
   const dragConstraintsRef = useRef(null);
-  const [activeCategory, setActiveCategory] = useState<'combat' | 'mining' | 'logging' | 'plants' | 'mob drops'>('combat');
+  const [activeCategory, setActiveCategory] = useState<'combat' | 'mining' | 'logging' | 'plants' | 'mobDrops'>('combat');
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -25,7 +29,7 @@ export const LifetimeStatsWindow: React.FC = () => {
     mining: { icon: Pickaxe, color: 'text-slate-400', border: 'border-slate-500/20', bg: 'bg-slate-500/10', data: lifetimeStats.oresMined },
     logging: { icon: Axe, color: 'text-amber-500', border: 'border-amber-500/20', bg: 'bg-amber-500/10', data: lifetimeStats.treesCut },
     plants: { icon: Leaf, color: 'text-emerald-500', border: 'border-emerald-500/20', bg: 'bg-emerald-500/10', data: lifetimeStats.plantsHarvested },
-    'mob drops': { icon: Package, color: 'text-purple-400', border: 'border-purple-500/20', bg: 'bg-purple-500/10', data: lifetimeStats.itemsLooted },
+    mobDrops: { icon: Package, color: 'text-purple-400', border: 'border-purple-500/20', bg: 'bg-purple-500/10', data: lifetimeStats.itemsLooted },
   };
 
   const currentData = categories[activeCategory].data || {};
@@ -54,7 +58,7 @@ export const LifetimeStatsWindow: React.FC = () => {
         <div className="flex items-center justify-between p-3 border-b border-white/10 bg-white/[0.02] cursor-grab active:cursor-grabbing">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-            <h2 className="text-xs font-black tracking-widest text-white uppercase">{t('lifetimeStats.title')}</h2>
+            <h2 className="text-xs font-black tracking-widest text-white uppercase">ROEDEX // {t('lifetimeStats.title')}</h2>
           </div>
           <button 
             onClick={() => setIsLifetimeStatsOpen(false)}
@@ -98,7 +102,7 @@ export const LifetimeStatsWindow: React.FC = () => {
                 <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
                   type="text"
-                  placeholder="Search entries..."
+                  placeholder={t('stats.searchEntries') as string}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-black/50 border border-white/10 rounded-md py-1.5 pl-8 pr-3 text-[11px] text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 transition-colors"

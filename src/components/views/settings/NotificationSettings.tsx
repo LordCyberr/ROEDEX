@@ -9,7 +9,8 @@ export const NotificationSettings: React.FC = () => {
   const { t } = useTranslation();
   const store = useSettingsStore(useShallow(state => ({
     notificationSettings: state.notificationSettings,
-    updateNotificationSettings: state.updateNotificationSettings
+    updateNotificationSettings: state.updateNotificationSettings,
+    notifications: state.notifications
   })));
 
   return (

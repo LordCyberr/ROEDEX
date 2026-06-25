@@ -482,6 +482,20 @@ export const companionTranslations = {
       "¡Mis sensores indican que {username} encontró {qty}x {item}! ¡Qué suerte!",
       "¡Increíble, {username}! ¡Conseguiste {qty}x {item}!"
     ],
+    alerts: {
+      slayerMilestone: "¡Hito alcanzado! ¡Has matado 10 {monster}s seguidos!",
+      levelUpReady: "¡Tienes suficientes Runas para subir de nivel! ¡Vamos al Templo!",
+      mythicDrop: "¡HURRA! ¡Finalmente conseguiste {qty}x {item}!",
+      zoneEnter: "Has entrado en {zone}.",
+      cheatDetected: "¡Trampa detectada!"
+    },
+    roedexTips: [
+      "¿Sabías que puedes rastrear tu eficiencia agrícola? ¡Abre la pestaña Botín y haz un Time Attack de 10 minutos!",
+      "Si ves un mob que quieres cultivar, haz clic en la estrella para agregarlo a Favoritos. ¡Mucho más fácil de rastrear!",
+      "Puedes personalizar mi voz, posición y estado de ánimo en Configuración. ¡Pero por favor, no me silencies!",
+      "Capto muchas señales cerca. ¡Revisa la pestaña Global para ver qué tan lejos están esos árboles y mobs!",
+      "¿Necesitas saber el precio de tu botín? El Rastreador estima los valores de reventa automáticamente."
+    ],
     mining: ["Ese mineral no se minará solo.", "¡Buen golpe!", "Roca adquirida.", "Ese mineral parecía caro.", "La minería es búsqueda de tesoros con pasos adicionales.", "Ayudaría, pero olvidé mi pico.", "Esa roca no tuvo oportunidad.", "La cueva se está iluminando.", "¡Más mineral! ¡Más cosas brillantes!", "Nunca se tiene suficiente mineral.", "Ese se veía valioso.", "Los mineros estarían orgullosos.", "Un día productivo bajo tierra.", "¡Sigue golpeando!"],
     chopping: ["Lo siento, árbol.", "Otro que cae.", "El bosque no estará feliz.", "Ese árbol luchó valientemente.", "¡Madera recolectada!", "Los árboles tardan años en crecer. Tú tardas segundos en cortarlos.", "Escuché a ese árbol quejarse antes.", "Ese es uno robusto.", "Menos mal que los árboles no huyen.", "Más madera para proyectos futuros.", "Los leñadores aprueban.", "Ese es un gran tronco.", "¡Buen corte! Precisión milimétrica.", "¡Árbol va! Cuidado con tu cabeza."],
     gathering: ["Esa planta olía bien.", "La naturaleza provee.", "Cuidado con las raras.", "No sé qué hace esa planta.", "Parece útil.", "Esa es una cosecha saludable.", "A los alquimistas les encantaría eso.", "Otra planta salvada del aburrimiento.", "¡Ingredientes frescos!", "Buen hallazgo.", "Esa parece rara.", "Los herbolarios estarían celosos.", "Una buena colección.", "¡Plantas por todas partes!"],
@@ -547,6 +561,20 @@ export const companionTranslations = {
       "Мои сенсоры показывают, что {username} нашел {qty}x {item}! Вот это удача!",
       "Невероятно, {username}! Ты получил {qty}x {item}!"
     ],
+    alerts: {
+      slayerMilestone: "Рубеж пройден! Вы убили 10 {monster} подряд!",
+      levelUpReady: "У вас достаточно Рун для повышения уровня! Вперед в Храм!",
+      mythicDrop: "УРА! Вы наконец-то получили {qty}x {item}!",
+      zoneEnter: "Вы вошли в {zone}.",
+      cheatDetected: "Обнаружено читерство!"
+    },
+    roedexTips: [
+      "А вы знали, что можно отслеживать эффективность фарма? Откройте вкладку Лут и запустите Тайм-атаку на 10 минут!",
+      "Если видите моба, которого хотите пофармить, нажмите на звездочку, чтобы добавить его в Избранное!",
+      "Вы можете настроить мой голос, позицию и настроение в Настройках. Только, пожалуйста, не отключайте меня!",
+      "Я улавливаю много сигналов поблизости. Проверьте вкладку Глобально, чтобы узнать точное расстояние!",
+      "Хотите узнать цену лута? Трекер автоматически оценивает стоимость при перепродаже."
+    ],
     mining: ["Эта руда сама себя не добудет.", "Отличный удар!", "Камень добыт.", "Эта руда выглядела дорогой.", "Шахтерство — это охота за сокровищами с лишними шагами.", "Я бы помог, но забыл свою кирку.", "У этого камня не было ни единого шанса.", "В пещере становится светлее.", "Больше руды! Больше блестящих вещей!", "Руды никогда не бывает слишком много.", "Этот выглядит ценным.", "Шахтеры бы гордились.", "Продуктивный день под землей.", "Продолжай бить!"],
     chopping: ["Прости, дерево.", "Еще одно падает.", "Лес не будет рад.", "Это дерево храбро сражалось.", "Древесина собрана!", "Деревьям нужны годы, чтобы вырасти. Тебе нужны секунды, чтобы их срубить.", "Я слышал, как это дерево жаловалось ранее.", "Вот это крепкое.", "Хорошо, что деревья не умеют бегать.", "Больше дерева для будущих проектов.", "Лесорубы одобряют.", "Какой огромный ствол.", "Отличная рубка!", "Берегись, падает!"],
     gathering: ["Это растение приятно пахло.", "Природа щедра.", "Осторожно с редкими.", "Я не знаю, что делает это растение.", "Выглядит полезным.", "Это хороший урожай.", "Алхимики бы это оценили.", "Еще одно растение спасено от скуки.", "Свежие ингредиенты!", "Отличная находка.", "Это выглядит редким.", "Травники бы позавидовали.", "Прекрасная коллекция.", "Растения повсюду!"],
@@ -611,6 +639,20 @@ export const companionTranslations = {
       "믿을 수가 없네! {username}, 진짜로 {qty}x {item}을 얻다니!",
       "내 센서에 따르면 {username}님이 {qty}x {item}을 찾았어! 완전 럭키!",
       "말도 안 돼, {username}! 네가 {qty}x {item}을 얻었어!"
+    ],
+    alerts: {
+      slayerMilestone: "슬레이어 마일스톤 달성! 연속으로 {monster} 10마리를 처치했습니다!",
+      levelUpReady: "레벨업에 충분한 룬이 모였습니다! 사원으로 갑시다!",
+      mythicDrop: "만세! 드디어 {qty}x {item}을(를) 얻었습니다!",
+      zoneEnter: "{zone}에 진입했습니다.",
+      cheatDetected: "부정 행위가 감지되었습니다!"
+    },
+    roedexTips: [
+      "파밍 효율을 추적할 수 있다는 걸 아시나요? 전리품 탭을 열고 10분 타임어택을 해보세요!",
+      "파밍하고 싶은 몹이 있다면 별 아이콘을 클릭해 즐겨찾기에 추가하세요. 추적하기가 훨씬 쉬워집니다!",
+      "설정에서 제 목소리, 위치, 기분을 바꿀 수 있습니다. 하지만 저를 음소거하진 말아주세요!",
+      "근처에서 많은 신호가 잡힙니다. 나무와 몹이 얼마나 떨어져 있는지 글로벌 탭에서 확인하세요!",
+      "전리품의 가격을 알고 싶으신가요? 트래커가 시장 데이터를 바탕으로 재판매 가치를 자동으로 추정합니다."
     ],
     mining: ["저 광석이 스스로 캐지진 않을 거야.", "스윙 좋아!", "바위 획득.", "저 광석 비싸 보이는데.", "채광은 번거로운 보물 찾기지.", "도와주고 싶은데 곡괭이를 깜빡했네.", "저 바위는 가망이 없었어.", "동굴이 밝아지고 있어.", "광석 더! 반짝이는 거 더!", "광석은 많을수록 좋지.", "저건 가치 있어 보여.", "광부들이 자랑스러워할 거야.", "지하에서 생산적인 하루네.", "계속 캐!"],
     chopping: ["미안해, 나무야.", "또 하나 쓰러지네.", "숲이 안 좋아할 텐데.", "저 나무는 용감하게 싸웠어.", "목재 수집 완료!", "나무는 자라는 데 수년이 걸리는데 넌 몇 초 만에 베는구나.", "아까 저 나무가 불평하는 걸 들었어.", "저건 튼튼하네.", "나무가 도망 못 가서 다행이야.", "나중을 위해 목재를 더 모으자.", "벌목꾼들이 인정할 거야.", "정말 큰 몸통이네.", "멋진 도끼질이야!", "나무 넘어간다!"],

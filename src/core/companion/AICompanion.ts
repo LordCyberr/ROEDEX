@@ -175,15 +175,23 @@ export class AICompanion {
 
     let line = this.pickRandom(this.getQuotes().login);
     if (username) {
-      // Pick specific quotes that work well with names, or just prepend/append
-      if (line.includes("Welcome back!")) {
-        line = `Welcome back, ${username}!`;
-      } else if (line.includes("Good to see you again!")) {
-        line = `Good to see you again, ${username}!`;
-      } else if (line.includes("Ready when you are!")) {
-        line = `Ready when you are, ${username}!`;
+      // Replace {username} or {name} if it exists in the localized string
+      if (line.includes('{username}') || line.includes('{name}')) {
+        line = line.replace(/\{name\}/g, username).replace(/\{username\}/g, username);
       } else {
-        line = `Hey ${username}! ${line}`;
+        // Fallback for strings that don't have the template yet
+        const settings = useSettingsStore.getState();
+        const lang = settings.language || 'en';
+        
+        if (lang === 'ko') {
+          line = `${username}님! ${line}`;
+        } else if (lang === 'es') {
+          line = `¡Hola ${username}! ${line}`;
+        } else if (lang === 'ru') {
+          line = `Эй, ${username}! ${line}`;
+        } else {
+          line = `Hey ${username}! ${line}`;
+        }
       }
     }
     

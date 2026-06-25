@@ -21,8 +21,8 @@ interface BootSequenceProps {
 
 export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerName = 'UNKNOWN_USER', currentZone = 'UNKNOWN_SECTOR' }) => {
   const { t } = useTranslation();
-  const displayPlayerName = (playerName || 'UNKNOWN_USER').toUpperCase();
-  const displayZone = (currentZone || 'UNKNOWN_SECTOR').toUpperCase();
+  const displayPlayerName = (playerName && playerName !== 'UNKNOWN_USER') ? playerName.toUpperCase() : 'SLAYER';
+  const displayZone = (currentZone && currentZone !== 'Unknown') ? currentZone.toUpperCase() : 'UNKNOWN_SECTOR';
 
   const bootMessagesRef = useRef([
     t('bootSequence.initializing'),

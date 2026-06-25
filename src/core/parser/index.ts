@@ -8,20 +8,28 @@ import { handleInventoryEvent } from './handlers/inventoryHandler';
 import { handlePlayerEvent } from './handlers/playerHandler';
 
 // Zod Schema to strictly validate the incoming WebSocket shape
+// Some game events contain only an event name and no payload, so a 1-element array is valid!
 const WebSocketEventSchema = z.tuple([
-  z.string(),
-  z.any() // Payload shape varies vastly per event, we just need to guarantee a string event name
+  z.string()
 ]).rest(z.any());
 
 // Parser module loaded
 
-let parserState = {
+export let parserState = {
   previousInventory: {} as Record<string, number>,
   lastWeaponBreakTime: 0,
   lastChestOpenTime: 0,
   isBlacksmithOpen: false,
-  loginTime: Date.now()
+  loginTime: Date.now(),
+  pendingUsername: '' as string,
+  hasReceivedFirstPacket: false
 };
+
+export function resetParserState() {
+  parserState.loginTime = Date.now();
+  parserState.pendingUsername = '';
+  parserState.hasReceivedFirstPacket = false;
+}
 
 // Profiling aggregation
 let parseTimeAggregator = {
@@ -123,13 +131,18 @@ export function parsePacket(rawMessage: string) {
     // Route events
     const startTime = performance.now();
     
+    if (!parserState.hasReceivedFirstPacket) {
+      parserState.hasReceivedFirstPacket = true;
+      NotificationManager.showInitializingToast();
+    }
+    
     if (eventName === 'user_online') {
       parserState.loginTime = Date.now();
     }
     
     handleEntityEvent(eventName, payload, store);
     handleInventoryEvent(eventName, payload, store, parserState);
-    handlePlayerEvent(eventName, payload, store);
+    handlePlayerEvent(eventName, payload, store, parserState);
     const duration = performance.now() - startTime;
     
     // Aggregate profiling data

@@ -100,7 +100,7 @@ export const SessionTab: React.FC<{ isHorizontal: boolean; compactHeightClass: s
             >
               {sessionActive ? <><Square size={10} fill="currentColor" /> {t('sessionTab.finishRun')}</> : <><Play size={10} fill="currentColor" /> {t('sessionTab.startNewRun')}</>}
             </button>
-            <Tooltip content="Reset Current Loot">
+            <Tooltip content={t('sessionTab.resetLoot' as any) as string}>
               <button
                 onClick={() => {
                   clearSession();
@@ -111,7 +111,7 @@ export const SessionTab: React.FC<{ isHorizontal: boolean; compactHeightClass: s
                 <Trash2 size={10} />
               </button>
             </Tooltip>
-            <Tooltip content="View Past Runs">
+            <Tooltip content={t('sessionTab.viewPastRuns' as any) as string}>
               <button
                 onClick={() => useSettingsStore.getState().setIsRunHistoryOpen(true)}
                 className="flex items-center justify-center px-2 py-1.5 rounded bg-[var(--bg-panel)] hover:bg-[var(--bg-card)] text-[#cfd2d5] border border-[var(--border-subtle)] transition-all shadow-md"
@@ -162,7 +162,7 @@ export const SessionTab: React.FC<{ isHorizontal: boolean; compactHeightClass: s
           {sortedLoot.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-[#3a3f47] italic text-[9px] gap-1">
               <PackageOpen size={16} className="opacity-50" />
-              No loot gathered yet
+              {t('stats.noLoot')}
             </div>
           ) : (
             <>

@@ -1,4 +1,4 @@
-import { parsePacket } from '../parser';
+import { parsePacket, resetParserState } from '../parser';
 import { useTrackerStore } from '../../store/trackerStore';
 import { useSettingsStore } from '../../store/settingsStore';
 
@@ -42,6 +42,7 @@ export function connectWebSocket() {
       // Reset greeting flags so the next player packet triggers the boot sequence
       AICompanion.resetGreeting();
       NotificationManager.resetGreeting();
+      resetParserState();
     } 
     else if (event.data.type === 'WS_CLOSE') {
       const state = useTrackerStore.getState();
@@ -60,6 +61,11 @@ export function connectWebSocket() {
       // If we are still connected, assume yes if we get a message
       if (!useTrackerStore.getState().connected) {
         useTrackerStore.getState().setConnected(true);
+        const sessionName = useTrackerStore.getState().sessionPlayerName;
+        if (sessionName && sessionName !== 'unknown') {
+           AICompanion.greetUser(sessionName);
+           NotificationManager.greetUser(sessionName);
+        }
       }
 
       parsePacket(rawMessage);

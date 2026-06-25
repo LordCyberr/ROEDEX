@@ -1,5 +1,22 @@
 # ROEDEX Changelog
 
+## v0.0.2 - AI Companions, 8-Way Resizing, Localization & Hotfixes (2026-06-25)
+
+### ✨ Features
+- **Integrated AI Companions:** Introduced a fully integrated AI Companion system with four distinct personas (Bob, Kaya, Lia, and Crash), featuring dynamic reactions, animated CRT faces, and custom chat bubbles.
+- **Companion Settings Hub:** Overhauled the settings menu by migrating legacy Bob settings into a unified, scalable Companion Settings tab.
+- **Global Localization:** Massively expanded localization support, ensuring companion dialogues, settings menus, and debug panels are fully translated into Spanish, Korean, and Russian.
+- **8-Way Resizing Architecture:** Revamped the overlay resizing architecture: you can now seamlessly drag and resize the tracker from any of the 8 directional handles, while the auto-expand UI perfectly respects your manual minimum constraints.
+
+### 🛠️ Fixes & Optimizations
+- **Hotfix:** Resolved language persistence so your chosen language loads instantly on startup instead of defaulting to English.
+- **Hotfix:** Fixed a UI bug where the translation hooks inside the Settings tab required a full app reload to apply.
+- **Hotfix:** Fixed an issue where the overlay resizing reset button started yellow (active) by default due to hardcoded default width limits.
+- **Hotfix:** Reduced the default width of the vertical Settings, NPC, Session, and Quests tabs down to 220px for a much cleaner, tighter layout.
+- **Auto-Expand Paradox:** Resolved the "auto-expand paradox" by intelligently mapping fixed dimensions to CSS minimums (minHeight/minWidth), allowing the UI to grow dynamically when data arrives without breaking user-defined bounds.
+- **Debug Panel:** Patched an issue where missing translation keys in the Debug Panel (e.g., debug.spawnTessa) would bleed into the UI as raw uppercase strings.
+- **Pop-out Constraints:** Fixed layout clipping on popped-out windows by ensuring they inherit the same 8-way responsive constraints as the main overlay.
+
 ## v0.0.1 - Initial Stable Release & Hotfixes (2026-06-20)
 
 ### ✨ Features

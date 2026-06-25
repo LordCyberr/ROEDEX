@@ -102,7 +102,7 @@ export const AboutSettings: React.FC = () => {
                     <button
                       onClick={() => handleCopy(w.name, w.address)}
                       className="p-1.5 rounded-lg bg-[var(--bg-panel)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-hover)] transition-all group-hover/wallet:text-[var(--accent-primary)]"
-                      title="Copy Address"
+                      title={t('ui.copyAddress')}
                     >
                       {copiedKey === w.name ? (
                         <CheckCircle2 size={12} className="text-green-400" />

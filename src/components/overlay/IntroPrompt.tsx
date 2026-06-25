@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const PROTOCOL_TEXTS = [
   "ROEDEX PROTOCOL",
@@ -14,6 +15,7 @@ interface IntroPromptProps {
 }
 
 export const IntroPrompt: React.FC<IntroPromptProps> = ({ onStart, onSkip }) => {
+  const { t } = useTranslation();
   const [langTextIndex, setLangTextIndex] = useState(0);
 
   useEffect(() => {
@@ -67,9 +69,7 @@ export const IntroPrompt: React.FC<IntroPromptProps> = ({ onStart, onSkip }) => 
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
             className="mb-8 text-[13px] leading-relaxed text-slate-400"
-          >
-            Welcome to ROEDEX, your premium AI companion overlay. The system is fully synced and ready to boot. Would you like to initialize the onboarding sequence to explore your new toolkit?
-          </motion.p>
+          >{t('wizard.welcomeMessage')}</motion.p>
           
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -90,7 +90,7 @@ export const IntroPrompt: React.FC<IntroPromptProps> = ({ onStart, onSkip }) => 
                 onClick={onSkip}
                 className="w-full px-6 py-3 text-xs font-semibold uppercase tracking-widest text-slate-500 transition-colors hover:text-slate-300"
               >
-                Skip Tutorial
+                {t('tutorial.skipTutorial')}
               </button>
             )}
           </motion.div>

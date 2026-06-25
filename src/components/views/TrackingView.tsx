@@ -138,6 +138,8 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
         } else {
           row.counts!.dead++;
         }
+      } else {
+        row.counts!.dead++;
       }
 
       if (respawnTimeMs && respawnTimeMs > now) {
@@ -177,7 +179,7 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
     });
 
     Object.values(timers).filter(t => t.category === 'Mob').forEach(t => {
-      const zoneStr = t.id.split('-')[1] || 'Unknown';
+      const zoneStr = t.zone || t.id.split('-')[1] || 'Unknown';
       processItem(t.name, t.category, zoneStr, t.pos, false, false, true, t.expectedRespawnTime);
     });
 
@@ -187,7 +189,7 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
     });
 
     Object.values(timers).filter(t => t.category !== 'Mob').forEach(t => {
-      const zoneStr = t.id.split('-')[1] || 'Unknown';
+      const zoneStr = t.zone || t.id.split('-')[1] || 'Unknown';
       processItem(t.name, t.category, zoneStr, t.pos, false, true, true, t.expectedRespawnTime);
     });
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
-import { Minus, Maximize2, PanelLeft, PanelTop, Globe2, Star, PackageOpen, Settings, Users, ExternalLink, RefreshCw, ArrowDownLeft, Lock, Unlock } from 'lucide-react';
+import { Minus, Maximize2, PanelLeft, PanelTop, Globe2, Star, PackageOpen, Settings, Users, ExternalLink, RefreshCw, ArrowDownLeft, Lock, Unlock, Scroll } from 'lucide-react';
 import { Tooltip } from '../ui/Tooltip';
 
 import { useTranslation } from '../../hooks/useTranslation';
@@ -50,13 +50,13 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
     if (!seenTabs[tabId]) {
       updateNotificationSettings({ seenTabs: { ...seenTabs, [tabId]: true } });
       let text = '';
-      if (tabId === 'global') text = "This is the Global Tab. It tracks every mob, resource, and item across the entire current zone.";
-      if (tabId === 'favorites') text = "Your Favorites Tab. Any item you bookmark with the star icon will appear here for easy tracking.";
-      if (tabId === 'session') text = "The Session Tab tracks your current farming run, including runestones per hour, XP, and items gathered.";
-      if (tabId === 'npcs') text = "The NPC Tab shows the locations of all vendors, quest givers, and important characters.";
-      if (tabId === 'tracking') text = "This is your main dashboard. We automatically detect your character's level, weapon durability, and map position. It updates the moment you swing a sword or take a step.";
-      if (tabId === 'loot') text = "The Loot Tab shows everything you've collected. The Session tab is for this current run, while Profile and Chest track your entire history.";
-      if (tabId === 'settings') text = "The Settings Tab. Customize my appearance, notifications, and tweak how data is displayed.";
+      if (tabId === 'global') text = t('tabHover.global' as any);
+      if (tabId === 'favorites') text = t('tabHover.favorites' as any);
+      if (tabId === 'session') text = t('tabHover.session' as any);
+      if (tabId === 'npcs') text = t('tabHover.npcs' as any);
+      if (tabId === 'tracking') text = t('tabHover.tracking' as any);
+      if (tabId === 'loot') text = t('tabHover.loot' as any);
+      if (tabId === 'settings') text = t('tabHover.settings' as any);
       
       if (text) {
         addBobMessage({
@@ -73,6 +73,7 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
     { id: 'favorites', icon: Star, label: t('tabs.favorites') },
     { id: 'session', icon: PackageOpen, label: t('tabs.session') },
     { id: 'npcs', icon: Users, label: t('tabs.npcs') },
+    { id: 'quests', icon: Scroll, label: t('tabs.quests' as any) || 'Quests' },
     { id: 'settings', icon: Settings, label: t('tabs.settings') }
   ] as const;
 
@@ -137,7 +138,7 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
               </Tooltip>
             )}
             {(Object.keys(poppedOutWindows).length > 0 || tutorialStep === 11) && (
-              <Tooltip content="Merge All Popped-Out Tabs">
+              <Tooltip content={t('ui.mergeTabs')}>
                 <button 
                   id="tutorial-merge-btn"
                   onClick={() => mergeAllTabs()}
@@ -219,7 +220,7 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
               </Tooltip>
             )}
             {(Object.keys(poppedOutWindows).length > 0 || tutorialStep === 11) && (
-              <Tooltip content="Merge All Popped-Out Tabs">
+              <Tooltip content={t('ui.mergeTabs')}>
                 <button 
                   id="tutorial-merge-btn"
                   onClick={() => mergeAllTabs()}

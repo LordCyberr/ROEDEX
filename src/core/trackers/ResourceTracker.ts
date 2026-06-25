@@ -126,7 +126,8 @@ export class ResourceTracker {
             name: resource.resource,
             category: resource.type as 'Trees' | 'Ores' | 'Plants',
             expectedRespawnTime: respawnTime,
-            pos: resource.pos
+            pos: resource.pos,
+            zone: currentZone
           };
           updates.timers = { ...state.timers, [newTimer.id]: newTimer };
           

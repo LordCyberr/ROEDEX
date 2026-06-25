@@ -118,7 +118,7 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
         <div className={`flex flex-col gap-1.5 w-[140px] shrink-0 h-full overflow-y-auto custom-scrollbar`}>
           <div className="flex flex-col items-center justify-start bg-[var(--bg-panel)] p-3 border border-[var(--border-subtle)] rounded shrink-0 gap-3 h-full">
             <div className="flex flex-col items-center gap-3 w-full text-center mt-1">
-              <Tooltip content="Total value of all items stored in your House Chest">
+              <Tooltip content={t('chestTab.totalValueDesc')}>
                 <div>
                   <span className="text-[8px] text-slate-400 uppercase tracking-widest font-bold cursor-help">{t('loot.chestWorth')}</span>
                   <div className="text-cyan-400 font-mono font-black text-[12px] leading-none mt-1">{(displayTotalValue as number).toLocaleString()}</div>
@@ -148,12 +148,12 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
                   className="w-full h-[26px] bg-[var(--bg-card)] text-[9px] text-slate-300 uppercase tracking-widest font-bold px-2 rounded border border-[var(--border-subtle)] hover:border-white/20 transition-colors flex items-center justify-center text-center"
                 />
               </div>
-              <Tooltip content="Include your current Runes balance in the 'Total Worth' calculation">
+              <Tooltip content={t('chestTab.includeRunesDesc')}>
                 <button 
                   onClick={() => setIncludeRunesInChest(!includeRunesInChest)} 
                   className={`w-full h-[26px] text-[9px] font-bold uppercase px-2 rounded border transition-colors flex items-center justify-center ${includeRunesInChest ? 'bg-purple-500/20 text-purple-400 border-purple-500/30 shadow-inner' : 'bg-[var(--bg-card)] text-slate-400 border-white/5 hover:border-white/20'}`}
                 >
-                  Runes
+                  {t('stats.runes')}
                 </button>
               </Tooltip>
             </div>
@@ -162,7 +162,7 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
       ) : (
         <div className="flex flex-col gap-1 p-2 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded shrink-0">
           <div className="flex justify-between items-center w-full">
-            <Tooltip content="Total value of all items stored in your House Chest">
+            <Tooltip content={t('chestTab.totalValueDesc')}>
               <div>
                 <span className="text-[8px] text-slate-400 uppercase tracking-widest font-bold cursor-help">{t('loot.chestWorth')}</span>
                 <div className="text-cyan-400 font-mono font-black text-[14px] leading-none mt-0.5">{(displayTotalValue as number).toLocaleString()}</div>
@@ -188,7 +188,7 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
                 className="w-full h-[22px] bg-[var(--bg-card)] text-[9px] text-slate-300 uppercase tracking-widest font-bold px-2 rounded border border-[var(--border-subtle)] hover:border-white/20 transition-colors flex items-center justify-center text-center"
               />
             </div>
-            <Tooltip content="Include your current Runes balance in the 'Total Worth' calculation">
+            <Tooltip content={t('chestTab.includeRunesDesc')}>
               <button 
                 onClick={() => setIncludeRunesInChest(!includeRunesInChest)} 
                 className={`w-1/2 h-[22px] text-[9px] font-bold uppercase px-2 rounded border transition-colors flex items-center justify-center ${includeRunesInChest ? 'bg-purple-500/20 text-purple-400 border-purple-500/30 shadow-inner' : 'bg-[var(--bg-card)] text-slate-400 border-white/5 hover:border-white/20'}`}
@@ -206,7 +206,7 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
           {chestItemsListUI.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-[#3a3f47] italic text-[9px] gap-1 py-4">
               <PackageOpen size={16} className="opacity-50" />
-              Inventory is empty
+              {t('stats.inventoryEmpty')}
             </div>
           ) : (
             <>
@@ -214,7 +214,7 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
                 <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest pl-5">{t('loot.item')}</span>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest w-12 text-right">{t('loot.count')}</span>
-                  <Tooltip content="Total Value"><span className="text-[8px] text-purple-400/80 font-bold uppercase tracking-widest w-14 text-right">{t('loot.total')}</span></Tooltip>
+                  <Tooltip content={t('chestTab.totalValue')}><span className="text-[8px] text-purple-400/80 font-bold uppercase tracking-widest w-14 text-right">{t('loot.total')}</span></Tooltip>
                 </div>
               </div>
               {chestItemsListUI.map((item) => {

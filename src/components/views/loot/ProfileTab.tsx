@@ -1,15 +1,17 @@
 import React from 'react';
 import { useTrackerStore } from '../../../store/trackerStore';
+import { useSettingsStore } from '../../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
 import { Sword } from 'lucide-react';
 import { useTranslation } from '../../../hooks/useTranslation';
 
 export const ProfileTab: React.FC<{ isHorizontal: boolean }> = ({ isHorizontal }) => {
   const { t } = useTranslation();
-  const { playerProfile, setIsLifetimeStatsOpen } = useTrackerStore(useShallow((state: any) => ({
+  const { playerProfile } = useTrackerStore(useShallow((state: any) => ({
     playerProfile: state.playerProfile,
-    setIsLifetimeStatsOpen: state.setIsLifetimeStatsOpen,
   })));
+  
+  const setIsLifetimeStatsOpen = useSettingsStore(state => state.setIsLifetimeStatsOpen);
 
   const pct = playerProfile.runesRequired > 0 
     ? Math.min(100, Math.floor((playerProfile.currentRunes / playerProfile.runesRequired) * 100)) 
@@ -55,7 +57,7 @@ export const ProfileTab: React.FC<{ isHorizontal: boolean }> = ({ isHorizontal }
         >
           <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/10 to-indigo-500/0 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg" />
           <span className="text-[10px] font-bold text-indigo-300 group-hover:text-white tracking-wider uppercase flex items-center gap-2 relative z-10">
-            Open Stats Window <Sword size={12} className="group-hover:translate-x-1 transition-transform" />
+            {t('stats.openStatsWindow')} <Sword size={12} className="group-hover:translate-x-1 transition-transform" />
           </span>
         </button>
       </div>

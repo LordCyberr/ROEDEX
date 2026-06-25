@@ -47,9 +47,7 @@ export const TrackingSettings: React.FC = () => {
         <button
           onClick={() => store.setMinimalChestTutorialSeen(false)}
           className="w-full text-center py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-[10px] rounded border border-cyan-500/20 transition-colors mb-4 shadow-sm"
-        >
-          Reset HUD Tutorial
-        </button>
+        >{t('settingsGroup.resetHudTutorial')}</button>
       )}
 
       <div className="w-full h-px bg-white/5 my-3" />

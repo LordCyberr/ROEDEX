@@ -144,7 +144,8 @@ export const translations = {
       "plants": "PLANTS",
       "ores": "ORES",
       "chests": "CHESTS",
-      "bosses": "BOSSES"
+      "bosses": "BOSSES",
+      "respawns": "Respawns"
     },
     "misc": {
       "noNpcsFound": "No NPCs found",
@@ -257,7 +258,12 @@ export const translations = {
       "spawnFinn": "Spawn Finn",
       "playersInZone": "Players In Zone",
       "nodesTracked": "Nodes Tracked",
-      "mobsTracked": "Mobs Tracked"
+      "mobsTracked": "Mobs Tracked",
+      "avgParseDuration": "Avg Parse Duration",
+      "avgRenderDuration": "Avg Render Duration",
+      "exportDiagnostics": "Export Diagnostics",
+      "maxSpikeDuration": "Max Spike Duration",
+      "wipeDataWarning": "Wipe Data Warning"
     },
     "errors": {
       "fixesImprovements": "Fixes Improvements"
@@ -272,7 +278,8 @@ export const translations = {
       "lvl": "Lvl",
       "runesToLevel": "Runes To Level",
       "total": "Total",
-      "viewHistory": "View History"
+      "viewHistory": "View History",
+      "chestValueTooltip": "Chest Value Tooltip"
     },
     "overlay": {
       "backpackValue": "Backpack Value",
@@ -296,7 +303,20 @@ export const translations = {
       "toggleThe": "Toggle the",
       "toEnable": "to enable or disable click-through mode.",
       "your": "Your",
-      "willPopUp": "will pop up to guide you through specific menus."
+      "willPopUp": "will pop up to guide you through specific menus.",
+      "calibratingHold": "Calibrating... Hold",
+      "continueBtn": "Continue",
+      "finishSetup": "Finish Setup",
+      "gotIt": "Got It",
+      "hoverToTest": "Hover to Test",
+      "langDesc": "Select your language",
+      "readyDesc": "You are ready",
+      "readyToExplore": "Ready to Explore",
+      "restartIntro": "Restart Intro",
+      "selectAiCompanion": "Select AI Companion",
+      "selectAiDesc": "Choose your AI companion",
+      "systemLangTest": "System Language Test",
+      "welcomeMessage": "Welcome to ROEDEX"
     },
     "focusHighlight": {
       "minimalHud": "Minimal HUD Setup",
@@ -311,13 +331,24 @@ export const translations = {
       "title": "Lifetime Statistics",
       "noRecords": "No records found."
     },
+    "stats": {
+      "openStatsWindow": "Open Stats Window",
+      "clearHistory": "Clear History",
+      "runes": "Runes",
+      "lootWorth": "Loot Worth",
+      "searchEntries": "Search Entries...",
+      "inventoryEmpty": "Inventory Empty",
+      "noLoot": "No Loot Found"
+    },
     "overlayContainer": {
       "poppedOut": "This tab is popped out"
     },
     "sessionTab": {
       "finishRun": "Finish Run",
       "startNewRun": "Start New Run",
-      "totalWorth": "Total Worth"
+      "totalWorth": "Total Worth",
+      "resetLoot": "Reset Loot",
+      "viewPastRuns": "View Past Runs"
     },
     "tutorial": {
       "step": "Step",
@@ -349,7 +380,7 @@ export const translations = {
       "s19": "Click the minimize button (dash icon) to shrink the window into a tiny floating orb! (Double-click the orb to bring it back)",
       "s20": "Double-tap the orb to reopen the UI, then click the Lock button! When locked, the UI becomes click-through.",
       "s21": "Great! Now click the lock button again to UNLOCK the UI, and you're ready to start playing!"
-},
+    },
     "errorBoundary": {
       "componentCrashed": "Component Crashed"
     },
@@ -370,6 +401,45 @@ export const translations = {
         "description": "The Orc Warrior. Brutal and loud, he loves smashing rocks and enemies alike!",
         "quote": "Crash hungry. When we eat?"
       }
+    },
+    "chestTab": {
+      "includeRunesDesc": "Include Runes in Value",
+      "totalValue": "Total Value",
+      "totalValueDesc": "Estimated total worth"
+    },
+    "settingsGroup": {
+      "appearance": "Appearance",
+      "behavior": "Behavior",
+      "messageCategories": "Message Categories",
+      "positioning": "Positioning",
+      "previewAndSetup": "Preview & Setup",
+      "resetHudTutorial": "Reset HUD Tutorial"
+    },
+    "ui": {
+      "chest": "Chest",
+      "copyAddress": "Copy Address",
+      "doubleTapToOpen": "Double Tap to Open",
+      "mergeTabs": "Merge Tabs",
+      "popOutTab": "Pop Out Tab",
+      "profile": "Profile",
+      "resetSize": "Reset Size",
+      "session": "Session",
+      "settings": "Settings",
+      "toggle": "Toggle",
+      "toggleLayout": "Toggle Layout",
+      "whatsNew": "What's New"
+    },
+    "tabHover": {
+      "global": "Global Data",
+      "favorites": "Favorites",
+      "session": "Session & Loot",
+      "npcs": "NPCs & Players",
+      "tracking": "Tracking & Zones",
+      "loot": "Chest Loot",
+      "settings": "Settings"
+    },
+    "quests": {
+      "upcomingFeature": "Upcoming Feature"
     }
   },
   "es": {
@@ -516,7 +586,8 @@ export const translations = {
       "plants": "PLANTAS",
       "ores": "MINERALES",
       "chests": "COFRES",
-      "bosses": "JEFES"
+      "bosses": "JEFES",
+      "respawns": "Reapariciones"
     },
     "misc": {
       "noNpcsFound": "No se encontraron NPCs",
@@ -629,7 +700,12 @@ export const translations = {
       "spawnFinn": "Generar Finn",
       "playersInZone": "Jugadores en la zona",
       "nodesTracked": "Nodos rastreados",
-      "mobsTracked": "Monstruos rastreados"
+      "mobsTracked": "Monstruos rastreados",
+      "avgParseDuration": "Duración Promedio Análisis",
+      "avgRenderDuration": "Duración Promedio Render",
+      "exportDiagnostics": "Exportar Diagnósticos",
+      "maxSpikeDuration": "Duración Máxima Pico",
+      "wipeDataWarning": "Advertencia Borrar Datos"
     },
     "errors": {
       "fixesImprovements": "Correcciones de mejoras"
@@ -644,7 +720,8 @@ export const translations = {
       "lvl": "nivel",
       "runesToLevel": "Runas para nivelar",
       "total": "Total",
-      "viewHistory": "Ver historial"
+      "viewHistory": "Ver historial",
+      "chestValueTooltip": "Sugerencia Valor Cofre"
     },
     "overlay": {
       "backpackValue": "Valor de la mochila",
@@ -668,7 +745,20 @@ export const translations = {
       "toggleThe": "Alternar el",
       "toEnable": "para habilitar o deshabilitar el modo de clic.",
       "your": "Su",
-      "willPopUp": "Aparecerá un mensaje emergente para guiarle a través de menús específicos."
+      "willPopUp": "Aparecerá un mensaje emergente para guiarle a través de menús específicos.",
+      "calibratingHold": "Calibrando... Mantener",
+      "continueBtn": "Continuar",
+      "finishSetup": "Finalizar Config",
+      "gotIt": "Entendido",
+      "hoverToTest": "Pase para Probar",
+      "langDesc": "Elige tu idioma",
+      "readyDesc": "Estás listo",
+      "readyToExplore": "Listo para Explorar",
+      "restartIntro": "Reiniciar Intro",
+      "selectAiCompanion": "Seleccionar Compañero AI",
+      "selectAiDesc": "Elige tu compañero AI",
+      "systemLangTest": "Prueba de Idioma del Sistema",
+      "welcomeMessage": "Bienvenido a ROEDEX"
     },
     "focusHighlight": {
       "minimalHud": "Configuración mínima de HUD",
@@ -683,13 +773,24 @@ export const translations = {
       "title": "Estadísticas de por vida",
       "noRecords": "No se encontraron registros."
     },
+    "stats": {
+      "openStatsWindow": "Abrir Estadísticas",
+      "clearHistory": "Borrar Historial",
+      "runes": "Runas",
+      "lootWorth": "Valor de Botín",
+      "searchEntries": "Buscar...",
+      "inventoryEmpty": "Inventario Vacío",
+      "noLoot": "Sin Botín"
+    },
     "overlayContainer": {
       "poppedOut": "Esta pestaña ha aparecido"
     },
     "sessionTab": {
       "finishRun": "Finalizar ejecución",
       "startNewRun": "Iniciar nueva ejecución",
-      "totalWorth": "Valor total"
+      "totalWorth": "Valor total",
+      "resetLoot": "Restablecer Botín",
+      "viewPastRuns": "Ver Ejecuciones Anteriores"
     },
     "tutorial": {
       "step": "Paso",
@@ -721,7 +822,7 @@ export const translations = {
       "s19": "¡Haz clic en el botón de minimizar (icono de guion) para encoger la ventana a un pequeño orbe flotante! (Haz doble clic en el orbe para traerlo de vuelta)",
       "s20": "¡Toca dos veces el orbe para reabrir la interfaz, luego haz clic en el botón de Bloqueo! Cuando está bloqueado, la interfaz permite hacer clics a través de ella.",
       "s21": "¡Genial! Ahora haz clic en el botón de bloqueo de nuevo para DESBLOQUEAR la interfaz, ¡y estás listo para empezar a jugar!"
-},
+    },
     "errorBoundary": {
       "componentCrashed": "Componente bloqueado"
     },
@@ -742,378 +843,45 @@ export const translations = {
         "description": "El Guerrero Orco. Brutal y ruidoso, ¡le encanta aplastar rocas y enemigos por igual!",
         "quote": "Crash tiene hambre. ¿Cuándo comemos?"
       }
-    }
-  },
-  "ru": {
-    "tabs": {
-      "global": "Глобальные данные",
-      "favorites": "Избранное",
-      "session": "Сессия и лут",
-      "npcs": "NPC и Игроки",
-      "npcTracker": "Трекер NPC",
-      "quests": "Квесты",
-      "settings": "Настройки"
     },
-    "settings": {
-      "enableDevMode": "Включить режим разработчика",
-      "devModeEnabled": "Режим разработчика включен",
-      "devModeWarning": "Внимание: Этот режим ТОЛЬКО для разработки!",
-      "devModeDesc": "Включить расширенное отслеживание производительности.",
-      "dangerZone": "Опасная зона",
-      "dangerZoneDesc": "Очистка базы данных полностью удалит все пользовательские макеты...",
-      "confirmHardReset": "Вы уверены, что хотите навсегда удалить все файлы базы данных ROEDEX?",
-      "hardResetBtn": "ПОЛНЫЙ СБРОС БАЗЫ ДАННЫХ",
-      "aboutRoedexDesc": "ROEDEX — это высокопроизводительный набор инструментов для отслеживания...",
-      "viewChangelog": "Смотреть журнал изменений",
-      "readMore": "Читать далее ➔",
-      "supportDevelopment": "Поддержать разработку",
-      "donationDesc": "ROEDEX — это проект с открытым исходным кодом...",
-      "verifyNetwork": "(Примечание: пожалуйста, проверьте сеть перед отправкой)",
-      "credits": "Благодарности",
-      "leadDeveloper": "Ведущий разработчик и создатель",
-      "guidanceContributions": "Руководство и Вклад",
-      "general": "Общие",
-      "uiTheme": "Тема интерфейса",
-      "displayDensity": "Плотность экрана",
-      "verticalLayout": "Вертикальный макет",
-      "activeOpacity": "Активная непрозрачность",
-      "idleOpacity": "Фоновая непрозрачность",
-      "minimizedOrbSize": "Размер свернутого шара",
-      "minimizedIcon": "Свернутая иконка",
-      "trackingData": "Отслеживание и данные",
-      "displayMode": "Режим отображения",
-      "sessionViewDesc": "Режим сессии непрерывно сохраняет все обнаруженные данные до ручного сброса.",
-      "trackerColumns": "КОЛОНКИ ТРЕКЕРА",
-      "showDistance": "Показать дистанцию",
-      "showCount": "Показать счет (Живые / Мертвые)",
-      "showTimer": "Показать таймер возрождения",
-      "dataManagement": "УПРАВЛЕНИЕ ДАННЫМИ",
-      "clearSessionCache": "Очистить кэш сессии",
-      "resetLootSession": "Сбросить лут сессии",
-      "weaponOverlay": "Оверлей оружия",
-      "armorOverlay": "Оверлей брони",
-      "uiNotifications": "Уведомления интерфейса",
-      "bobCompanion": "Компаньон Боб",
-      "advanced": "Расширенные",
-      "language": "Язык",
-      "aboutMe": "Обо мне",
-      "aboutMeDesc": "Я создал этот инструмент, чтобы помочь сообществу ROE отслеживать свой лут, планировать гринд и оптимизировать игровые сессии. Если вам нравится использовать ROEDEX и вы хотите поддержать его дальнейшую разработку, можете угостить меня кофе!",
-      "donate": "Поддержать Разработчика",
-      "descGeneral": "Настройки тем, масштаба интерфейса, языка, прозрачности и привязки окон.",
-      "descTracking": "Управление данными, настройка лута сессии и очистка локального хранилища.",
-      "descWeapon": "Отслеживание прочности оружия, позиции оверлея и предупреждения об автосмене.",
-      "descArmor": "Мониторинг прочности слотов брони и предупреждения о поломке экипировки.",
-      "descNotifications": "Настройки уведомлений, звуки оповещений и позиции всплывающих окон интерфейса.",
-      "descCompanion": "Настройки личности компаньона ИИ, поведение и частота.",
-      "descAdvanced": "Режим разработчика, статистика отладки и импорт/экспорт данных.",
-      "descAbout": "Информация о разработчике, списки изменений и пожертвования.",
-      "aiCompanion": "Компаньон ИИ",
-      "achievements": "Достижения",
-      "activePersona": "Активный персонаж",
-      "alertThreshold": "Порог оповещения",
-      "alertsAndAnchor": "Оповещения и якорь",
-      "autoMinimizeOnChest": "Автоматическое сворачивание на груди",
-      "barHeight": "Высота бара",
-      "barWidth": "Ширина стержня",
-      "behavior": "Поведение",
-      "borderRadius": "Граница радиуса",
-      "borderSettings": "Настройки границ",
-      "borderWidth": "Ширина границы",
-      "bubbleDistance": "Пузырьковое расстояние",
-      "bubbleOffset": "Смещение пузырька",
-      "chatterFrequency": "Частота болтовни",
-      "combatBosses": "Боевые боссы",
-      "companionIconScale": "Масштаб значков-компаньонов",
-      "customImageUrl": "URL-адрес пользовательского изображения",
-      "displayAppearance": "Внешний вид дисплея",
-      "dynamicBorderColor": "Динамический цвет границы",
-      "enableAnimations": "Включить анимацию",
-      "enableArmorOverlay": "Включить наложение брони",
-      "enableCompanionMode": "Включить режим компаньона",
-      "enableDurabilityAlerts": "Включить оповещения о долговечности",
-      "enableNeonGlow": "Включить неоновое свечение",
-      "enableToasts": "Включить тосты",
-      "enableWeaponOverlay": "Включить наложение оружия",
-      "eventTriggers": "Триггеры событий",
-      "gameplayTips": "Советы по игровому процессу",
-      "gatheringCrafting": "Сбор Ремесло",
-      "glassStrength": "Прочность стекла",
-      "globalDataTable": "Таблица глобальных данных",
-      "globalScale": "Глобальный масштаб",
-      "greetings": "Привет",
-      "jokes": "Шутки",
-      "layout": "Макет",
-      "lockMinimalChestHud": "Заблокировать интерфейс минимального сундука",
-      "lockPosition": "Зафиксировать положение",
-      "lockUiHotkey": "Заблокировать горячую клавишу пользовательского интерфейса",
-      "maxRespawnTooltips": "Подсказки по максимальному возрождению",
-      "minimalChestHud": "Минимальный сундук",
-      "minimizeHotkey": "Свернуть горячую клавишу",
-      "miningWoodcutting": "Горное дело",
-      "opacity": "Непрозрачность",
-      "orbBorderThickness": "Толщина границы сферы",
-      "position": "Позиция",
-      "positionAnimation": "Позиционная анимация",
-      "quickPreset": "Быстрая предустановка",
-      "rareDrops": "Редкие капли",
-      "rareLootDrops": "Редкая добыча",
-      "raritySortOrder": "Порядок сортировки по редкости",
-      "resetSizeHotkey": "Горячая клавиша «Сбросить размер»",
-      "roastLevel": "Уровень обжарки",
-      "scale": "Шкала",
-      "showPreviewDummy": "Показать манекен предварительного просмотра",
-      "speechBubbleDuration": "Продолжительность речевого пузыря",
-      "speechBubbleTextScale": "Текстовая шкала речевого пузыря",
-      "speechBubbleTheme": "Тема речевого пузыря",
-      "style": "Стиль",
-      "toastDuration": "Продолжительность тоста",
-      "toastHeight": "Высота тоста",
-      "toastShape": "Форма тоста",
-      "toggleLayoutHotkey": "Переключить горячую клавишу макета",
-      "toolWarnings": "Предупреждения об инструменте",
-      "uiDesign": "Дизайн пользовательского интерфейса",
-      "zoneChanges": "Изменения зон"
+    "chestTab": {
+      "includeRunesDesc": "Incluir Runas en el Valor",
+      "totalValue": "Valor Total",
+      "totalValueDesc": "Valor total estimado"
     },
-    "columns": {
-      "name": "ИМЯ",
-      "dist": "ДИСТ",
-      "location": "ЛОКАЦИЯ",
-      "track": "ТРЕК",
-      "npc": "NPC"
+    "settingsGroup": {
+      "appearance": "Apariencia",
+      "behavior": "Comportamiento",
+      "messageCategories": "Categorías de Mensajes",
+      "positioning": "Posicionamiento",
+      "previewAndSetup": "Vista Previa y Config",
+      "resetHudTutorial": "Reiniciar Tutorial HUD"
     },
-    "categories": {
-      "forest": "ЛЕС",
-      "mobs": "МОБЫ",
-      "trees": "ДЕРЕВЬЯ",
-      "plants": "РАСТЕНИЯ",
-      "ores": "РУДА",
-      "chests": "СУНДУКИ",
-      "bosses": "БОССЫ"
+    "ui": {
+      "chest": "Cofre",
+      "copyAddress": "Copiar Dirección",
+      "doubleTapToOpen": "Doble Toque para Abrir",
+      "mergeTabs": "Fusionar Pestañas",
+      "popOutTab": "Desplegar Pestaña",
+      "profile": "Perfil",
+      "resetSize": "Restablecer Tamaño",
+      "session": "Sesión",
+      "settings": "Ajustes",
+      "toggle": "Alternar",
+      "toggleLayout": "Alternar Diseño",
+      "whatsNew": "Novedades"
     },
-    "misc": {
-      "noNpcsFound": "NPC не найдены",
-      "noNpcs": "NPC не найдены",
-      "trackNpc": "Отслеживать NPC",
-      "untrackNpc": "Не отслеживать NPC",
-      "noItemsFound": "Нет элементов в этой категории",
-      "searchNpcs": "Поиск NPC...",
-      "connected": "Подключено к ROE",
-      "disconnected": "Отключено",
-      "popOutTab": "Открепить вкладку",
-      "toggleLayout": "Сменить макет",
-      "maximize": "Развернуть",
-      "minimize": "Свернуть",
-      "resetAutoSize": "Сбросить авторазмер"
+    "tabHover": {
+      "global": "Datos Globales",
+      "favorites": "Favoritos",
+      "session": "Sesión y Botín",
+      "npcs": "NPCs y Jugadores",
+      "tracking": "Rastreo y Zonas",
+      "loot": "Botín de Cofre",
+      "settings": "Ajustes"
     },
-    "npcZones": {
-      "guild": "Guild",
-      "mine": "Mine",
-      "pond": "Pond",
-      "marketplace": "Marketplace",
-      "tavern": "Tavern",
-      "alchemist": "Alchemist",
-      "blacksmith": "Blacksmith",
-      "eastTown": "East Town"
-    },
-    "npcLocations": {
-      "floor1Chest": "1-й этаж, рядом с сундуком",
-      "floor1Room1": "1-й этаж, первая комната",
-      "entrance": "У главного входа",
-      "outsideRight": "Снаружи, справа от входа",
-      "outsideCave": "Снаружи у входа в шахту",
-      "nearPond": "Стоит возле пруда",
-      "outsideMarket": "Снаружи у Рынка",
-      "entranceGuitar": "У входа, играет на гитаре",
-      "bottomArmWrestling": "Внизу справа, смотрит на армрестлинг",
-      "topFireplace": "Вверху справа, греется у камина",
-      "topLeftTable": "Вверху слева, сидит за столом",
-      "outsideBench": "Снаружи, сидит на скамейке",
-      "outsideRoaming": "Снаружи, бродит вокруг",
-      "insideAlchemist": "Внутри лавки Алхимика",
-      "outsideAlchemist": "Снаружи у лавки Алхимика",
-      "insideBlacksmith": "Внутри Кузницы",
-      "outsideBlacksmith": "Снаружи у Кузницы",
-      "nextGuild": "Рядом со зданием Гильдии",
-      "eastGate": "Стоит возле Восточных ворот",
-      "centerMarket": "В центре Рынка",
-      "bottomArmWrestling2": "Внизу справа, участвует в армрестлинге",
-      "playingPool": "Играет в бильярд за вторым столом",
-      "drinkingBar": "Выпивает у барной стойки",
-      "bartender": "Работает за барной стойкой",
-      "sleepingTable": "Вверху слева, спит на столе",
-      "atCounter": "Работает за прилавком",
-      "repairingTools": "Занят ремонтом инструментов",
-      "eastTownArea": "Бродит по восточной части города",
-      "hidingPillar1": "Прячется за первой колонной",
-      "hidingPillar2": "Прячется за второй колонной"
-    },
-    "bootSequence": {
-      "initializing": "ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ...",
-      "biometric": "БИОМЕТРИЧЕСКОЕ СКАНИРОВАНИЕ: ЗАВЕРШЕНО",
-      "welcome": "ДОБРО ПОЖАЛОВАТЬ",
-      "calibrating": "КАЛИБРОВКА ТРЕКЕРОВ ДЛЯ",
-      "online": "ЯДРО ИИ ОНЛАЙН.",
-      "systemBoot": "ЗАГРУЗКА_СИСТЕМЫ",
-      "chooseCompanion": "ВЫБЕРИТЕ ИИ КОМПАНЬОНА",
-      "hoverToPreview": "Наведите для предпросмотра. Кликните, чтобы выбрать и запустить HUD.",
-      "back": "НАЗАД",
-      "skipStep": "Пропустить [ESC]"
-    },
-    "welcome": {
-      "title": "ДОБРО ПОЖАЛОВАТЬ В ROEDEX",
-      "subtitle": "Ваш идеальный компаньон в реальном времени для Curse of Aros. ROEDEX отслеживает ваш прогресс, не прерывая игру.",
-      "feature1Title": "Отслеживание добычи и опыта",
-      "feature1Desc": "Автоматически рассчитывает золото и опыт в час на основе реальных действий в игре.",
-      "feature2Title": "Таймеры возрождения",
-      "feature2Desc": "Точно знайте, когда боссы и ресурсы возродятся во всех зонах.",
-      "feature3Title": "Умная система оверлеев",
-      "feature3Desc": "Открепляйте виджеты, перетаскивайте их куда угодно и блокируйте, чтобы кликать сквозь них.",
-      "skip": "Пропустить обучение",
-      "start": "Начать интерактивное руководство"
-    },
-    "about": {
-      "lordCyberr": "Lord Cyberr",
-      "mrSnorch": "Mr. Snorch"
-    },
-    "debug": {
-      "armorUi": "Броня Пользовательский интерфейс",
-      "companion": "Компаньон",
-      "exportReport": "Экспортный отчет",
-      "fps": "Фпс",
-      "mainOverlay": "Основное наложение",
-      "minimizedOrb": "Минимизированная сфера",
-      "mockUiTests": "Пробные тесты пользовательского интерфейса",
-      "network": "Сеть",
-      "overlayPositions": "Позиции наложения",
-      "packetsSec": "Пакеты в сек.",
-      "parseAvg": "Анализ среднего значения",
-      "parseMax": "Разобрать Макса",
-      "ram": "Баран",
-      "renderAvg": "Среднее значение рендеринга",
-      "socketStatus": "Статус сокета",
-      "storeMemory": "Хранить память",
-      "systemUsage": "Использование системы",
-      "title": "Заголовок",
-      "weaponUi": "Интерфейс оружия",
-      "active": "Активен",
-      "offline": "Офлайн",
-      "spawnTessa": "Породить Тессу",
-      "spawnFinn": "Породить Финна",
-      "playersInZone": "Игроки в зоне",
-      "nodesTracked": "Отслеживаемые узлы",
-      "mobsTracked": "Отслеживаемые мобы"
-    },
-    "errors": {
-      "fixesImprovements": "Исправления Улучшения"
-    },
-    "loot": {
-      "chestWorth": "Сундук стоит",
-      "count": "Считать",
-      "inventoryLootValue": "Стоимость добычи из инвентаря",
-      "item": "Элемент",
-      "lifetimeStats": "Статистика за все время",
-      "lootValue": "Стоимость добычи",
-      "lvl": "Уровень",
-      "runesToLevel": "Руны для уровня",
-      "total": "Общий",
-      "viewHistory": "Просмотреть историю"
-    },
-    "overlay": {
-      "backpackValue": "Стоимость рюкзака",
-      "chestValue": "Стоимость сундука",
-      "finishToSave": "Завершить, чтобы сохранить",
-      "noPastRuns": "Нет прошлых запусков",
-      "pastRuns": "Прошлые запуски"
-    },
-    "wizard": {
-      "calibrationComplete": "Калибровка завершена",
-      "guide1_mid": "Guide1_mid",
-      "guide2_mid": "Guide2_mid",
-      "guide3_mid": "Руководство3_mid",
-      "guide4": "Руководство4",
-      "init": "Инициализировать",
-      "quickGuide": "Краткое руководство",
-      "step": "Мастер установки — шаг",
-      "of": "из",
-      "useThe": "Используйте",
-      "toNavigate": "для навигации между модулями.",
-      "toggleThe": "Переключить",
-      "toEnable": "чтобы включить или отключить режим перехода по клику.",
-      "your": "Твой",
-      "willPopUp": "появится всплывающее окно, которое проведет вас через определенные меню."
-    },
-    "focusHighlight": {
-      "minimalHud": "Минимальная настройка HUD",
-      "dragBackpack": "Перетащите значение рюкзака",
-      "placeBackpack": "и поместите его над инвентарем с левой стороны.",
-      "dragChest": "Перетащите значение сундука",
-      "placeChest": "и поместите его над сундуком дома с правой стороны.",
-      "dragRedX": "Перетащите красную зону «X»",
-      "placeRedX": "прямо над кнопкой X в игре. Нажмите на нее, чтобы закрыть сундук!"
-    },
-    "lifetimeStats": {
-      "title": "Статистика за все время",
-      "noRecords": "Записи не найдены."
-    },
-    "overlayContainer": {
-      "poppedOut": "Эта вкладка выскочила"
-    },
-    "sessionTab": {
-      "finishRun": "Завершить пробежку",
-      "startNewRun": "Начать новый запуск",
-      "totalWorth": "Общая стоимость"
-    },
-    "tutorial": {
-      "step": "Шаг",
-      "previous": "Назад",
-      "skip": "Пропустить",
-      "next": "Далее",
-      "awaitingInput": "ОЖИДАНИЕ ВВОДА...",
-      "skipTutorial": "Пропустить Обучение",
-      "restartIntro": "Перезапустить Интро",
-      "safeZoneWarning": "⚠️ ВЫ В БЕЗОПАСНОЙ ЗОНЕ! ПОЖАЛУЙСТА, ВЫЙДИТЕ В ДИКУЮ ПРИРОДУ, ЧТОБЫ УВИДЕТЬ ДАННЫЕ ДЛЯ ЗАКЛАДОК!",
-      "s1": "Добро пожаловать в ROEDEX! Это обучение охватит все функции интерфейса за один раз. Нажмите 'ДАЛЕЕ' ниже, чтобы начать.",
-      "s2": "Это Глобальная вкладка. Заголовок отслеживает Имя, Дистанцию, количество Живых и Мертвых, и Время Возрождения. Нажмите 'ДАЛЕЕ'.",
-      "s3": "Наведите курсор на таймер возрождения первого предмета, чтобы увидеть очередь возрождения! Затем нажмите 'ДАЛЕЕ'.",
-      "s4": "Отлично! Теперь нажмите на значок категории рядом с предметом в списке, чтобы добавить его в закладки.",
-      "s5": "Нажмите на вкладку Избранное (значок звезды) вверху, чтобы увидеть ваши закладки.",
-      "s6": "Видите свою закладку? Теперь нажмите на значок снова, чтобы удалить ее из избранного.",
-      "s7": "Нажмите на вкладку Сессия наверху. Эта вкладка отслеживает ваш Профиль, Статистику Сессии и Лут.",
-      "s8": "Нажмите на вкладку NPC. Она показывает местоположение всех торговцев и важных персонажей.",
-      "s9": "Нажмите на категорию 'Алхимик', чтобы развернуть ее, затем наведите курсор на первую строку NPC.",
-      "s10": "Нажмите на вкладку Настройки (значок шестеренки). Здесь все настраивается: от цветов до уведомлений.",
-      "s11": "Прокрутите вниз и нажмите 'О ROEDEX', чтобы развернуть раздел. Затем нажмите 'ДАЛЕЕ'.",
-      "s12": "Теперь нажмите кнопку 'Журнал Изменений', чтобы прочитать последние обновления.",
-      "s13": "Отлично! Теперь закройте окно журнала изменений, нажав X в правом верхнем углу.",
-      "s14": "Вернемся к Глобальной вкладке. Нажмите значок всплывающего окна в правом верхнем углу, чтобы отделить ее в мини-оверлей!",
-      "s15": "Возьмите заголовок всплывающего окна и перетащите его. Нажмите 'ДАЛЕЕ', когда закончите.",
-      "s16": "Нажмите кнопку 'Объединить' в заголовке (значок стрелки вниз), чтобы вернуть все окна в главный вид.",
-      "s17": "Нажмите кнопку Макета (значок панелей), чтобы переключиться на Горизонтальный Вид! Это позволяет видеть больше информации.",
-      "s18": "Отлично! Теперь нажмите еще раз, чтобы вернуться к Вертикальному Виду.",
-      "s19": "Нажмите кнопку свертывания (значок тире), чтобы сжать окно в парящую сферу! (Двойной клик вернет его)",
-      "s20": "Дважды коснитесь сферы, чтобы открыть интерфейс, затем нажмите кнопку Блокировки! Когда он заблокирован, он становится прозрачным для кликов.",
-      "s21": "Отлично! Теперь снова нажмите кнопку блокировки, чтобы РАЗБЛОКИРОВАТЬ интерфейс, и вы готовы к игре!"
-},
-    "errorBoundary": {
-      "componentCrashed": "Компонент вышел из строя"
-    },
-    "companions": {
-      "bob": {
-        "description": "Оптимистичный исследователь. Любит находить новый лут и отправляться в приключения.",
-        "quote": "Итак... каков наш следующий шаг?"
-      },
-      "kaya": {
-        "description": "Свирепая Они. Всегда ищет драки и огромный лут!",
-        "quote": "Это ожидание утомляет. Давайте найдем кого-нибудь, чтобы побить."
-      },
-      "lia": {
-        "description": "Эльфийка-маг. Мистическая спутница, сосредоточенная на магии и редких секретах.",
-        "quote": "Магический резонанс здесь весьма специфичен..."
-      },
-      "crash": {
-        "description": "Орк-воин. Жестокий и громкий, обожает крушить камни и врагов!",
-        "quote": "Крэш голоден. Когда мы будем есть?"
-      }
+    "quests": {
+      "upcomingFeature": "Próxima Función"
     }
   },
   "ko": {
@@ -1260,7 +1028,8 @@ export const translations = {
       "plants": "식물",
       "ores": "광석",
       "chests": "상자",
-      "bosses": "보스"
+      "bosses": "보스",
+      "respawns": "리스폰"
     },
     "misc": {
       "noNpcsFound": "NPC를 찾을 수 없습니다",
@@ -1366,7 +1135,19 @@ export const translations = {
       "storeMemory": "메모리 저장",
       "systemUsage": "시스템 사용량",
       "title": "제목",
-      "weaponUi": "무기UI"
+      "weaponUi": "무기UI",
+      "avgParseDuration": "평균 구문 분석",
+      "avgRenderDuration": "평균 렌더링",
+      "exportDiagnostics": "진단 내보내기",
+      "maxSpikeDuration": "최대 스파이크",
+      "wipeDataWarning": "데이터 삭제 경고",
+      "active": "활성",
+      "mobsTracked": "추적된 몹",
+      "nodesTracked": "추적된 노드",
+      "offline": "오프라인",
+      "playersInZone": "구역 내 플레이어",
+      "spawnFinn": "핀 스폰",
+      "spawnTessa": "테사 스폰"
     },
     "errors": {
       "fixesImprovements": "개선 사항 수정"
@@ -1381,7 +1162,8 @@ export const translations = {
       "lvl": "레벨",
       "runesToLevel": "레벨에 맞는 룬",
       "total": "총",
-      "viewHistory": "기록 보기"
+      "viewHistory": "기록 보기",
+      "chestValueTooltip": "상자 가치 툴팁"
     },
     "overlay": {
       "backpackValue": "배낭 가치",
@@ -1405,7 +1187,20 @@ export const translations = {
       "toggleThe": "토글",
       "toEnable": "클릭연결 모드를 활성화 또는 비활성화합니다.",
       "your": "당신의",
-      "willPopUp": "특정 메뉴를 안내하는 팝업이 표시됩니다."
+      "willPopUp": "특정 메뉴를 안내하는 팝업이 표시됩니다.",
+      "calibratingHold": "보정 중... 유지",
+      "continueBtn": "계속",
+      "finishSetup": "설정 완료",
+      "gotIt": "알겠습니다",
+      "hoverToTest": "테스트하려면 마우스를 올리세요",
+      "langDesc": "언어를 선택하세요",
+      "readyDesc": "준비되었습니다",
+      "readyToExplore": "탐험할 준비가 되었습니다",
+      "restartIntro": "인트로 재시작",
+      "selectAiCompanion": "AI 동반자 선택",
+      "selectAiDesc": "AI 동반자를 선택하세요",
+      "systemLangTest": "시스템 언어 테스트",
+      "welcomeMessage": "ROEDEX에 오신 것을 환영합니다"
     },
     "focusHighlight": {
       "minimalHud": "최소한의 HUD 설정",
@@ -1426,7 +1221,9 @@ export const translations = {
     "sessionTab": {
       "finishRun": "달리기 완료",
       "startNewRun": "새로운 실행 시작",
-      "totalWorth": "총 가치"
+      "totalWorth": "총 가치",
+      "resetLoot": "전리품 초기화",
+      "viewPastRuns": "이전 실행 보기"
     },
     "tutorial": {
       "step": "단계",
@@ -1458,7 +1255,7 @@ export const translations = {
       "s19": "최소화 버튼(대시 아이콘)을 클릭하여 창을 작은 떠다니는 오브로 축소하세요! (오브를 더블 클릭하면 다시 나타납니다)",
       "s20": "오브를 두 번 탭하여 UI를 다시 연 다음 잠금 버튼을 클릭하세요! 잠기면 UI를 클릭하여 통과할 수 있습니다.",
       "s21": "훌륭합니다! 이제 잠금 버튼을 다시 클릭하여 UI의 잠금을 해제하면 플레이할 준비가 된 것입니다!"
-},
+    },
     "errorBoundary": {
       "componentCrashed": "구성요소 충돌"
     },
@@ -1479,6 +1276,54 @@ export const translations = {
         "description": "오크 전사. 잔혹하고 시끄러우며, 바위와 적을 부수는 것을 좋아합니다!",
         "quote": "크래시 배고파. 우리 언제 먹어?"
       }
+    },
+    "chestTab": {
+      "includeRunesDesc": "가치에 룬 포함",
+      "totalValue": "총 가치",
+      "totalValueDesc": "예상 총 가치"
+    },
+    "settingsGroup": {
+      "appearance": "외관",
+      "behavior": "동작",
+      "messageCategories": "메시지 카테고리",
+      "positioning": "위치 지정",
+      "previewAndSetup": "미리보기 및 설정",
+      "resetHudTutorial": "HUD 튜토리얼 재설정"
+    },
+    "stats": {
+      "inventoryEmpty": "인벤토리 비어 있음",
+      "noLoot": "전리품 없음",
+      "clearHistory": "기록 지우기",
+      "lootWorth": "전리품 가치",
+      "openStatsWindow": "통계 창 열기",
+      "runes": "룬",
+      "searchEntries": "항목 검색..."
+    },
+    "ui": {
+      "chest": "상자",
+      "copyAddress": "주소 복사",
+      "doubleTapToOpen": "두 번 탭하여 열기",
+      "mergeTabs": "탭 병합",
+      "popOutTab": "탭 분리",
+      "profile": "프로필",
+      "resetSize": "크기 재설정",
+      "session": "세션",
+      "settings": "설정",
+      "toggle": "토글",
+      "toggleLayout": "레이아웃 토글",
+      "whatsNew": "새로운 소식"
+    },
+    "tabHover": {
+      "global": "글로벌 데이터",
+      "favorites": "즐겨찾기",
+      "session": "세션 및 전리품",
+      "npcs": "NPC 및 플레이어",
+      "tracking": "추적 및 구역",
+      "loot": "상자 전리품",
+      "settings": "설정"
+    },
+    "quests": {
+      "upcomingFeature": "예정된 기능"
     }
   }
 } as const;
@@ -1493,4 +1338,7 @@ export type TranslationKey =
   | `npcLocations.${keyof typeof translations.en.npcLocations}`
   | `bootSequence.${keyof typeof translations.en.bootSequence}`
   | `welcome.${keyof typeof translations.en.welcome}`
+  | `tutorial.${keyof typeof translations.en.tutorial}`
+  | `companions.${keyof typeof translations.en.companions}`
+  | `quests.${keyof typeof translations.en.quests}`
   | string;
