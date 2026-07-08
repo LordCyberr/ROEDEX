@@ -4,6 +4,8 @@ import { TrackerState } from './storeTypes';
 import { createSessionSlice } from './slices/sessionSlice';
 import { createPlayerSlice } from './slices/playerSlice';
 import { createEntitySlice } from './slices/entitySlice';
+import { createRouteRecorderSlice } from './slices/routeRecorderSlice';
+import { createErrorLogSlice } from './slices/errorLogSlice';
 
 // Export the types for components to use
 export * from './storeTypes';
@@ -143,6 +145,8 @@ export const useTrackerStore = create<TrackerState>()(
       ...createSessionSlice(...a),
       ...createPlayerSlice(...a),
       ...createEntitySlice(...a),
+      ...createRouteRecorderSlice(...a),
+      ...createErrorLogSlice(...a),
     }),
     {
       name: 'roedex-storage',

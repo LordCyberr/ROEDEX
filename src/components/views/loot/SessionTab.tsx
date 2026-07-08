@@ -2,10 +2,7 @@ import React, { useMemo } from 'react';
 import { useTrackerStore } from '../../../store/trackerStore';
 import { useSettingsStore } from '../../../store/settingsStore';
 
-// @ts-ignore
-import { FixedSizeList as List } from 'react-window';
-// @ts-ignore
-import { AutoSizer } from 'react-virtualized-auto-sizer';
+
 
 import { useShallow } from 'zustand/react/shallow';
 import { motion } from 'motion/react';

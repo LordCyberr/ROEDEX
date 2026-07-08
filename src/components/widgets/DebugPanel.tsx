@@ -1,10 +1,11 @@
 import React from 'react';
-import { useTrackerStore } from '../../store/trackerStore';
+import { useTrackerStore, clearAllStorageAndReload } from '../../store/trackerStore';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
 import { motion, useDragControls, useMotionValue } from 'motion/react';
-import { Terminal, Activity, Server, Users, Box, Cpu, Download } from 'lucide-react';
+import { Terminal, Activity, Server, Users, Box, Cpu, Download, Copy, AlertTriangle } from 'lucide-react';
 import { Tooltip } from '../ui/Tooltip';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const DebugPanel: React.FC = () => {
   const { t } = useTranslation();
@@ -38,13 +39,14 @@ export const DebugPanel: React.FC = () => {
   const playerCount = useTrackerStore(state => Object.keys(state.enemies).filter(k => state.enemies[k].type === 'player').length);
   const mobCount = useTrackerStore(state => Object.keys(state.enemies).filter(k => state.enemies[k].type !== 'player').length);
   const resourceCount = useTrackerStore(state => Object.keys(state.resources).length);
+  const errorLogs = useTrackerStore(state => state.errorLogs);
 
   const dragControls = useDragControls();
   const panelRef = React.useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const width = useMotionValue(240);
-  const height = useMotionValue(400); // Increased height to fit new section
+  const height = useMotionValue(400);
 
   const [fps, setFps] = React.useState(0);
   const [ram, setRam] = React.useState(0);
@@ -77,49 +79,62 @@ export const DebugPanel: React.FC = () => {
 
   if (!isDebugPanelOpen) return null;
 
+  const getExportData = () => {
+    const state = useTrackerStore.getState();
+    const settings = useSettingsStore.getState();
+    return {
+      timestamp: new Date().toISOString(),
+      appState: {
+        layoutMode: settings.layoutMode,
+        verticalGroupingMode: settings.verticalGroupingMode,
+        isMinimized: settings.isMinimized,
+        globalScale: settings.globalScale,
+        theme: settings.theme,
+        connected: state.connected,
+        developerMode: settings.developerMode,
+        language: settings.language,
+        visualQuality: settings.visualQuality
+      },
+      environment: {
+        userAgent: navigator.userAgent,
+        screenWidth: window.screen.width,
+        screenHeight: window.screen.height,
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight,
+        devicePixelRatio: window.devicePixelRatio
+      },
+      diagnostics: {
+        fps,
+        ram,
+        debugStats: settings.debugStats,
+        profilerMetrics: settings.profilerMetrics,
+        packetCounts: state.packetCounts
+      },
+      overlaySettings: {
+        poppedOutWindows: settings.poppedOutWindows,
+        weaponUISettings: settings.weaponUISettings,
+        armorUISettings: settings.armorUISettings,
+        notificationSettings: settings.notificationSettings,
+        tableSettings: settings.tableSettings,
+        activeTab: settings.activeTab
+      },
+      gameStateMetrics: {
+        currentZone: state.currentZone,
+        playersTracked: Object.keys(state.enemies).filter(k => state.enemies[k].type === 'player').length,
+        mobsTracked: Object.keys(state.enemies).filter(k => state.enemies[k].type !== 'player').length,
+        resourcesTracked: Object.keys(state.resources).length,
+        lootTracked: Object.keys(state.loot).length,
+        questsTracked: state.quests.length,
+        sessionActive: state.sessionActive,
+        isChestOpen: state.isChestOpen
+      },
+      errorLogs: state.errorLogs
+    };
+  };
+
   const handleExportData = () => {
     try {
-      const state = useTrackerStore.getState();
-      const settings = useSettingsStore.getState();
-      const safeData = {
-        timestamp: new Date().toISOString(),
-        appState: {
-          layoutMode: settings.layoutMode,
-          verticalGroupingMode: settings.verticalGroupingMode,
-          isMinimized: settings.isMinimized,
-          globalScale: settings.globalScale,
-          theme: settings.theme,
-          connected: state.connected,
-          developerMode: settings.developerMode,
-          language: settings.language
-        },
-        diagnostics: {
-          fps,
-          ram,
-          debugStats: settings.debugStats,
-          profilerMetrics: settings.profilerMetrics,
-          packetCounts: state.packetCounts
-        },
-        overlaySettings: {
-          poppedOutWindows: settings.poppedOutWindows,
-          weaponUISettings: settings.weaponUISettings,
-          armorUISettings: settings.armorUISettings,
-          notificationSettings: settings.notificationSettings,
-          tableSettings: settings.tableSettings,
-          activeTab: settings.activeTab
-        },
-        gameStateMetrics: {
-          currentZone: state.currentZone,
-          playersTracked: Object.keys(state.enemies).filter(k => state.enemies[k].type === 'player').length,
-          mobsTracked: Object.keys(state.enemies).filter(k => state.enemies[k].type !== 'player').length,
-          resourcesTracked: Object.keys(state.resources).length,
-          lootTracked: Object.keys(state.loot).length,
-          questsTracked: state.quests.length,
-          sessionActive: state.sessionActive,
-          isChestOpen: state.isChestOpen
-        }
-      };
-      
+      const safeData = getExportData();
       const jsonString = JSON.stringify(safeData, null, 2);
       const blob = new Blob([jsonString], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -136,12 +151,24 @@ export const DebugPanel: React.FC = () => {
     }
   };
 
+  const handleCopyLogs = async () => {
+    try {
+      const safeData = getExportData();
+      const jsonString = JSON.stringify(safeData, null, 2);
+      await navigator.clipboard.writeText(jsonString);
+      alert('Debug logs copied to clipboard!');
+    } catch (e) {
+      console.error('Failed to copy logs', e);
+    }
+  };
+
   return (
     <motion.div
       ref={panelRef}
       style={{ x, y, width, height, minHeight: 400, minWidth: 240 }}
       drag
       dragMomentum={false}
+      dragElastic={0.1}
       dragListener={false}
       dragControls={dragControls}
       className="fixed bottom-4 right-4 z-[100] bg-black/90 backdrop-blur-md border border-green-500/30 rounded-lg shadow-[0_0_20px_rgba(34,197,94,0.15)] font-mono text-[10px] uppercase overflow-y-auto pointer-events-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-black/40 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-green-500/30 hover:[&::-webkit-scrollbar-thumb]:bg-green-500/50 [&::-webkit-scrollbar-thumb]:rounded-full"
@@ -155,7 +182,15 @@ export const DebugPanel: React.FC = () => {
         }}
       >
         <Terminal size={14} className="text-green-400" />
-        <span className="text-green-400 font-bold tracking-widest flex-1">ROEDEX // {t('debug.title')}</span>
+        <span className="text-green-400 font-bold tracking-widest flex-1">ROEDEX // DEBUG TERMINAL</span>
+        
+        {errorLogs.length > 0 && (
+          <div className="flex items-center gap-1 text-red-500 mr-2 bg-red-500/10 px-1.5 py-0.5 rounded" title={`${errorLogs.length} recent errors captured`}>
+            <AlertTriangle size={10} />
+            <span className="text-[9px] font-bold">{errorLogs.length}</span>
+          </div>
+        )}
+
         <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500 shadow-[0_0_8px_#22c55e]' : 'bg-red-500 shadow-[0_0_8px_#ef4444]'}`} />
       </div>
 
@@ -176,6 +211,29 @@ export const DebugPanel: React.FC = () => {
             <span>{t('debug.packetsSec')}</span>
             <span className="text-green-300 font-bold">{debugStats.pps}</span>
           </div>
+          <div className="flex justify-between">
+            <Tooltip content="Packets intentionally dropped by the interceptor before parsing to save performance"><span>{t('ui.interceptorDrops')}</span></Tooltip>
+            <span className="text-yellow-400 font-bold">{profilerMetrics?.parseTime?.droppedEvents || 0}</span>
+          </div>
+        </div>
+
+        <div className="w-full h-px bg-green-500/20" />
+
+        {/* Event Breakdown */}
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-green-400 font-bold mb-2">
+            <Activity size={12} />
+            <span>EVENT TYPE BREAKDOWN (TOP 3)</span>
+          </div>
+          {Object.entries(useTrackerStore.getState().packetCounts || {})
+            .sort(([, a], [, b]) => (b as number) - (a as number))
+            .slice(0, 3)
+            .map(([type, count]) => (
+              <div key={type} className="flex justify-between">
+                <span className="text-[9px] truncate max-w-[150px]">{type}</span>
+                <span className="text-green-300 font-bold">{count as number}</span>
+              </div>
+            ))}
         </div>
 
         <div className="w-full h-px bg-green-500/20" />
@@ -232,44 +290,6 @@ export const DebugPanel: React.FC = () => {
 
         <div className="w-full h-px bg-green-500/20" />
 
-        {/* Mock Data Injection */}
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-green-400 font-bold mb-2">
-            <Box size={12} />
-            <span>{t('debug.mockUiTests')}</span>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => {
-                useSettingsStore.getState().setCurrentNpcDialogue({
-                  speaker: 'Tessa',
-                  originalText: "I swear...",
-                  translatedText: "¡Lo juro, por cada tronco que corto, aparecen dos más detrás de mí. O alguien está haciendo trabajo extra a escondidas... o el bosque está creciendo por despecho!"
-                });
-                setTimeout(() => useSettingsStore.getState().setCurrentNpcDialogue(null), 6000);
-              }}
-              className="flex-1 py-1 bg-blue-500/20 hover:bg-blue-500/40 border border-blue-500/50 rounded text-blue-300 transition-colors text-[9px]"
-            >
-              {t('debug.spawnTessa') || 'SPAWN TESSA'}
-            </button>
-            <button
-              onClick={() => {
-                useSettingsStore.getState().setCurrentNpcDialogue({
-                  speaker: 'Finn',
-                  originalText: "Shhh...",
-                  translatedText: "¡Shhh! Me estoy escondiendo de los demás. ¡Si me encuentran, tendré que ser el limo de nuevo!"
-                });
-                setTimeout(() => useSettingsStore.getState().setCurrentNpcDialogue(null), 5000);
-              }}
-              className="flex-1 py-1 bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/50 rounded text-purple-300 transition-colors text-[9px]"
-            >
-              {t('debug.spawnFinn') || 'SPAWN FINN'}
-            </button>
-          </div>
-        </div>
-
-        <div className="w-full h-px bg-green-500/20" />
-
         {/* Overlay Positions */}
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-green-400 font-bold mb-2">
@@ -302,27 +322,38 @@ export const DebugPanel: React.FC = () => {
 
         {/* Export Data */}
         <div className="flex flex-col gap-2 mt-1">
-          <Tooltip content={t('debug.exportDiagnostics')}>
-            <button
-              onClick={handleExportData}
-              className="flex items-center gap-2 px-4 py-1.5 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 hover:border-green-500/60 rounded text-green-400 font-bold transition-colors w-full justify-center"
-            >
-              <Download size={12} />
-              <span>{t('debug.exportReport')}</span>
-            </button>
-          </Tooltip>
+          <div className="flex gap-2 w-full">
+            <Tooltip content={t('debug.exportDiagnostics')}>
+              <button
+                onClick={handleExportData}
+                className="flex-1 flex items-center gap-2 px-2 py-1.5 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 hover:border-green-500/60 rounded text-green-400 font-bold transition-colors justify-center"
+              >
+                <Download size={12} />
+                <span>{t('ui.export')}</span>
+              </button>
+            </Tooltip>
+            <Tooltip content="Copy logs to clipboard">
+              <button
+                onClick={handleCopyLogs}
+                className="flex-1 flex items-center gap-2 px-2 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 hover:border-blue-500/60 rounded text-blue-400 font-bold transition-colors justify-center"
+              >
+                <Copy size={12} />
+                <span>{t('ui.copyLogs')}</span>
+              </button>
+            </Tooltip>
+          </div>
           
           <Tooltip content={t('debug.wipeDataWarning')}>
             <button
               onClick={() => {
                 if (window.confirm("WARNING! This will WIPE ALL ROEDEX data including settings, custom layouts, and stats! Are you absolutely sure?")) {
-                  import('../../store/trackerStore').then(m => m.clearAllStorageAndReload());
+                  clearAllStorageAndReload();
                 }
               }}
               className="flex items-center gap-2 px-4 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/50 hover:border-red-500/80 rounded text-red-400 font-bold transition-colors w-full justify-center"
             >
               <Activity size={12} />
-              <span>FACTORY RESET</span>
+              <span>{t('ui.factoryReset')}</span>
             </button>
           </Tooltip>
         </div>
@@ -358,4 +389,3 @@ export const DebugPanel: React.FC = () => {
 
   );
 };
-import { useTranslation } from '../../hooks/useTranslation'; 

@@ -5,6 +5,7 @@ export const translations = {
       "favorites": "Favorites",
       "session": "Session & Loot",
       "npcs": "NPCs & Players",
+      "players": "Online Players",
       "npcTracker": "NPC Tracker",
       "quests": "Quests",
       "settings": "Settings"
@@ -87,7 +88,10 @@ export const translations = {
       "enableArmorOverlay": "Enable Armor Overlay",
       "enableCompanionMode": "Enable Companion Mode",
       "enableDurabilityAlerts": "Enable Durability Alerts",
+      "soundAlerts": "Sound Alerts",
       "enableNeonGlow": "Enable Neon Glow",
+      "enableItemGlow": "Enable Rarity Glow",
+      "compactDensity": "Compact View",
       "enableToasts": "Enable Toasts",
       "enableWeaponOverlay": "Enable Weapon Overlay",
       "eventTriggers": "Event Triggers",
@@ -145,7 +149,8 @@ export const translations = {
       "ores": "ORES",
       "chests": "CHESTS",
       "bosses": "BOSSES",
-      "respawns": "Respawns"
+      "respawns": "Respawns",
+      "blacksmith": "BLACKSMITH"
     },
     "misc": {
       "noNpcsFound": "No NPCs found",
@@ -170,7 +175,10 @@ export const translations = {
       "tavern": "Tavern",
       "alchemist": "Alchemist",
       "blacksmith": "Blacksmith",
-      "eastTown": "East Town"
+      "eastTown": "East Town",
+      "minesLower": "Mines Lower",
+      "bank": "Bank",
+      "house": "House"
     },
     "npcLocations": {
       "floor1Chest": "1st Floor, near the chest",
@@ -282,6 +290,9 @@ export const translations = {
       "chestValueTooltip": "Chest Value Tooltip"
     },
     "overlay": {
+      "storageWealth": "Storage Wealth",
+      "backpack": "Backpack",
+      "chest": "Chest",
       "backpackValue": "Backpack Value",
       "chestValue": "Chest Value",
       "finishToSave": "Finish To Save",
@@ -427,7 +438,20 @@ export const translations = {
       "settings": "Settings",
       "toggle": "Toggle",
       "toggleLayout": "Toggle Layout",
-      "whatsNew": "What's New"
+      "whatsNew": "What's New",
+      "required": "Required",
+      "reward": "Reward",
+      "recipe": "Recipe",
+      "craftingRecipe": "Crafting Recipe",
+      "selectAQuestToViewDetails": "Select a quest to view details",
+      "noAvailableQuests": "No available quests",
+      "noActiveQuests": "No active quests",
+      "noPlayersNearby": "No Players Nearby",
+      "interceptorDrops": "INTERCEPTOR DROPS",
+      "export": "EXPORT",
+      "copyLogs": "COPY LOGS",
+      "factoryReset": "FACTORY RESET",
+      "dragMode": "DRAG MODE"
     },
     "tabHover": {
       "global": "Global Data",
@@ -448,6 +472,7 @@ export const translations = {
       "favorites": "Favoritos",
       "session": "Sesión y Botín",
       "npcs": "NPCs y Jugadores",
+      "players": "Jugadores en Línea",
       "npcTracker": "Rastreador de NPCs",
       "quests": "Misiones",
       "settings": "Ajustes"
@@ -529,7 +554,10 @@ export const translations = {
       "enableArmorOverlay": "Habilitar superposición de armadura",
       "enableCompanionMode": "Habilitar el modo complementario",
       "enableDurabilityAlerts": "Habilitar alertas de durabilidad",
+      "soundAlerts": "Alertas de Sonido",
       "enableNeonGlow": "Habilitar brillo de neón",
+      "enableItemGlow": "Habilitar Brillo de Rareza",
+      "compactDensity": "Vista Compacta",
       "enableToasts": "Habilitar brindis",
       "enableWeaponOverlay": "Habilitar superposición de armas",
       "eventTriggers": "Activadores de eventos",
@@ -587,7 +615,8 @@ export const translations = {
       "ores": "MINERALES",
       "chests": "COFRES",
       "bosses": "JEFES",
-      "respawns": "Reapariciones"
+      "respawns": "Reapariciones",
+      "blacksmith": "HERRERO"
     },
     "misc": {
       "noNpcsFound": "No se encontraron NPCs",
@@ -612,7 +641,10 @@ export const translations = {
       "tavern": "Tavern",
       "alchemist": "Alchemist",
       "blacksmith": "Blacksmith",
-      "eastTown": "East Town"
+      "eastTown": "East Town",
+      "minesLower": "Mines Lower",
+      "bank": "Bank",
+      "house": "House"
     },
     "npcLocations": {
       "floor1Chest": "1er piso, cerca del cofre",
@@ -724,6 +756,9 @@ export const translations = {
       "chestValueTooltip": "Sugerencia Valor Cofre"
     },
     "overlay": {
+      "storageWealth": "Riqueza de almacenamiento",
+      "backpack": "Mochila",
+      "chest": "Cofre",
       "backpackValue": "Valor de la mochila",
       "chestValue": "Valor del cofre",
       "finishToSave": "Terminar para guardar",
@@ -859,17 +894,30 @@ export const translations = {
     },
     "ui": {
       "chest": "Cofre",
-      "copyAddress": "Copiar Dirección",
-      "doubleTapToOpen": "Doble Toque para Abrir",
-      "mergeTabs": "Fusionar Pestañas",
-      "popOutTab": "Desplegar Pestaña",
+      "copyAddress": "Copiar dirección",
+      "doubleTapToOpen": "Toque dos veces para abrir",
+      "mergeTabs": "Fusionar pestañas",
+      "popOutTab": "Ficha emergente",
       "profile": "Perfil",
-      "resetSize": "Restablecer Tamaño",
+      "resetSize": "Restablecer tamaño",
       "session": "Sesión",
-      "settings": "Ajustes",
+      "settings": "Configuración",
       "toggle": "Alternar",
       "toggleLayout": "Alternar Diseño",
-      "whatsNew": "Novedades"
+      "whatsNew": "Novedades",
+      "required": "Requerido",
+      "reward": "Recompensa",
+      "recipe": "Receta",
+      "craftingRecipe": "Receta de Elaboración",
+      "selectAQuestToViewDetails": "Selecciona una misión para ver detalles",
+      "noAvailableQuests": "No hay misiones disponibles",
+      "noActiveQuests": "No hay misiones activas",
+      "noPlayersNearby": "No Hay Jugadores Cerca",
+      "interceptorDrops": "GOTAS DEL INTERCEPTOR",
+      "export": "EXPORTAR",
+      "copyLogs": "COPIAR REGISTROS",
+      "factoryReset": "RESTABLECIMIENTO DE FÁBRICA",
+      "dragMode": "MODO DE ARRASTRE"
     },
     "tabHover": {
       "global": "Datos Globales",
@@ -971,7 +1019,10 @@ export const translations = {
       "enableArmorOverlay": "아머 오버레이 활성화",
       "enableCompanionMode": "컴패니언 모드 활성화",
       "enableDurabilityAlerts": "내구성 경고 활성화",
+      "soundAlerts": "사운드 알림",
       "enableNeonGlow": "네온 글로우 활성화",
+      "enableItemGlow": "희귀도 글로우 활성화",
+      "compactDensity": "컴팩트 보기",
       "enableToasts": "토스트 활성화",
       "enableWeaponOverlay": "무기 오버레이 활성화",
       "eventTriggers": "이벤트 트리거",
@@ -1054,7 +1105,10 @@ export const translations = {
       "tavern": "Tavern",
       "alchemist": "Alchemist",
       "blacksmith": "Blacksmith",
-      "eastTown": "East Town"
+      "eastTown": "East Town",
+      "minesLower": "Mines Lower",
+      "bank": "Bank",
+      "house": "House"
     },
     "npcLocations": {
       "floor1Chest": "1층, 상자 근처",
@@ -1166,6 +1220,9 @@ export const translations = {
       "chestValueTooltip": "상자 가치 툴팁"
     },
     "overlay": {
+      "storageWealth": "저장소 재산",
+      "backpack": "배낭",
+      "chest": "상자",
       "backpackValue": "배낭 가치",
       "chestValue": "가슴 가치",
       "finishToSave": "저장하려면 완료하세요",

@@ -1,5 +1,14 @@
 # ROEDEX Changelog
 
+## v0.0.4 - Localization Patch & HUD Fixes (2026-07-08)
+
+### ✨ Features
+- **Final Localization Patch:** Completed the migration of all remaining hardcoded UI strings (Quest Board, Players View, Blacksmith, Debug Panel, etc.) into the translation engine.
+- **Missing Translations:** Added missing translations for Minimal Chest HUD across English, Spanish, and Korean.
+
+### 🛠️ Fixes & Optimizations
+- **Chest HUD Persistence Bug:** Fixed a critical logic bug where moving items right before closing the chest would permanently stick the Minimal Chest HUD to the screen due to a debounce timeout conflict.
+
 ## v0.0.3 - UI Hotfixes & Persistence (2026-06-25)
 
 ### 🛠️ Fixes & Optimizations

@@ -463,6 +463,17 @@ body {
   box-shadow: 0 0 15px color-mix(in srgb, var(--accent-primary) 30%, transparent);
 }
 
+/* ── Performance Mode Overrides ── */
+.perf-mode .backdrop-blur-md,
+.perf-mode .backdrop-blur-lg,
+.perf-mode .backdrop-blur-sm,
+.perf-mode .backdrop-blur,
+.perf-mode .glass-panel {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background-color: rgba(10, 10, 10, 0.95) !important;
+  box-shadow: none !important;
+}
 
 /* ── Custom Webkit Scrollbars Theme Matched ── */
 .custom-scrollbar::-webkit-scrollbar {
@@ -522,6 +533,15 @@ body {
   animation: ring-zoom-in 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
 }
 
+@keyframes map-dash {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+.animate-map-dash {
+  animation: map-dash 1s linear infinite;
+}
+
 /* ── Bob Advanced Animations ── */
 @keyframes float {
   0% { transform: translateY(0px); }
@@ -564,3 +584,53 @@ body {
 .animate-scanline-sweep {
   animation: scanline-sweep 3s ease-in-out infinite;
 }
+
+/* ── BootSequence Toast Animations ── */
+@keyframes blinkCursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes radarScan { 0% { transform: translateX(-200%); } 100% { transform: translateX(200%); } }
+@keyframes radarScanVertical { 0% { transform: translateY(-100%); } 100% { transform: translateY(300%); } }
+@keyframes subtext1 { 0%, 32% { opacity: 1; } 33%, 100% { opacity: 0; } }
+@keyframes subtext2 { 0%, 32% { opacity: 0; } 33%, 65% { opacity: 1; } 66%, 100% { opacity: 0; } }
+@keyframes subtext3 { 0%, 65% { opacity: 0; } 66%, 100% { opacity: 1; } }
+@keyframes charReveal { 0% { opacity: 0; } 100% { opacity: 1; } }
+
+/* ── Gold Sheen Animation ── */
+@keyframes gold-sheen {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.gold-sheen-effect {
+  background: linear-gradient(
+    90deg,
+    rgba(250, 204, 21, 0) 0%,
+    rgba(250, 204, 21, 0.05) 25%,
+    rgba(250, 204, 21, 0.25) 50%,
+    rgba(250, 204, 21, 0.05) 75%,
+    rgba(250, 204, 21, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: gold-sheen 2.5s ease-in-out infinite;
+}
+
+/* ── Rarity Pulsing Borders ── */
+@keyframes rarity-pulse-mythic {
+  0%, 100% { border-color: rgba(168, 85, 247, 0.2); box-shadow: 0 0 4px rgba(168, 85, 247, 0.1); }
+  50% { border-color: rgba(168, 85, 247, 0.6); box-shadow: 0 0 12px rgba(168, 85, 247, 0.3); }
+}
+.animate-rarity-mythic {
+  animation: rarity-pulse-mythic 2s infinite ease-in-out;
+}
+
+@keyframes rarity-pulse-rare {
+  0%, 100% { border-color: rgba(74, 222, 128, 0.2); box-shadow: 0 0 4px rgba(74, 222, 128, 0.1); }
+  50% { border-color: rgba(74, 222, 128, 0.6); box-shadow: 0 0 12px rgba(74, 222, 128, 0.3); }
+}
+.animate-rarity-rare {
+  animation: rarity-pulse-rare 2.5s infinite ease-in-out;
+}
+
+

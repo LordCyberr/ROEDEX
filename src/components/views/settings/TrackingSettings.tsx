@@ -4,6 +4,7 @@ import { useTrackerStore } from '../../../store/trackerStore';
 import { useShallow } from 'zustand/react/shallow';
 import { SelectRow, ToggleRow } from './SettingsControls';
 import { useTranslation } from '../../../hooks/useTranslation';
+import { RotateCcw, Trash2, RefreshCw } from 'lucide-react';
 
 export const TrackingSettings: React.FC = () => {
   const trackerStore = useTrackerStore();
@@ -46,26 +47,38 @@ export const TrackingSettings: React.FC = () => {
       {store.minimalChestHud && (
         <button
           onClick={() => store.setMinimalChestTutorialSeen(false)}
-          className="w-full text-center py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-[10px] rounded border border-cyan-500/20 transition-colors mb-4 shadow-sm"
-        >{t('settingsGroup.resetHudTutorial')}</button>
+          className="w-full flex items-center justify-center gap-1 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-[10px] rounded border border-cyan-500/20 transition-colors mb-4 shadow-sm font-bold uppercase tracking-wider"
+        >
+          <RotateCcw size={11} /> {t('settingsGroup.resetHudTutorial')}
+        </button>
       )}
 
       <div className="w-full h-px bg-white/5 my-3" />
 
       <button
         onClick={trackerStore.clearSessionCache}
-        className="w-full text-center py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[10px] rounded border border-red-500/20 transition-colors mb-1 shadow-sm"
+        className="w-full flex items-center justify-center gap-1 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[10px] rounded border border-red-500/20 transition-colors mb-1 shadow-sm font-bold uppercase tracking-wider"
       >
-        {t('settings.clearSessionCache')}
+        <Trash2 size={11} /> {t('settings.clearSessionCache')}
       </button>
       <button
         onClick={trackerStore.clearSession}
-        className="w-full text-center py-1.5 bg-[var(--bg-panel)] hover:bg-[var(--bg-card)] text-[#cfd2d5] text-[10px] rounded border border-[var(--border-subtle)] transition-colors shadow-sm mb-4"
+        className="w-full flex items-center justify-center gap-1 py-1.5 bg-[var(--bg-panel)] hover:bg-[var(--bg-card)] text-[#cfd2d5] text-[10px] rounded border border-[var(--border-subtle)] transition-colors shadow-sm mb-4 font-bold uppercase tracking-wider"
       >
-        {t('settings.resetLootSession')}
+        <RefreshCw size={11} /> {t('settings.resetLootSession')}
       </button>
       
-      <div className="text-[9px] font-bold text-[var(--text-muted)] mt-2 mb-1 pl-1 uppercase tracking-wider">{t('settings.globalDataTable')}</div>
+
+      <div className="text-[9px] font-bold text-[var(--text-muted)] mt-4 mb-1 pl-1 uppercase tracking-wider">{t('settings.globalDataTable')}</div>
+      <SelectRow
+        label="Tracking Style"
+        value={store.tableSettings.trackingStyle || 'center'}
+        options={[
+          { label: 'Center Arrow', value: 'center' },
+          { label: 'Nav Ring', value: 'ring' }
+        ]}
+        onChange={(v) => store.updateTableSettings({ trackingStyle: v as any })}
+      />
       <ToggleRow 
         label={t('settings.showDistance')} 
         value={store.tableSettings.showDistance} 
@@ -101,6 +114,11 @@ export const TrackingSettings: React.FC = () => {
           { label: 'Show 20', value: '20' }
         ]}
         onChange={(v) => store.updateTableSettings({ maxRespawnTooltips: parseInt(v) as any })}
+      />
+      <ToggleRow 
+        label={t('settings.enableItemGlow')} 
+        value={store.tableSettings.itemGlow} 
+        onChange={(v) => store.updateTableSettings({ itemGlow: v })} 
       />
     </>
   );

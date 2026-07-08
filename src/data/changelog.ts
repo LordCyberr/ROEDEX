@@ -8,6 +8,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA: ChangelogEntry[] = [
   {
+    version: '0.0.4',
+    date: '2026-07-08',
+    title: 'Localization Patch & HUD Fixes',
+    features: [
+      'Final Localization Patch: Completed the migration of all remaining hardcoded UI strings (Quest Board, Players View, Blacksmith, Debug Panel, etc.) into the translation engine.',
+      'Missing Translations: Added missing translations for Minimal Chest HUD across English, Spanish, and Korean.'
+    ],
+    fixes: [
+      'Chest HUD Persistence Bug: Fixed a critical logic bug where moving items right before closing the chest would permanently stick the Minimal Chest HUD to the screen due to a debounce timeout conflict.'
+    ]
+  },
+  {
     version: '0.0.3',
     date: '2026-06-25',
     title: 'UI Hotfixes & Persistence',

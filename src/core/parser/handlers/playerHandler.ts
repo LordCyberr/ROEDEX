@@ -1,5 +1,4 @@
 import { useTrackerStore } from '../../../store/trackerStore';
-import { useSettingsStore } from '../../../store/settingsStore';
 import { TrackerValidator } from '../../../utils/trackerValidator';
 import { MobTracker } from '../../trackers/MobTracker';
 import { ResourceTracker } from '../../trackers/ResourceTracker';
@@ -7,6 +6,7 @@ import { AICompanion } from '../../companion/AICompanion';
 import { NotificationManager } from '../../notifications/NotificationManager';
 import { SpawnStateEvent, EnemyRespawnEvent, ResourceRespawnEvent } from '../../../types/events';
 import { getRunesRequired } from '../../../data/levelRequirements';
+import { useBlacksmithStore } from '../../../store/blacksmithStore';
 import { parsePacket } from '../index';
 
 const RARE_RESOURCES = [
@@ -25,6 +25,13 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any, p
                parserState.pendingUsername = payload.username;
              }
            }
+           
+           if (payload.userId) {
+             state.setOnlinePlayer(payload.userId, {
+               username: payload.username,
+               lastSeen: Date.now()
+             });
+           }
        }
       break;
     }
@@ -32,32 +39,76 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any, p
       const data = payload as SpawnStateEvent;
       
       const currentZone = data.zone || 'Unknown';
+      const prevZone = store.currentZone;
+      
       store.setCurrentZone(currentZone);
       if (currentZone !== 'Unknown') {
         AICompanion.zoneChange(currentZone);
+        if (currentZone !== prevZone) {
+          NotificationManager.showZoneLoadingToast(currentZone);
+        }
       }
 
+      // Process massive datasets in chunks to prevent V8 main-thread locking and stuttering
+      const processInChunks = (items: any[], chunkSize: number, processor: (chunk: any[]) => void) => {
+        if (!items || !items.length) return;
+        let index = 0;
+        const processNext = () => {
+          const chunk = items.slice(index, index + chunkSize);
+          processor(chunk);
+          index += chunkSize;
+          if (index < items.length) {
+            requestAnimationFrame(() => setTimeout(processNext, 0));
+          }
+        };
+        processNext();
+      };
+
       if (data.enemies) {
-        const validEnemies = data.enemies.filter((e: any) => TrackerValidator.validateEnemySpawn(e));
-        const parsedEnemies = validEnemies.map((e: any) => MobTracker.parseSpawn(e as EnemyRespawnEvent, currentZone));
-        store.batchSetEnemies(parsedEnemies);
+        processInChunks(data.enemies, 50, (chunk) => {
+          const validEnemies = chunk.filter((e: any) => TrackerValidator.validateEnemySpawn(e));
+          const parsedEnemies = validEnemies.map((e: any) => MobTracker.parseSpawn(e as EnemyRespawnEvent, currentZone));
+          store.batchSetEnemies(parsedEnemies);
+        });
       }
 
       if (data.resources) {
-        const validResources = data.resources.filter((r: any) => TrackerValidator.validateResourceSpawn(r));
-        
-        const rareCount: Record<string, number> = {};
-        validResources.forEach((r: any) => {
-          if (r.resource) {
-            const matchedRare = RARE_RESOURCES.find(rare => r.resource.toLowerCase().includes(rare.toLowerCase()));
-            if (matchedRare) {
-               rareCount[matchedRare] = (rareCount[matchedRare] || 0) + 1;
+        processInChunks(data.resources, 150, (chunk) => {
+          const validResources = chunk.filter((r: any) => TrackerValidator.validateResourceSpawn(r));
+          
+          const rareCount: Record<string, number> = {};
+          validResources.forEach((r: any) => {
+            if (r.resource) {
+              const matchedRare = RARE_RESOURCES.find(rare => r.resource.toLowerCase().includes(rare.toLowerCase()));
+              if (matchedRare) {
+                 rareCount[matchedRare] = (rareCount[matchedRare] || 0) + 1;
+              }
             }
-          }
+          });
+          
+          const parsedResources = validResources.map((r: any) => ResourceTracker.parseSpawn(r as ResourceRespawnEvent, currentZone));
+          store.batchSetResources(parsedResources);
         });
-        
-        const parsedResources = validResources.map((r: any) => ResourceTracker.parseSpawn(r as ResourceRespawnEvent, currentZone));
-        store.batchSetResources(parsedResources);
+      }
+      break;
+    }
+
+    case 'state': {
+      if (payload) {
+        if (payload.locationName) {
+          store.setCurrentZone(payload.locationName);
+          AICompanion.zoneChange(payload.locationName);
+        }
+        if (payload.position) {
+          store.setPlayerPosition(payload.position);
+        }
+        if (payload.health !== undefined && payload.maxHealth !== undefined) {
+          const profileUpdate: any = {
+            currentHealth: payload.health,
+            maxHealth: payload.maxHealth
+          };
+          store.setPlayerProfile(profileUpdate);
+        }
       }
       break;
     }
@@ -165,6 +216,10 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any, p
            AICompanion.onPlayerDeath();
         }
         
+        if (d.isGuildPassActive !== undefined) {
+           storeState.setIsGuildPassActive(d.isGuildPassActive);
+        }
+
         if (Object.keys(profileUpdate).length > 0) {
            const finalLevel = profileUpdate.level || storeState.playerProfile.level || 1;
            
@@ -228,7 +283,31 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any, p
               itemsLooted: rawBushes ? itemsLooted : state.lifetimeStats.itemsLooted,
            };
            
-           if (d.enemiesData || d.oresData || d.treesData || d.bushesData) {
+           if (d.blacksmith_item_stats) {
+           try {
+             const bsData = JSON.parse(d.blacksmith_item_stats);
+             if (bsData.blacksmithItemStats) {
+               const activeJobs = bsData.blacksmithItemStats.map((item: any) => {
+                 const startTime = new Date(item.blacksmithStartTime).getTime();
+                 const durationMs = (item.blacksmithDuration || 0) * 1000;
+                 return {
+                   instanceId: item.instanceId,
+                   itemName: item.itemName,
+                   startTime: startTime,
+                   endTime: startTime + durationMs,
+                   duration: item.blacksmithDuration,
+                   mode: item.blacksmithMode,
+                   notified: false
+                 };
+               });
+               useBlacksmithStore.getState().setJobs(activeJobs);
+             }
+           } catch (e) {
+             console.error('[ROEDEX] Failed to parse blacksmith_item_stats', e);
+           }
+         }
+
+         if (d.enemiesData || d.oresData || d.treesData || d.bushesData) {
               state.setLifetimeStats(newStats);
            }
         }
@@ -250,8 +329,25 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any, p
     case 'move': {
        if (payload?.pos) {
           store.setPlayerPosition(payload.pos);
+       } else if (payload?.position) {
+          store.setPlayerPosition(payload.position);
        }
        break;
+    }
+
+    case 'tutorial_state_push': {
+      try {
+        if (payload?.activeQuests && Array.isArray(payload.activeQuests)) {
+          const formattedQuests = payload.activeQuests.map((q: any) => ({
+            ...q,
+            status: 'accepted'
+          }));
+          useTrackerStore.getState().setQuests(formattedQuests);
+        }
+      } catch (err) {
+        console.error("Error parsing tutorial quests:", err);
+      }
+      break;
     }
 
     case 'npcquest_all_result': {
@@ -281,10 +377,12 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any, p
     case 'join_zone': {
        const zone = payload?.zone || payload?.data?.zone;
        if (zone) {
-          const currentZone = store.currentZone;
+          const state = useTrackerStore.getState();
+          const currentZone = state.currentZone;
           AICompanion.zoneChange(zone);
           if (currentZone !== zone && zone !== 'Unknown') {
-            useSettingsStore.getState().addNotification({ type: 'info', title: 'System', message: `Entered Zone: ${zone}` });
+            NotificationManager.showZoneLoadingToast(zone);
+            state.clearOnlinePlayers(); // Clear players when entering a new zone
             
             // Only update currentZone after 1 second to avoid UI flicker during transitions
             setTimeout(() => {
@@ -293,6 +391,62 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any, p
           }
        }
        break;
+    }
+
+    case 'user_offline': {
+      if (payload?.userId) {
+        useTrackerStore.getState().removeOnlinePlayer(payload.userId);
+      }
+      break;
+    }
+
+    case 'town:roster': {
+      if (payload?.players && Array.isArray(payload.players)) {
+        const state = useTrackerStore.getState();
+        payload.players.forEach((p: any) => {
+          if (p.userId) {
+            state.setOnlinePlayer(p.userId, {
+              username: p.username || 'Unknown',
+              position: p.position || p.pos,
+              lastSeen: Date.now()
+            });
+          }
+        });
+      }
+      break;
+    }
+
+    case 'town:left':
+    case 'town:leave': {
+      const id = payload?.userId || payload?.id;
+      if (id) {
+        useTrackerStore.getState().removeOnlinePlayer(id);
+      }
+      break;
+    }
+
+    case 'town:joined': {
+      if (payload?.userId) {
+        useTrackerStore.getState().setOnlinePlayer(payload.userId, {
+          username: payload.username || payload.displayName || 'Unknown',
+          position: payload.position || payload.pos,
+          lastSeen: Date.now()
+        });
+      }
+      break;
+    }
+
+    case 'town:move': {
+      // Sometimes town:move has userId or id, sometimes it might not (if it's our own broadcast)
+      const id = payload?.userId || payload?.id;
+      const pos = payload?.position || payload?.pos;
+      if (id && pos) {
+        useTrackerStore.getState().setOnlinePlayer(id, {
+          position: pos,
+          lastSeen: Date.now()
+        });
+      }
+      break;
     }
 
     case 'level_up':

@@ -55,6 +55,14 @@ export class MobTracker {
     
     if (isDead && !enemy.isDead) {
       AICompanion.onCombatWin(enemy.type);
+      if (store.isRecording) {
+        store.addRoutePoint({
+          action: 'kill',
+          x: enemy.pos.x,
+          y: enemy.pos.y,
+          detail: enemy.type
+        });
+      }
     }
 
     useTrackerStore.setState((state) => {

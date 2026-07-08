@@ -26,6 +26,10 @@ export class AICompanion {
   
   // Timers
   private static idleTimer: any = null;
+  private static lastActivityTime: number = Date.now();
+  private static isBored: boolean = false;
+  private static activityCheckInterval: any = null;
+  private static lastExcitedTime: number = 0;
 
   private static getQuotes() {
     const settings = useSettingsStore.getState();
@@ -70,10 +74,71 @@ export class AICompanion {
 
   static startTimers() {
     this.resetIdleTimer();
+    this.initActivityChecks();
   }
 
   static onActivity() {
-    // Left empty since AFK was removed, but it's called from many hooks so keeping it empty is safe
+    const wasBored = this.isBored;
+    this.lastActivityTime = Date.now();
+    this.isBored = false;
+    
+    if (wasBored) {
+      useSettingsStore.getState().setBobMood('idle');
+      
+      const lang = useSettingsStore.getState().language || 'en';
+      let backMsg = "Welcome back! Ready to get back to the grind?";
+      if (lang === 'es') backMsg = "¡Bienvenido de vuelta! ¿Listo para volver al trabajo?";
+      if (lang === 'ru') backMsg = "С возвращением! Готов вернуться к гринду?";
+      if (lang === 'ko') backMsg = "돌아온 걸 환영해요! 다시 파밍을 시작해볼까요?";
+      
+      this.sendBobMessage('chat', backMsg);
+    }
+  }
+
+  static initActivityChecks() {
+    if (this.activityCheckInterval) clearInterval(this.activityCheckInterval);
+    this.activityCheckInterval = setInterval(() => {
+      const now = Date.now();
+      const settings = useSettingsStore.getState();
+      if (!settings.notificationSettings.companionMode) return;
+      
+      // Trigger bored message if AFK for 10 minutes (600,000ms)
+      if (!this.isBored && now - this.lastActivityTime >= 600000) {
+        this.isBored = true;
+        useSettingsStore.getState().setBobMood('thinking');
+        
+        const lang = settings.language || 'en';
+        let boredMsg = "Are we just standing here? I'm getting a bit bored...";
+        if (lang === 'es') boredMsg = "¿Nos vamos a quedar aquí parados? Me estoy aburriendo un poco...";
+        if (lang === 'ru') boredMsg = "Мы просто стоим здесь? Мне становится скучновато...";
+        if (lang === 'ko') boredMsg = "우리 그냥 여기 서 있는 건가요? 조금 지루해지네요...";
+        
+        this.sendBobMessage('chat', boredMsg);
+      }
+    }, 30000); // Check every 30 seconds
+  }
+
+  static onPpsSpike(pps: number) {
+    const now = Date.now();
+    // Cooldown of 2 minutes for excitement messages so he doesn't spam
+    if (now - this.lastExcitedTime < 120000) return;
+    this.lastExcitedTime = now;
+
+    useSettingsStore.getState().setBobMood('happy');
+    setTimeout(() => {
+      // Return to idle mood after some time if not bored
+      if (!this.isBored) {
+        useSettingsStore.getState().setBobMood('idle');
+      }
+    }, 10000);
+
+    const lang = useSettingsStore.getState().language || 'en';
+    let excitedMsg = `Whoa! ${pps} packets/sec! Combat is getting intense, stay focused!`;
+    if (lang === 'es') excitedMsg = `¡Guau! ¡${pps} paquetes/seg! ¡El combate se está poniendo tenso, mantén la concentración!`;
+    if (lang === 'ru') excitedMsg = `Ого! ${pps} пак/сек! Бой становится жарким, сосредоточься!`;
+    if (lang === 'ko') excitedMsg = `와우! 초당 ${pps} 패킷! 전투가 치열해지고 있어요. 집중하세요!`;
+
+    this.sendBobMessage('chat', excitedMsg);
   }
 
   private static resetIdleTimer() {
@@ -265,17 +330,72 @@ export class AICompanion {
     this.onActivity();
   }
 
-  static onRareDrop() {
-    this.triggerCategory('rareDrop', this.getQuotes().rareDrop, 5000, 'bobRareDrop', true);
+  private static getContextualLootCommentary(itemName: string, quantity: number, rarity: string): string {
+    const cleanName = itemName.replace(/^./, str => str.toUpperCase());
+    const qtyStr = quantity > 1 ? `${quantity}x ` : '';
+    const isSword = cleanName.toLowerCase().includes('sword') || cleanName.toLowerCase().includes('blade') || cleanName.toLowerCase().includes('dagger') || cleanName.toLowerCase().includes('staff') || cleanName.toLowerCase().includes('bow');
+    const isMaterial = cleanName.toLowerCase().includes('core') || cleanName.toLowerCase().includes('crystal') || cleanName.toLowerCase().includes('essence') || cleanName.toLowerCase().includes('ore') || cleanName.toLowerCase().includes('crown') || cleanName.toLowerCase().includes('heart');
+
+    const lang = useSettingsStore.getState().language || 'en';
+
+    if (lang === 'es') {
+      if (rarity === 'mythic' || rarity === 'priority') {
+        if (isSword) return `¡¿Guau! ¡¿Un ${cleanName}?! ¿Vas a equiparlo o a vendérselo al herrero?`;
+        if (isMaterial) return `¡¿Un ${cleanName}?! ¡Ese material mítico vale una fortuna, no lo pierdas!`;
+        return `¡Cielos, un ${cleanName}! ¡Eso es increíblemente raro!`;
+      }
+      return `¡Mira eso! Encontraste ${qtyStr}${cleanName}. ¡Un botín genial!`;
+    }
+    if (lang === 'ru') {
+      if (rarity === 'mythic' || rarity === 'priority') {
+        if (isSword) return `ОГО! ${cleanName}?! Собираешься экипировать его или продашь кузнецу?`;
+        if (isMaterial) return `${cleanName}?! Этот мифический материал стоит целое состояние, не потеряй его!`;
+        return `Ого, ${cleanName}! Это невероятно редко!`;
+      }
+      return `Посмотри на это! Ты нашел ${qtyStr}${cleanName}. Отличный лут!`;
+    }
+    if (lang === 'ko') {
+      if (rarity === 'mythic' || rarity === 'priority') {
+        if (isSword) return `와우! ${cleanName}?! 장착하실 건가요, 아니면 대장장이에게 파실 건가요?`;
+        if (isMaterial) return `${cleanName}?! 이 신화적인 재료는 어마어마한 가치가 있어요. 절대 잃어버리지 마세요!`;
+        return `세상에, ${cleanName}이라니! 정말 엄청나게 희귀하네요!`;
+      }
+      return `이것 좀 보세요! ${qtyStr}${cleanName}을(를) 찾았어요. 멋진 전리품이네요!`;
+    }
+    // Default to English
+    if (rarity === 'mythic' || rarity === 'priority') {
+      if (isSword) return `WHOA! A ${cleanName}?! Are you going to equip that or sell it to the Blacksmith?`;
+      if (isMaterial) return `A ${cleanName}?! That mythic material is worth a fortune, don't lose it!`;
+      return `Holy moly, a ${cleanName}! That is incredibly rare!`;
+    }
+    return `Look at that! You found ${qtyStr}${cleanName}. Nice loot!`;
+  }
+
+  static onRareDrop(itemName?: string, quantity: number = 1) {
     this.onActivity();
     const settings = useSettingsStore.getState();
+    if (settings.notificationSettings.companionMode && settings.notificationSettings.bobRareDrop) {
+      if (itemName) {
+        const line = this.getContextualLootCommentary(itemName, quantity, 'rare');
+        this.sendBobMessage('chat', line);
+      } else {
+        this.triggerCategory('rareDrop', this.getQuotes().rareDrop, 5000, 'bobRareDrop', true);
+      }
+    }
     if (settings.notificationSettings.audio) playSound('rare');
   }
 
-  static onMythicDrop() {
-    this.triggerCategory('mythicDrop', this.getQuotes().mythicDrop, 5000, 'bobRareDrop', true);
+  static onMythicDrop(itemName?: string, quantity: number = 1) {
     this.onActivity();
     const settings = useSettingsStore.getState();
+    if (settings.notificationSettings.companionMode && settings.notificationSettings.bobRareDrop) {
+      if (itemName) {
+        const line = this.getContextualLootCommentary(itemName, quantity, 'mythic');
+        this.sendBobMessage('chat', line);
+      } else {
+        this.triggerCategory('mythicDrop', this.getQuotes().mythicDrop, 5000, 'bobRareDrop', true);
+      }
+    }
     if (settings.notificationSettings.audio) playSound('mythic');
   }
 
@@ -528,7 +648,14 @@ export class AICompanion {
   }
 
   static onPriorityDrop(itemName: string, quantity: number) {
-    const alertStr = this.getAlerts().mythicDrop || "HURRAY! You finally got {qty}x {item}!";
-    this.sendBobMessage('chat', alertStr.replace('{qty}', quantity.toString()).replace('{item}', itemName));
+    this.onActivity();
+    const settings = useSettingsStore.getState();
+    if (settings.notificationSettings.companionMode && settings.notificationSettings.bobRareDrop) {
+      const line = this.getContextualLootCommentary(itemName, quantity, 'priority');
+      this.sendBobMessage('chat', line);
+    } else {
+      const alertStr = this.getAlerts().mythicDrop || "HURRAY! You finally got {qty}x {item}!";
+      this.sendBobMessage('chat', alertStr.replace('{qty}', quantity.toString()).replace('{item}', itemName));
+    }
   }
 }

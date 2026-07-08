@@ -16,6 +16,7 @@ export function handleInventoryEvent(
     previousInventory: Record<string, number>;
     isBlacksmithOpen: boolean;
     loginTime: number;
+    chestCloseTimeout?: ReturnType<typeof setTimeout> | null;
   }
 ) {
   switch (eventName) {
@@ -30,6 +31,11 @@ export function handleInventoryEvent(
       // This prevents the 500ms debounce on chest_closed from breaking if they move an item right before closing.
       if (state.isChestOpen) {
         break;
+      }
+      
+      if (parserState.chestCloseTimeout) {
+        clearTimeout(parserState.chestCloseTimeout);
+        parserState.chestCloseTimeout = null;
       }
       
       parserState.lastChestOpenTime = Date.now();
@@ -53,19 +59,20 @@ export function handleInventoryEvent(
       break;
     }
     case 'chest_closed': {
-      if (Date.now() - parserState.lastChestOpenTime < 500) {
-        break;
+      if (parserState.chestCloseTimeout) {
+        clearTimeout(parserState.chestCloseTimeout);
       }
-
-      const state = useTrackerStore.getState();
-      const settings = useSettingsStore.getState();
-      state.setIsChestOpen(false);
-      if (settings.autoMinimizeOnChest) {
-        settings.setIsMinimized(false);
-        Object.keys(settings.poppedOutWindows).forEach(id => {
-          settings.updatePoppedOutWindow(id, { isMinimized: false });
-        });
-      }
+      parserState.chestCloseTimeout = setTimeout(() => {
+        const state = useTrackerStore.getState();
+        const settings = useSettingsStore.getState();
+        state.setIsChestOpen(false);
+        if (settings.autoMinimizeOnChest) {
+          settings.setIsMinimized(false);
+          Object.keys(settings.poppedOutWindows).forEach(id => {
+            settings.updatePoppedOutWindow(id, { isMinimized: false });
+          });
+        }
+      }, 500);
       break;
     }
     case 'chest': {
@@ -81,6 +88,10 @@ export function handleInventoryEvent(
         if (Date.now() - parserState.lastWeaponBreakTime < 2000) {
           // Do nothing
         } else {
+          if (parserState.chestCloseTimeout) {
+            clearTimeout(parserState.chestCloseTimeout);
+            parserState.chestCloseTimeout = null;
+          }
           parserState.lastChestOpenTime = Date.now();
           state.setIsChestOpen(true);
           AICompanion.onChestOpen();

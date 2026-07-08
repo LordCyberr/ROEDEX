@@ -4,11 +4,17 @@ import { AICompanion } from './core/companion/AICompanion';
 import { OverlayContainer } from './components/overlay/OverlayContainer';
 import { useTrackerStore } from './store/trackerStore';
 import { useSettingsStore } from './store/settingsStore';
+import { initializeErrorInterceptor } from './core/utils/ErrorInterceptor';
+import { LootTracker } from './core/trackers/LootTracker';
 
+// Initialize error logger immediately
+initializeErrorInterceptor();
 
 function App() {
   const [isHydrated, setIsHydrated] = useState(false);
   useEffect(() => {
+    LootTracker.initCleanup();
+    
     // Load persisted settings
     if (typeof chrome !== 'undefined' && chrome?.storage?.local) {
       try {

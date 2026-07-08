@@ -1,127 +1,16 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useSettingsStore } from '../../store/settingsStore';
 import { OverlayNotification } from '../../types/events';
 import { useShallow } from 'zustand/react/shallow';
 import { motion, AnimatePresence, useDragControls, useMotionValue } from 'motion/react';
-import { Sparkles, Star, Info, Sword, Pickaxe, Map, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Star, Info, Sword, Pickaxe, Map } from 'lucide-react';
 
-const BootSequenceToast = ({ notif, animConfig, width, height, opacity, isTop, toastShape }: any) => {
-  const [displayText, setDisplayText] = useState('');
-  const [subTextIndex, setSubTextIndex] = useState(0);
-  
-  const subTexts = [
-    'INITIALIZING MODULES...',
-    'SYNCING GAME STATE...',
-    'ESTABLISHING SECURE CONNECTION...'
-  ];
+import { useWindowSize } from '../../hooks/useWindowSize';
+import { BootSequenceToast } from './toasts/BootSequenceToast';
+import { SystemOnlineToast } from './toasts/SystemOnlineToast';
+import { ZoneChangeToast, ForestZoneToast } from './toasts/ZoneChangeToast';
+import { ThemeColors } from '../../utils/theme';
 
-  // 5 dots
-  const dotsCount = 5;
-
-  useEffect(() => {
-    let currentChar = 0;
-    const targetText = notif.title || 'SYSTEM BOOT';
-    const typeInterval = setInterval(() => {
-      setDisplayText(targetText.substring(0, currentChar + 1));
-      if (currentChar < targetText.length) {
-        currentChar++;
-      } else {
-        clearInterval(typeInterval);
-      }
-    }, 40);
-
-    const subInterval = setInterval(() => {
-      setSubTextIndex(prev => Math.min(prev + 1, subTexts.length - 1));
-    }, 1500);
-
-    return () => {
-      clearInterval(typeInterval);
-      clearInterval(subInterval);
-    };
-  }, [notif.title]);
-
-  return (
-    <motion.div
-      layout
-      initial={animConfig.initial}
-      animate={{ ...animConfig.animate, x: 0, y: 0 }}
-      exit={animConfig.exit}
-      transition={{ type: "spring", stiffness: 300, damping: 25 }}
-      style={{ 
-        minWidth: width ? `${width * 1.1}px` : '300px',
-        width: 'auto',
-        maxWidth: 'calc(100vw - 32px)', 
-        minHeight: height ? `${height * 1.1}px` : '70px',
-        opacity,
-        transformOrigin: isTop ? 'top center' : 'bottom center'
-      }}
-      className={`flex flex-col justify-center backdrop-blur-xl px-8 py-5 pointer-events-auto bg-[var(--bg-panel)] border-2 border-[#22d3ee]/50 ${toastShape} shadow-[0_0_25px_rgba(34,211,238,0.4)] relative overflow-hidden`}
-    >
-      <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-[#22d3ee] to-transparent animate-pulse" />
-      <div className="flex items-center gap-2 mb-3 justify-center w-full">
-        <span className="text-[#22d3ee] font-mono text-lg md:text-xl tracking-[0.2em] uppercase font-bold drop-shadow-[0_0_10px_rgba(34,211,238,0.8)] whitespace-nowrap">
-          &gt;_  {displayText}<span className="animate-pulse">_</span>
-        </span>
-      </div>
-      <div className="flex items-center justify-between w-full px-3 mt-1">
-        <span className="text-[#22d3ee]/80 font-mono text-xs md:text-sm tracking-widest uppercase whitespace-nowrap">
-          {subTexts[subTextIndex]}
-        </span>
-        <div className="flex gap-1.5 ml-5">
-          {Array.from({ length: dotsCount }).map((_, i) => (
-            <motion.div 
-              key={i} 
-              animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1.2, 0.8] }}
-              transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2, ease: "easeInOut" }}
-              className="w-2.5 h-2.5 rounded-full bg-[#22d3ee] shadow-[0_0_10px_#22d3ee]"
-            />
-          ))}
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
-const SystemOnlineToast = ({ notif, animConfig, width, height, opacity, isTop, toastShape }: any) => {
-  return (
-    <motion.div
-      layout
-      initial={{ ...animConfig.initial, scale: 0.8 }}
-      animate={{ ...animConfig.animate, x: 0, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scaleY: 0.05, scaleX: 1.5, filter: 'blur(10px)', transition: { duration: 0.3 } }}
-      transition={{ type: "spring", stiffness: 400, damping: 20 }}
-      style={{ 
-        minWidth: width ? `${width * 1.1}px` : '300px',
-        width: 'auto',
-        maxWidth: 'calc(100vw - 32px)', 
-        minHeight: height ? `${height * 1.1}px` : '70px',
-        opacity,
-        transformOrigin: isTop ? 'top center' : 'bottom center'
-      }}
-      className={`flex items-center justify-center backdrop-blur-xl px-8 py-5 pointer-events-auto bg-[var(--bg-panel)] border-2 border-green-500/60 ${toastShape} shadow-[0_0_30px_rgba(34,197,94,0.5)] relative overflow-hidden`}
-    >
-      <motion.div 
-        initial={{ opacity: 1 }}
-        animate={{ opacity: 0 }}
-        transition={{ duration: 1, ease: "easeOut" }}
-        className="absolute inset-0 bg-white z-10 mix-blend-screen"
-      />
-      <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-green-400 to-transparent shadow-[0_0_15px_#4ade80]" />
-      
-      <div className="flex flex-col items-center justify-center w-full gap-1.5 text-center relative z-20">
-        <div className="flex items-center justify-center gap-2 mb-1.5">
-          <CheckCircle2 size={24} className="text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.8)]" />
-          <span className="text-[16px] md:text-[20px] font-black text-green-400 tracking-[0.2em] uppercase drop-shadow-[0_0_12px_rgba(74,222,128,0.6)] whitespace-nowrap">
-            {notif.title}
-          </span>
-        </div>
-        <span className="text-white/90 font-mono font-bold tracking-wider text-xs md:text-sm uppercase drop-shadow-lg whitespace-nowrap">
-          {notif.message}
-        </span>
-      </div>
-    </motion.div>
-  );
-};
 
 export const NotificationToaster: React.FC = () => {
   // Single useShallow call — was 4 separate subscriptions
@@ -160,10 +49,19 @@ export const NotificationToaster: React.FC = () => {
     notifications.forEach((n: OverlayNotification) => {
       if (n.id === 'placeholder') return;
       if (!(n.id in timersRef.current)) {
+        let toastDuration = duration;
+        
+        // Ensure boot toasts stay on screen long enough
+        if (n.type === 'boot-sequence') {
+          toastDuration = 8000;
+        } else if (n.type === 'system-online') {
+          toastDuration = 5000;
+        }
+
         timersRef.current[n.id] = setTimeout(() => {
           removeNotification(n.id);
           delete timersRef.current[n.id];
-        }, duration);
+        }, toastDuration);
       }
     });
   // Only re-run when the count changes, not on every notification reference
@@ -233,20 +131,23 @@ export const NotificationToaster: React.FC = () => {
 
   const getGlowClass = (type?: string) => {
     if (!neonGlow) return 'shadow-lg border-[var(--border-subtle)]';
-    if (!type) return 'shadow-lg border-[var(--border-subtle)]';
-    const t = type.toLowerCase();
-    if (t.includes('mythic')) return 'shadow-[0_0_20px_rgba(168,85,247,0.4)] border-purple-500/60';
-    if (t.includes('rare')) return 'shadow-[0_0_20px_rgba(74,222,128,0.3)] border-green-500/50';
-    if (t.includes('achievement')) return 'shadow-[0_0_20px_rgba(217,70,239,0.3)] border-fuchsia-500/50';
-    return 'shadow-lg border-[var(--border-subtle)]';
+    if (type?.toLowerCase().includes('rare')) return ThemeColors.rarity.rare.glow;
+    if (type?.toLowerCase().includes('mythic')) return ThemeColors.rarity.mythic.glow;
+    if (type?.toLowerCase().includes('combat') || type?.toLowerCase().includes('error')) return ThemeColors.status.error;
+    if (type?.toLowerCase().includes('success')) return ThemeColors.status.success;
+    if (type?.toLowerCase().includes('achievement')) return ThemeColors.status.achievement;
+    if (type?.toLowerCase().includes('system-online')) return ThemeColors.status.systemOnline;
+    
+    return 'shadow-lg border-white/10';
   };
 
+  const windowSize = useWindowSize();
   const dragConstraints = React.useMemo(() => ({ 
     left: 0, 
     top: 0, 
-    right: typeof globalThis !== 'undefined' ? globalThis.innerWidth - 60 : 1000, 
-    bottom: typeof globalThis !== 'undefined' ? globalThis.innerHeight - 60 : 1000 
-  }), []);
+    right: windowSize.width > 60 ? windowSize.width - 60 : 1000, 
+    bottom: windowSize.height > 60 ? windowSize.height - 60 : 1000 
+  }), [windowSize]);
 
   return (
     <motion.div 
@@ -274,6 +175,12 @@ export const NotificationToaster: React.FC = () => {
           if (notif.type === 'system-online') {
             return <SystemOnlineToast key={notif.id} notif={notif} animConfig={animConfig} width={width} height={height} opacity={opacity} isTop={isTop} toastShape={getShapeClass()} />;
           }
+          if (notif.type === 'zone-change-forest') {
+            return <ForestZoneToast key={notif.id} notif={notif} animConfig={animConfig} width={width} height={height} opacity={opacity} isTop={isTop} toastShape={getShapeClass()} />;
+          }
+          if (notif.type && notif.type.startsWith('zone-change')) {
+            return <ZoneChangeToast key={notif.id} notif={notif} animConfig={animConfig} width={width} height={height} opacity={opacity} isTop={isTop} toastShape={getShapeClass()} />;
+          }
           
           return (
           <motion.div
@@ -290,7 +197,7 @@ export const NotificationToaster: React.FC = () => {
               opacity,
               transformOrigin: isTop ? 'top center' : 'bottom center'
             }}
-            className={`flex items-center justify-center backdrop-blur-xl px-4 py-3 pointer-events-auto
+            className={`flex items-center justify-center backdrop-blur-xl px-4 py-3 pointer-events-auto relative overflow-hidden
               bg-[var(--bg-panel)] border ${getShapeClass()} ${getGlowClass(notif.type)}
               ${notif.id === 'placeholder' ? 'cursor-grab active:cursor-grabbing border-dashed border-indigo-400' : ''}
             `}
@@ -302,7 +209,11 @@ export const NotificationToaster: React.FC = () => {
               />
             )}
             
-            <div className={`flex flex-col items-center justify-center w-full gap-1 text-center`}>
+            {(notif.type?.toLowerCase().includes('mythic') || notif.type?.toLowerCase().includes('achievement')) && (
+              <div className="absolute inset-0 gold-sheen-effect pointer-events-none rounded-[inherit] z-0" />
+            )}
+            
+            <div className={`flex flex-col items-center justify-center w-full gap-1 text-center z-10`}>
               {notif.title && (
                 <div className="flex items-center justify-center gap-1.5 mb-1">
                   {getIcon(notif.type)}
@@ -312,7 +223,7 @@ export const NotificationToaster: React.FC = () => {
                 </div>
               )}
               <span className={`text-[var(--text-primary)] font-bold leading-relaxed break-words text-xs md:text-sm`}>
-                {notif.message}
+                {notif.message?.replace(/\.+$/, '').trim()}
               </span>
             </div>
           </motion.div>

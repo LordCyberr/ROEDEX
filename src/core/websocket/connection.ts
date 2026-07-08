@@ -70,12 +70,25 @@ export function connectWebSocket() {
 
       parsePacket(rawMessage);
     }
+    else if (event.data.type === 'WS_DROPPED_METRIC') {
+      const currentMetrics = useSettingsStore.getState().profilerMetrics;
+      useSettingsStore.getState().updateProfilerMetrics({
+        parseTime: {
+          ...currentMetrics.parseTime,
+          droppedEvents: currentMetrics.parseTime.droppedEvents + event.data.count
+        }
+      });
+    }
   };
 
   window.addEventListener('message', messageListener);
 
   // Track Packets Per Second
   packetInterval = setInterval(() => {
+    if (packetCount > 70) {
+      AICompanion.onPpsSpike(packetCount);
+    }
+
     // Only update the store if the debug panel is open to avoid unnecessary re-renders
     if (useSettingsStore.getState().isDebugPanelOpen) {
       useSettingsStore.getState().updateDebugStats(packetCount);

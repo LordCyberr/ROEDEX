@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
-import { Minus, Maximize2, PanelLeft, PanelTop, Globe2, Star, PackageOpen, Settings, Users, ExternalLink, RefreshCw, ArrowDownLeft, Lock, Unlock, Scroll } from 'lucide-react';
+import { Minus, Maximize2, PanelLeft, PanelTop, Globe2, Star, PackageOpen, Settings, Users, ExternalLink, RefreshCw, ArrowDownLeft, Lock, Unlock, Scroll, Radar } from 'lucide-react';
 import { Tooltip } from '../ui/Tooltip';
 
 import { useTranslation } from '../../hooks/useTranslation';
@@ -74,6 +74,7 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
     { id: 'session', icon: PackageOpen, label: t('tabs.session') },
     { id: 'npcs', icon: Users, label: t('tabs.npcs') },
     { id: 'quests', icon: Scroll, label: t('tabs.quests' as any) || 'Quests' },
+    { id: 'players', icon: Radar, label: 'Players' },
     { id: 'settings', icon: Settings, label: t('tabs.settings') }
   ] as const;
 
@@ -182,7 +183,7 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
         /* Vertical Mode - Single Unified Block of Icons with Partition */
           <div className="flex w-full items-center justify-between gap-1 px-1 relative">
           {/* Vertical Tabs Section */}
-          <div className="grid grid-cols-3 grid-rows-2 gap-1">
+          <div className="grid grid-cols-4 grid-rows-2 gap-1">
             {tabs.map(tab => (
               <Tooltip key={tab.id} content={tab.label}>
                 <button

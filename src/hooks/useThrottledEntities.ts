@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTrackerStore } from '../store/trackerStore';
+import { useSettingsStore } from '../store/settingsStore';
 
 export function useThrottledEntities(throttleMs = 300) {
   const [state, setState] = useState(() => {
@@ -13,7 +14,9 @@ export function useThrottledEntities(throttleMs = 300) {
 
     const unsub = useTrackerStore.subscribe((currentState) => {
       const now = Date.now();
-      const currentThrottleMs = document.hidden ? 2000 : throttleMs;
+      const activeTab = useSettingsStore.getState().activeTab;
+      const isTrackingTab = activeTab === 'global' || activeTab === 'favorites';
+      const currentThrottleMs = document.hidden ? 2000 : (isTrackingTab ? throttleMs : 1500);
       
       const updateState = () => {
         setState({

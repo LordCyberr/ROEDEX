@@ -4,6 +4,7 @@ import { useTranslation } from '../../../hooks/useTranslation';
 import { useSettingsStore } from '../../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
 import { ToggleRow } from './SettingsControls';
+import { clearAllStorageAndReload } from '../../../store/trackerStore';
 
 export const AdvancedSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -39,7 +40,7 @@ export const AdvancedSettings: React.FC = () => {
         <button 
           onClick={() => {
             if (window.confirm(t('settings.confirmHardReset') || "Are you sure you want to permanently erase all ROEDEX database files? This cannot be undone.")) {
-              import('../../../store/trackerStore').then(m => m.clearAllStorageAndReload());
+              clearAllStorageAndReload();
             }
           }}
           className="bg-red-500/10 hover:bg-red-500/30 text-red-500 border border-red-500/50 px-4 py-2 rounded font-bold text-xs transition-all w-full tracking-wider"

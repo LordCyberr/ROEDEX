@@ -38,7 +38,9 @@ export const GeneralSettings: React.FC = () => {
     resetSizeHotkey: state.resetSizeHotkey,
     setResetSizeHotkey: state.setResetSizeHotkey,
     lockUiHotkey: state.lockUiHotkey,
-    setLockUiHotkey: state.setLockUiHotkey
+    setLockUiHotkey: state.setLockUiHotkey,
+    visualQuality: state.visualQuality,
+    setVisualQuality: state.setVisualQuality
   })));
   const { t } = useTranslation();
 
@@ -78,6 +80,20 @@ export const GeneralSettings: React.FC = () => {
         ]}
         onChange={(v) => store.setTheme(v)}
       />
+      <SelectRow
+        label="Visual Quality"
+        value={store.visualQuality || 'high'}
+        options={[
+          { label: 'High (Glass & Animations)', value: 'high' },
+          { label: 'Max Performance (Solid & Fast)', value: 'performance' }
+        ]}
+        onChange={(v) => store.setVisualQuality(v as any)}
+      />
+      {store.visualQuality === 'performance' && (
+        <div className="px-2 py-1 mb-2 text-[9px] text-[var(--accent-primary)] font-bold bg-[var(--accent-primary)]/10 rounded border border-[var(--accent-primary)]/30">
+          Max Performance enabled. Blurs and heavy shadows are disabled to maximize your in-game FPS.
+        </div>
+      )}
       <SelectRow
         label={t('settings.displayDensity')}
         value={store.displayDensity}

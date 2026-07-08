@@ -85,6 +85,15 @@ export class ResourceTracker {
           const updates: any = {};
           
           if (!resource.gathered) {
+            if (state.isRecording) {
+              state.addRoutePoint({
+                action: 'gather',
+                x: resource.pos.x,
+                y: resource.pos.y,
+                detail: resource.resource
+              });
+            }
+
             const typeStr = (resource.type || '').toLowerCase();
             const resName = (resource.resource || '').toLowerCase();
             const isOre = typeStr.includes('ore') || typeStr.includes('rock') || resName.includes('ore') || resName.includes('rock') || resName.includes('copper') || resName.includes('iron') || resName.includes('gold') || resName.includes('silver') || resName.includes('crystal');

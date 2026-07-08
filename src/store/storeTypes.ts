@@ -1,5 +1,12 @@
 import { EnemyEntity, ResourceNode, LootDrop, RespawnTimer, Vector2, WeaponState, OverlayNotification, RunStats } from '../types/events';
 
+export interface OnlinePlayer {
+  id: string;
+  username: string;
+  position?: Vector2;
+  zone?: string;
+  lastSeen: number;
+}
 export type ArmorSlot = 'Helmet' | 'Torso' | 'Pants' | 'Gloves' | 'Boots';
 export interface ArmorItem {
   name: string;
@@ -40,18 +47,21 @@ export interface Quest {
   title: string;
   description: string;
   quest_type: string;
-  status: 'accepted' | 'completed';
+  status: 'available' | 'accepted' | 'completed';
   required_item: string;
   quantity: number;
   reward: number;
   reward_type: string;
   item_rarity: string;
+  location?: string;
+  reward_cost_difference?: number;
   recipe?: {
     location: string;
     ingredients: QuestIngredient[];
   };
   quests_list: QuestStep[];
   currentAmount: number; // mapped from result.currentAmount
+  current_step: number;
 }
 
 export interface NpcDialogueData {
@@ -76,7 +86,7 @@ export interface UISlice {
   setIsRunHistoryOpen: (runHistoryOpen: boolean) => void;
 
   profilerMetrics: {
-    parseTime: { average: number; max: number; lastSpike: number; totalEvents: number };
+    parseTime: { average: number; max: number; lastSpike: number; totalEvents: number; droppedEvents: number };
     renderTime: { average: number; lastRender: number };
     memory: { enemiesCount: number; resourcesCount: number; poppedOutWindows: number; lastUpdate: number };
   };
@@ -99,8 +109,8 @@ export interface UISlice {
   language: Language;
   setLanguage: (lang: Language) => void;
 
-  activeTab: 'global' | 'favorites' | 'session' | 'settings' | 'npcs' | 'quests';
-  setActiveTab: (tab: 'global' | 'favorites' | 'session' | 'settings' | 'npcs' | 'quests') => void;
+  activeTab: 'global' | 'favorites' | 'session' | 'settings' | 'npcs' | 'quests' | 'players';
+  setActiveTab: (tab: 'global' | 'favorites' | 'session' | 'settings' | 'npcs' | 'quests' | 'players') => void;
   tabDimensions: Record<string, { width?: number, height?: number }>;
   collapsedCategories: Record<string, boolean>;
   toggleCategory: (category: string) => void;
@@ -136,6 +146,8 @@ export interface UISlice {
   setAutoMinimizeOnChest: (val: boolean) => void;
   isUILocked: boolean;
   setIsUILocked: (locked: boolean) => void;
+  visualQuality: 'high' | 'performance';
+  setVisualQuality: (quality: 'high' | 'performance') => void;
   
   // Display Modes
   displayDensity: 'compact' | 'standard';
@@ -157,7 +169,6 @@ export interface UISlice {
   };
   setChestWidgetPosition: (key: 'chest' | 'inventory' | 'closeZone', pos: { x: number, y: number }) => void;
   
-  // Settings UI State
   categoryOrder: string[];
   setCategoryOrder: (order: string[]) => void;
   
@@ -283,6 +294,8 @@ export interface UISlice {
     showTimer: boolean;
     raritySortOrder: 'asc' | 'desc' | 'none';
     maxRespawnTooltips: 5 | 10 | 15 | 20;
+    trackingStyle: 'center' | 'ring';
+    itemGlow: boolean;
   };
   updateTableSettings: (settings: Partial<UISlice['tableSettings']>) => void;
 
@@ -381,6 +394,9 @@ export interface PlayerSlice {
     name?: string;
   };
   setPlayerProfile: (profile: Partial<PlayerSlice['playerProfile']>) => void;
+  
+  isGuildPassActive: boolean;
+  setIsGuildPassActive: (active: boolean) => void;
 
   lifetimeStats: {
     mobsKilled: Record<string, number>;
@@ -399,8 +415,9 @@ export interface PlayerSlice {
   incrementLifetimeStat: (category: 'mobsKilled' | 'oresMined' | 'treesCut' | 'plantsHarvested' | 'itemsLooted', id: string, amount?: number) => void;
 
   playerPosition: Vector2 | null;
+  playerZone: string;
+  setPlayerPosition: (pos: Vector2 | null, zone?: string) => void;
   throttledPlayerPosition: Vector2 | null;
-  setPlayerPosition: (pos: Vector2) => void;
   
   weapon: WeaponState | null;
   setWeapon: (weapon: WeaponState | null) => void;
@@ -412,9 +429,19 @@ export interface PlayerSlice {
   
   packetCounts: Record<string, number>;
   incrementPacketCount: (type: string) => void;
+
+  onlinePlayers: Record<string, OnlinePlayer>;
+  setOnlinePlayer: (id: string, player: Partial<OnlinePlayer>) => void;
+  removeOnlinePlayer: (id: string) => void;
+  clearOnlinePlayers: () => void;
 }
 
 export interface EntitySlice {
+  activeWaypoint: Vector2 | null;
+  activeWaypointName: string | null;
+  activeWaypointZone: string | null;
+  setActiveWaypoint: (pos: Vector2 | null, name?: string | null, zone?: string | null) => void;
+
   enemies: Record<string, EnemyEntity>;
   resources: Record<string, ResourceNode>;
   loot: Record<string, LootDrop>;
@@ -435,10 +462,44 @@ export interface EntitySlice {
   addLoot: (drop: LootDrop) => void;
   removeLoot: (dropId: string) => void;
   clearLoot: () => void;
+  clearExpiredLoot: () => void;
 
   addTimer: (timer: RespawnTimer) => void;
   removeTimer: (id: string) => void;
   clearTimers: () => void;
 }
 
-export type TrackerState = SessionSlice & PlayerSlice & EntitySlice;
+export interface RoutePoint {
+  timestamp: number;
+  action: 'move' | 'kill' | 'gather' | 'enter_zone' | 'custom_marker';
+  x: number;
+  y: number;
+  detail?: string; // e.g., mob name, resource type, zone name
+}
+
+export interface RouteRecorderSlice {
+  isRecording: boolean;
+  recordedRoute: RoutePoint[];
+  lastRecordedMoveTime: number;
+  
+  startRecording: () => void;
+  stopRecording: () => void;
+  addRoutePoint: (point: Omit<RoutePoint, 'timestamp'>) => void;
+  exportRoute: () => void;
+  clearRoute: () => void;
+}
+
+export interface ErrorLog {
+  timestamp: string;
+  message: string;
+  stack?: string;
+  zone: string | null;
+}
+
+export interface ErrorLogSlice {
+  errorLogs: ErrorLog[];
+  logError: (message: string, stack?: string) => void;
+  clearErrors: () => void;
+}
+
+export type TrackerState = SessionSlice & PlayerSlice & EntitySlice & RouteRecorderSlice & ErrorLogSlice;

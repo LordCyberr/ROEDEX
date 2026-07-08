@@ -3,12 +3,15 @@ import { motion, useMotionValue, useDragControls } from 'motion/react';
 import { PoppedOutWindow } from '../../store/storeTypes';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
-import { TrackingView } from '../views/TrackingView';
-import { LootView } from '../views/LootView';
-import { NPCView } from '../views/NPCView';
-import { SettingsView } from '../views/SettingsView';
+import { Suspense, lazy } from 'react';
+
+const TrackingView = lazy(() => import('../views/TrackingView').then(module => ({ default: module.TrackingView })));
+const LootView = lazy(() => import('../views/LootView').then(module => ({ default: module.LootView })));
+const NPCView = lazy(() => import('../views/NPCView').then(module => ({ default: module.NPCView })));
+const SettingsView = lazy(() => import('../views/SettingsView').then(module => ({ default: module.SettingsView })));
+
 import { Tooltip } from '../ui/Tooltip';
-import { Globe2, Star, PackageOpen, Users, Settings, Minus, X, RefreshCw, ScrollText, Lock, Unlock, User, Activity } from 'lucide-react';
+import { Globe2, Star, PackageOpen, Users, Settings, Minus, X, RefreshCw, ScrollText, Lock, Unlock, User, Activity, Radar } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 
 const tabsConfig = [
@@ -17,6 +20,7 @@ const tabsConfig = [
   { id: 'session', icon: PackageOpen, label: 'Session & Loot' },
   { id: 'npcs', icon: Users, label: 'NPCs & Players' },
   { id: 'quests', icon: ScrollText, label: 'Quests' },
+  { id: 'players', icon: Radar, label: 'Players' },
   { id: 'settings', icon: Settings, label: 'Settings' },
   { id: 'session_profile', icon: User, label: 'Profile' },
   { id: 'session_session', icon: Activity, label: 'Session Stats' },
@@ -169,13 +173,14 @@ export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow, co
     switch (id) {
       case 'global':
       case 'favorites':
-        return <TrackingView forcedTab={id} />;
-      case 'session': return <LootView />;
-      case 'session_profile': return <LootView forcedTab="profile" hideNavigation={true} />;
-      case 'session_session': return <LootView forcedTab="session" hideNavigation={true} />;
-      case 'session_chest': return <LootView forcedTab="chest" hideNavigation={true} />;
-      case 'npcs': return <NPCView />;
-      case 'settings': return <SettingsView />;
+        return <Suspense fallback={null}><TrackingView forcedTab={id} /></Suspense>;
+      case 'session': return <Suspense fallback={null}><LootView /></Suspense>;
+      case 'session_profile': return <Suspense fallback={null}><LootView forcedTab="profile" hideNavigation={true} /></Suspense>;
+      case 'session_session': return <Suspense fallback={null}><LootView forcedTab="session" hideNavigation={true} /></Suspense>;
+      case 'session_chest': return <Suspense fallback={null}><LootView forcedTab="chest" hideNavigation={true} /></Suspense>;
+      case 'npcs': return <Suspense fallback={null}><NPCView /></Suspense>;
+      case 'quests': return <Suspense fallback={null}><TrackingView forcedTab="quests" /></Suspense>;
+      case 'settings': return <Suspense fallback={null}><SettingsView /></Suspense>;
       default: return null;
     }
   };

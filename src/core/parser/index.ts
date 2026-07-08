@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import { useTrackerStore } from '../../store/trackerStore';
 import { useSettingsStore } from '../../store/settingsStore';
 import { AICompanion } from '../companion/AICompanion';
@@ -6,12 +5,20 @@ import { NotificationManager } from '../notifications/NotificationManager';
 import { handleEntityEvent } from './handlers/entityHandler';
 import { handleInventoryEvent } from './handlers/inventoryHandler';
 import { handlePlayerEvent } from './handlers/playerHandler';
+import { handleQuestData } from './handlers/questHandler';
 
-// Zod Schema to strictly validate the incoming WebSocket shape
-// Some game events contain only an event name and no payload, so a 1-element array is valid!
-const WebSocketEventSchema = z.tuple([
-  z.string()
-]).rest(z.any());
+// @ts-ignore
+import ParserWorker from './parser.worker?worker&inline';
+
+const parserWorker = new ParserWorker();
+parserWorker.onmessage = (e: MessageEvent) => {
+  if (e.data.success) {
+    const { parsed, eventName, payload } = e.data;
+    processParsedPacket(eventName, payload, parsed);
+  } else if (e.data.error === 'invalid_shape') {
+    console.warn(`[ROEDEX Worker] Dropped malformed WebSocket event. Game data structure may have changed.`);
+  }
+};
 
 // Parser module loaded
 
@@ -22,7 +29,8 @@ export let parserState = {
   isBlacksmithOpen: false,
   loginTime: Date.now(),
   pendingUsername: '' as string,
-  hasReceivedFirstPacket: false
+  hasReceivedFirstPacket: false,
+  chestCloseTimeout: null as ReturnType<typeof setTimeout> | null
 };
 
 export function resetParserState() {
@@ -70,36 +78,16 @@ export function updateWeaponDurabilityState(d: any, defaultName: string) {
 }
 
 export function parsePacket(rawMessage: string) {
-  const store = useTrackerStore.getState();
-  
-  let jsonString = rawMessage;
-  if (jsonString.startsWith('42["')) {
-    jsonString = jsonString.slice(2);
-  } else if (jsonString.startsWith('42/game,[')) {
-    jsonString = jsonString.slice(8);
-  } else {
-    return;
-  }
-  
-  let parsed: any;
-  try {
-    parsed = JSON.parse(jsonString);
-  } catch (e) {
-    return;
-  }
-
-  // Strictly validate the tuple structure using Zod
-  const validation = WebSocketEventSchema.safeParse(parsed);
-  if (!validation.success) {
-    console.warn(`[ROEDEX Zod] Dropped malformed WebSocket event. Game data structure may have changed.`, validation.error);
-    return;
-  }
-
-  const [eventName, payload] = validation.data;
-
   if (typeof rawMessage === 'string' && rawMessage.includes('Hit rejected: Enemy is already dead')) {
     AICompanion.onCheatDetected();
   }
+  
+  // Offload heavy JSON parsing to the background worker
+  parserWorker.postMessage({ rawMessage });
+}
+
+function processParsedPacket(eventName: string, payload: any, parsed: any) {
+  const store = useTrackerStore.getState();
 
   try {
     const settings = useSettingsStore.getState();
@@ -122,7 +110,16 @@ export function parsePacket(rawMessage: string) {
             newPos = { x: parsed[1], y: parsed[2] };
           }
           if (newPos) {
-            store.setPlayerPosition(newPos);
+            store.setPlayerPosition(newPos, payload?.locationName);
+            AICompanion.onActivity();
+            if (store.isRecording) {
+              store.addRoutePoint({
+                action: 'move',
+                x: newPos.x,
+                y: newPos.y,
+                detail: payload?.locationName
+              });
+            }
           }
         }
       }
@@ -143,6 +140,7 @@ export function parsePacket(rawMessage: string) {
     handleEntityEvent(eventName, payload, store);
     handleInventoryEvent(eventName, payload, store, parserState);
     handlePlayerEvent(eventName, payload, store, parserState);
+    handleQuestData(parsed);
     const duration = performance.now() - startTime;
     
     // Aggregate profiling data
@@ -173,6 +171,6 @@ export function parsePacket(rawMessage: string) {
     }
     
   } catch (error) {
-    console.error(`[Parser] Error processing message: ${rawMessage}`, error);
+    console.error(`[Parser] Error processing message:`, parsed, error);
   }
 }

@@ -108,110 +108,21 @@ export const useSettingsStore = create<UISlice>()(
           ...(persistedState?.notificationSettings || {})
         };
         
-        if (!notifSettings.v4PositionMigrated) {
-          notifSettings.position = 'top-left';
-          notifSettings.v4PositionMigrated = true;
-          if (persistedState) {
-            persistedState.overlayPosition = { x: 20, y: 80 };
-            persistedState.orbPosition = { x: 50, y: 16 };
-            persistedState.companionPosition = { x: typeof window !== 'undefined' ? window.innerWidth - 80 : 800, y: 220 };
-          }
-        }
-        
-        if (!notifSettings.v5PositionMigrated) {
-          notifSettings.v5PositionMigrated = true;
-          if (persistedState) {
-            persistedState.overlayPosition = { x: 20, y: 80 };
-          }
-        }
-        
-        if (!notifSettings.v10PositionsMigrated) {
-          notifSettings.v10PositionsMigrated = true;
-          if (persistedState) {
-            persistedState.overlayPosition = { x: 20, y: 150 };
-            persistedState.orbPosition = { x: 20, y: 100 };
-            persistedState.companionPosition = { x: typeof window !== 'undefined' ? window.innerWidth - 320 : 800, y: 30 };
-          }
-        }
-        
-        if (!notifSettings.v11PositionsMigrated) {
-          notifSettings.v11PositionsMigrated = true;
-          if (persistedState) {
-            persistedState.companionPosition = { x: typeof window !== 'undefined' ? window.innerWidth - 320 : 800, y: 120 };
-          }
-        }
-        
-        if (!notifSettings.v6ToastMigrated) {
-          notifSettings.v6ToastMigrated = true;
-          notifSettings.position = 'top-center';
-          notifSettings.scale = 0.9;
-        }
 
-        if (!notifSettings.v8ToastTopCenter) {
-          notifSettings.v8ToastTopCenter = true;
-          notifSettings.position = 'top-center';
-        }
-
-        if (!notifSettings.v12NotifDefaultsMigrated) {
-          notifSettings.v12NotifDefaultsMigrated = true;
-          notifSettings.toastShape = 'rectangle';
-          notifSettings.neonGlow = true;
-          notifSettings.width = 300;
-          notifSettings.height = 70;
-          notifSettings.scale = 1.0;
-          notifSettings.opacity = 1.0;
-        }
 
         const weaponSettings = {
           ...currentState.weaponUISettings,
           ...(persistedState?.weaponUISettings || {})
         };
 
-        if (!weaponSettings.v7WeaponPositionMigrated) {
-          weaponSettings.v7WeaponPositionMigrated = true;
-          weaponSettings.position = 'bottom-center';
-        }
 
-        if (!weaponSettings.v9WeaponLayoutMigrated) {
-          weaponSettings.v9WeaponLayoutMigrated = true;
-          weaponSettings.layout = 'vertical';
-          weaponSettings.width = 20;
-          weaponSettings.height = 100;
-        }
-
-        if (!weaponSettings.v12WeaponDefaultsMigrated) {
-          weaponSettings.v12WeaponDefaultsMigrated = true;
-          weaponSettings.position = 'bottom-center';
-          weaponSettings.layout = 'horizontal';
-          weaponSettings.width = 174;
-          weaponSettings.height = 7;
-          weaponSettings.style = 'bar_percent';
-        }
-
-        if (!weaponSettings.v13WeaponDefaultsMigrated) {
-          weaponSettings.v13WeaponDefaultsMigrated = true;
-          weaponSettings.height = 24;
-        }
 
         const armorSettings = {
           ...currentState.armorUISettings,
           ...(persistedState?.armorUISettings || {})
         };
 
-        if (!armorSettings.v12ArmorDefaultsMigrated) {
-          armorSettings.v12ArmorDefaultsMigrated = true;
-          armorSettings.position = 'bottom-right';
-          armorSettings.layout = 'vertical';
-          armorSettings.width = 7;
-          armorSettings.height = 174;
-          armorSettings.style = 'bar_percent';
-        }
 
-        if (!armorSettings.v13ArmorDefaultsMigrated) {
-          armorSettings.v13ArmorDefaultsMigrated = true;
-          armorSettings.width = 50;
-          armorSettings.height = 38;
-        }
 
         const mergedChestWidgetPositions = {
           ...currentState.chestWidgetPositions,
@@ -248,12 +159,15 @@ export const useSettingsStore = create<UISlice>()(
           ...(persistedState?.companionPosition || {})
         };
 
+
+
         return {
           ...currentState,
           ...persistedState,
           notificationSettings: notifSettings,
           weaponUISettings: weaponSettings,
           armorUISettings: armorSettings,
+
           chestWidgetPositions: mergedChestWidgetPositions,
           overlayPosition: mergedOverlayPosition,
           orbPosition: mergedOrbPosition,

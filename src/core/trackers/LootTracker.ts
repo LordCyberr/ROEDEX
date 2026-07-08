@@ -16,6 +16,15 @@ const PRIORITY_DROPS = [
 ];
 
 export class LootTracker {
+  private static cleanupInterval: ReturnType<typeof setInterval> | null = null;
+
+  static initCleanup() {
+    if (this.cleanupInterval) clearInterval(this.cleanupInterval);
+    this.cleanupInterval = setInterval(() => {
+      useTrackerStore.getState().clearExpiredLoot();
+    }, 5000);
+  }
+
   static notifyLoot(itemName: string, quantity: number) {
     const settingsStore = useSettingsStore.getState();
     if (!itemName) return;
@@ -38,12 +47,12 @@ export class LootTracker {
       const info = getItemInfo(itemName);
       if (info && info.source === 'monster') {
         if (info.rarity === 'rare') {
-          AICompanion.onRareDrop();
+          AICompanion.onRareDrop(itemName, quantity);
           if (settingsStore.notificationSettings.enabled && settingsStore.notificationSettings.toasts && settingsStore.notificationSettings.lootEvents) {
             settingsStore.addNotification({ type: 'rare', title: 'Rare Drop', message: `You found a ${itemName}!` });
           }
         } else if (info.rarity === 'mythic') {
-          AICompanion.onMythicDrop();
+          AICompanion.onMythicDrop(itemName, quantity);
           if (settingsStore.notificationSettings.enabled && settingsStore.notificationSettings.toasts && settingsStore.notificationSettings.lootEvents) {
             settingsStore.addNotification({ type: 'mythic', title: 'Mythic Drop', message: `You found a ${itemName}!` });
           }
@@ -66,11 +75,6 @@ export class LootTracker {
     if (event.itemName) {
         this.notifyLoot(event.itemName, event.quantity || 1);
     }
-    
-    // Loot despawns after some time (usually 60 seconds in many MMOs)
-    setTimeout(() => {
-      useTrackerStore.getState().removeLoot(drop.dropId);
-    }, 60000);
   }
 
   static handlePickup(dropId: string) {

@@ -91,7 +91,7 @@ export const MinimizedOrb: React.FC<{ constraintsRef?: any }> = ({ constraintsRe
   return (
     <motion.div 
       ref={dragRef}
-      style={{ x, y }}
+      style={{ x, y, width: orbSize, height: orbSize, borderRadius: '50%' }}
       drag={!isUILocked}
       dragMomentum={false}
       dragConstraints={constraintsRef}

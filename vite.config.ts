@@ -18,7 +18,8 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom'],
           ui: ['lucide-react', 'motion/react'],
-          store: ['zustand']
+          store: ['zustand'],
+          i18n: ['./src/i18n/translations.ts', './src/i18n/companionTranslations.ts']
         }
       }
     }

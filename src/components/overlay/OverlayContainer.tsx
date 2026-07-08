@@ -4,11 +4,7 @@ import { Header } from '../layout/Header';
 import { useTrackerStore } from '../../store/trackerStore';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
-import { TrackingView } from '../views/TrackingView';
-import { LootView } from '../views/LootView';
-import { NPCView } from '../views/NPCView';
-import { QuestView } from '../views/QuestView';
-import { SettingsView } from '../views/SettingsView';
+
 import { WeaponUI } from '../widgets/WeaponUI';
 import { ArmorUI } from '../widgets/ArmorUI';
 import { NotificationToaster } from '../widgets/NotificationToaster';
@@ -18,16 +14,28 @@ import { DebugPanel } from '../widgets/DebugPanel';
 import { MinimizedOrb } from './MinimizedOrb';
 import { PoppedOutWindowComponent } from './PoppedOutWindowComponent';
 import { ErrorBoundary } from '../widgets/ErrorBoundary';
-import { ChangelogModal } from '../ui/ChangelogModal';
+// ChangelogModal lazy loaded
 import { motion, useMotionValue, useDragControls } from 'motion/react';
 import { MinimalChestHUD } from '../widgets/MinimalChestHUD';
+import { BlacksmithUI } from '../widgets/BlacksmithUI';
 import { PoppedOutWindow } from '../../store/storeTypes';
 import { CompanionGuideOverlay } from './CompanionGuideOverlay';
 import { FocusHighlight } from './FocusHighlight';
-import { LifetimeStatsWindow } from './LifetimeStatsWindow';
-import { RunHistoryWindow } from './RunHistoryWindow';
+// Windows lazy loaded
 import { NPCTranslationBubble } from './NPCTranslationBubble';
-import { Profiler, ProfilerOnRenderCallback } from 'react';
+import { DirectionalArrow } from './DirectionalArrow';
+import { Profiler, ProfilerOnRenderCallback, lazy, Suspense } from 'react';
+
+const ChangelogModal = lazy(() => import('../ui/ChangelogModal').then(module => ({ default: module.ChangelogModal })));
+const LifetimeStatsWindow = lazy(() => import('./LifetimeStatsWindow').then(module => ({ default: module.LifetimeStatsWindow })));
+const RunHistoryWindow = lazy(() => import('./RunHistoryWindow').then(module => ({ default: module.RunHistoryWindow })));
+
+const TrackingView = lazy(() => import('../views/TrackingView').then(module => ({ default: module.TrackingView })));
+const LootView = lazy(() => import('../views/LootView').then(module => ({ default: module.LootView })));
+const NPCView = lazy(() => import('../views/NPCView').then(module => ({ default: module.NPCView })));
+const QuestView = lazy(() => import('../views/QuestView').then(module => ({ default: module.QuestView })));
+const PlayersView = lazy(() => import('../views/PlayersView').then(module => ({ default: module.PlayersView })));
+const SettingsView = lazy(() => import('../views/SettingsView').then(module => ({ default: module.SettingsView })));
 
 export const OverlayContainer: React.FC = () => {
   const { currentZone, connected } = useTrackerStore(useShallow((state: any) => ({
@@ -40,7 +48,7 @@ export const OverlayContainer: React.FC = () => {
     mergeTab, overlayPosition, setOverlayPosition,
     activeOpacity, idleOpacity, isUILocked, globalScale,
     tabDimensions, theme, tutorialStep, tutorialCompleted,
-    devForceOverlay
+    devForceOverlay, visualQuality
   } = useSettingsStore(useShallow((state: any) => ({
     activeTab: state.activeTab,
     isMinimized: state.isMinimized,
@@ -57,7 +65,8 @@ export const OverlayContainer: React.FC = () => {
     globalScale: state.globalScale,
     tutorialStep: state.notificationSettings?.tutorialStep || 0,
     tutorialCompleted: state.notificationSettings?.tutorialCompleted || false,
-    devForceOverlay: state.devForceOverlay
+    devForceOverlay: state.devForceOverlay,
+    visualQuality: state.visualQuality
   })));
   const { t } = useTranslation();
 
@@ -187,12 +196,13 @@ export const OverlayContainer: React.FC = () => {
       switch (activeTab) {
         case 'global':
         case 'favorites':
-          return <TrackingView forcedTab={activeTab} />;
-        case 'session': return <LootView />;
+          return <Suspense fallback={null}><TrackingView forcedTab={activeTab} /></Suspense>;
+        case 'session': return <Suspense fallback={null}><LootView /></Suspense>;
         case 'npcs':
-          return <NPCView />;
-        case 'quests': return <QuestView />;
-        case 'settings': return <SettingsView />;
+          return <Suspense fallback={null}><NPCView /></Suspense>;
+        case 'quests': return <Suspense fallback={null}><QuestView /></Suspense>;
+        case 'players': return <Suspense fallback={null}><PlayersView /></Suspense>;
+        case 'settings': return <Suspense fallback={null}><SettingsView /></Suspense>;
         default: return null;
       }
     };
@@ -235,7 +245,7 @@ export const OverlayContainer: React.FC = () => {
     const startOverlayX = x.get();
     const startOverlayY = y.get();
     
-    const minW = isHorizontal ? 400 : 180;
+    const minW = isHorizontal ? 420 : 220;
     const minH = isHorizontal ? 150 : 200;
     const maxW = window.innerWidth - 16;
     const maxH = window.innerHeight * 0.85;
@@ -308,7 +318,7 @@ export const OverlayContainer: React.FC = () => {
 
   return (
     <Profiler id="OverlayContainer" onRender={onRender}>
-      <div ref={containerRef} className="fixed inset-0 pointer-events-none z-50 overflow-hidden text-[var(--text-primary)] font-[var(--font-body)]" data-theme={theme}>
+      <div ref={containerRef} className={`fixed inset-0 pointer-events-none z-50 overflow-hidden text-[var(--text-primary)] font-[var(--font-body)] ${visualQuality === 'performance' ? 'perf-mode' : ''}`} data-theme={theme}>
       {isRefReady && (
         <div 
           className={`w-full h-full transition-opacity duration-1000 ${(!isGameLoaded || !isOverlayReady) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
@@ -381,6 +391,7 @@ export const OverlayContainer: React.FC = () => {
             <ErrorBoundary><WeaponUI /></ErrorBoundary>
             <ErrorBoundary><ArmorUI /></ErrorBoundary>
             <ErrorBoundary><EfficiencyHUD /></ErrorBoundary>
+            <ErrorBoundary><BlacksmithUI /></ErrorBoundary>
             <ErrorBoundary><DebugPanel /></ErrorBoundary>
             <ErrorBoundary><MinimalChestHUD /></ErrorBoundary>
             <ErrorBoundary><FocusHighlight /></ErrorBoundary>
@@ -391,14 +402,19 @@ export const OverlayContainer: React.FC = () => {
         )}
         
         <NPCTranslationBubble />
+
+        <ErrorBoundary><DirectionalArrow /></ErrorBoundary>
       </div>
       )}
       
       <ErrorBoundary><NotificationToaster /></ErrorBoundary>
       <ErrorBoundary><CompanionGuideOverlay /></ErrorBoundary>
-      <ErrorBoundary><ChangelogModal /></ErrorBoundary>
-      <ErrorBoundary><LifetimeStatsWindow /></ErrorBoundary>
-      <ErrorBoundary><RunHistoryWindow /></ErrorBoundary>
+      <Suspense fallback={null}>
+        <ErrorBoundary><ChangelogModal /></ErrorBoundary>
+        <ErrorBoundary><LifetimeStatsWindow /></ErrorBoundary>
+        <ErrorBoundary><RunHistoryWindow /></ErrorBoundary>
+      </Suspense>
+
     </div>
     </Profiler>
   );

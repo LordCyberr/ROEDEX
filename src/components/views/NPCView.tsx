@@ -2,10 +2,25 @@ import React, { useState } from 'react';
 import { useSettingsStore } from '../../store/settingsStore';
 
 import { KNOWN_NPCS_DATA, NPCInfo } from '../../data/npcs';
-import { Users, Search, MapPin, ChevronDown, ChevronRight } from 'lucide-react';
+import { Search, MapPin, ChevronDown, ChevronRight } from 'lucide-react';
+import { useTrackerStore } from '../../store/trackerStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Tooltip } from '../ui/Tooltip';
+
+import { NPCCard } from './npc/NPCCard';
+
+const getRawZoneName = (npcZoneKey: string): string => {
+  const z = npcZoneKey.toLowerCase();
+  if (z.includes('guild')) return 'Guild';
+  if (z.includes('mine')) return 'Mines';
+  if (z.includes('pond')) return 'Town';
+  if (z.includes('marketplace')) return 'Marketplace';
+  if (z.includes('tavern')) return 'Tavern';
+  if (z.includes('alchemist')) return 'Alchemist';
+  if (z.includes('blacksmith')) return 'BlackSmith';
+  if (z.includes('easttown')) return 'East Town';
+  return npcZoneKey;
+};
 
 export const NPCView: React.FC = () => {
   const { t } = useTranslation();
@@ -54,6 +69,8 @@ export const NPCView: React.FC = () => {
   const layoutMode = useSettingsStore(state => state.layoutMode);
   const tabDimensions = useSettingsStore(state => state.tabDimensions);
   const isHorizontal = layoutMode === 'horizontal';
+
+  const activeWaypointName = useTrackerStore(state => state.activeWaypointName);
 
   const activeDimKey = isHorizontal ? `npcs_horizontal` : `npcs_vertical`;
   const activeDim = tabDimensions[activeDimKey] || {};
@@ -130,19 +147,8 @@ export const NPCView: React.FC = () => {
   const rowVirtualizer = useVirtualizer({
     count: flatItems.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: (index) => flatItems[index].type === 'header' ? 24 : 36,
+    estimateSize: (index) => flatItems[index].type === 'header' ? 24 : 58,
   });
-
-  const renderHeader = () => (
-    <div className="flex items-center justify-between mb-1 border-b border-[var(--border-subtle)] pb-1 shrink-0">
-      <div className="flex items-center gap-1.5">
-        <Users size={14} className="text-[#00ffcc]" />
-        <h2 className="text-xs font-bold text-[var(--text-primary)] font-[var(--font-heading)] tracking-wide">
-          {t('tabs.npcTracker')}
-        </h2>
-      </div>
-    </div>
-  );
 
   const renderSearch = () => (
     <div className="relative mb-2 shrink-0">
@@ -169,7 +175,6 @@ export const NPCView: React.FC = () => {
 
   return (
     <div className={`flex-1 flex flex-col p-2 overflow-hidden min-h-0 bg-[var(--bg-base)] w-full ${!isHorizontal ? 'min-w-[150px]' : ''}`}>
-      {!isHorizontal && renderHeader()}
       {!isHorizontal && renderSearch()}
 
       {/* HORIZONTAL MODE */}
@@ -181,10 +186,6 @@ export const NPCView: React.FC = () => {
               <div className="flex flex-col w-[160px] shrink-0 bg-[var(--bg-card)] rounded-lg shadow-md border border-[var(--border-subtle)] h-fit max-h-full overflow-hidden">
                 {/* Compact Header & Search */}
                 <div className="p-1.5 border-b border-[var(--border-subtle)] bg-[var(--bg-panel)] shrink-0">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <Users size={12} className="text-[#00ffcc]" />
-                    <h2 className="text-[10px] font-bold text-[var(--text-primary)] uppercase tracking-widest">{t('tabs.npcTracker')}</h2>
-                  </div>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-1.5 flex items-center pointer-events-none">
                       <Search size={10} className="text-[var(--text-muted)]" />
@@ -238,23 +239,25 @@ export const NPCView: React.FC = () => {
                     {/* Card List (Grid) */}
                     <div className={`grid gap-2 overflow-y-auto custom-scrollbar p-2 ${isSearching ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'}`}>
                       {groupedNpcs[zone].map(npc => {
+                        const isTracked = activeWaypointName === npc.name;
                         return (
-                          <div 
+                          <NPCCard 
                             key={npc.name}
-                            className="flex flex-col gap-1 p-2 rounded-lg border transition-colors bg-[var(--bg-hover)] border-transparent hover:border-[var(--border-subtle)]"
-                          >
-                            <div className="text-[11px] font-bold text-[var(--text-primary)] truncate">{npc.name}</div>
-                            <div className="flex items-center gap-1 mt-1">
-                              <MapPin size={10} className="text-[var(--text-muted)] shrink-0" />
-                              <Tooltip content={t(npc.location as any)}>
-                                <div 
-                                  className="text-[10px] text-[var(--text-secondary)] truncate hover:text-clip hover:whitespace-normal transition-all"
-                                >
-                                  {t(npc.location as any)}
-                                </div>
-                              </Tooltip>
-                            </div>
-                          </div>
+                            npc={npc}
+                            isTracked={isTracked}
+                            t={t}
+                            onToggle={() => {
+                              if (activeWaypointName === npc.name) {
+                                useTrackerStore.getState().setActiveWaypoint(null, null);
+                              } else if (npc.x !== undefined && npc.y !== undefined) {
+                                // If the NPC has coordinates inside the Town's outer limits, their physical tracking zone is Town.
+                                // Town bounds: x is roughly -80 to 40, y is roughly -50 to 80.
+                                const isActuallyInTown = npc.x > -80 && npc.x < 40 && npc.y > -50 && npc.y < 80;
+                                const targetZone = isActuallyInTown ? 'Town' : getRawZoneName(npc.zone);
+                                useTrackerStore.getState().setActiveWaypoint({ x: npc.x!, y: npc.y! }, npc.name, targetZone);
+                              }
+                            }}
+                          />
                         );
                       })}
                     </div>
@@ -263,12 +266,8 @@ export const NPCView: React.FC = () => {
               </div>
             </>
           ) : (
-            <div className="flex flex-col gap-0.5 w-[160px] shrink-0 bg-[var(--bg-card)] rounded-lg shadow-md border border-[var(--border-subtle)] h-fit overflow-hidden">
+             <div className="flex flex-col gap-0.5 w-[160px] shrink-0 bg-[var(--bg-card)] rounded-lg shadow-md border border-[var(--border-subtle)] h-fit overflow-hidden">
                <div className="p-1.5 border-b border-[var(--border-subtle)] bg-[var(--bg-panel)] shrink-0">
-                 <div className="flex items-center gap-1.5 mb-1.5">
-                   <Users size={12} className="text-[#00ffcc]" />
-                   <h2 className="text-[10px] font-bold text-[var(--text-primary)] uppercase tracking-widest">{t('tabs.npcTracker')}</h2>
-                 </div>
                  <div className="relative">
                    <div className="absolute inset-y-0 left-0 pl-1.5 flex items-center pointer-events-none">
                      <Search size={10} className="text-[var(--text-muted)]" />
@@ -293,10 +292,7 @@ export const NPCView: React.FC = () => {
         /* VERTICAL MODE */
         <>
           {zones.length > 0 && (
-            <div className="grid grid-cols-[45px_1fr] gap-2 px-2 ml-1 py-1 mb-1 bg-[var(--bg-panel)] border border-[var(--border-accent)] rounded text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-wider shrink-0">
-              <div className="truncate">{t('columns.npc')}</div>
-              <div className="truncate">{t('columns.location')}</div>
-            </div>
+            <div className="hidden"></div>
           )}          <div ref={parentRef} className={`flex flex-col flex-1 min-h-0 overflow-y-auto custom-scrollbar pb-2 pr-2 ${compactHeightClass}`}>
             {zones.length === 0 ? (
               <div className="text-center py-4 text-xs text-[var(--text-muted)] italic w-full">
@@ -337,16 +333,20 @@ export const NPCView: React.FC = () => {
                         </button>
                       ) : (
                         <div className="flex flex-col gap-1 pl-1 h-full justify-center">
-                          <div className="grid grid-cols-[45px_1fr] gap-2 px-2 py-1.5 items-center rounded border transition-colors bg-[var(--bg-hover)] border-transparent hover:border-[var(--border-subtle)]">
-                            <div className="text-[11px] font-bold text-[var(--text-primary)] truncate">{item.npc.name}</div>
-                            <Tooltip content={t(item.npc.location as any)}>
-                              <div 
-                                className="text-[10px] text-[var(--text-secondary)] truncate hover:text-clip hover:whitespace-normal transition-all"
-                              >
-                                {t(item.npc.location as any)}
-                              </div>
-                            </Tooltip>
-                          </div>
+                          <NPCCard 
+                            npc={item.npc}
+                            isTracked={activeWaypointName === item.npc.name}
+                            t={t}
+                            onToggle={() => {
+                              if (activeWaypointName === item.npc.name) {
+                                useTrackerStore.getState().setActiveWaypoint(null, null);
+                              } else if (item.npc.x !== undefined && item.npc.y !== undefined) {
+                                const isActuallyInTown = item.npc.x > -80 && item.npc.x < 40 && item.npc.y > -50 && item.npc.y < 80;
+                                const targetZone = isActuallyInTown ? 'Town' : getRawZoneName(item.npc.zone);
+                                useTrackerStore.getState().setActiveWaypoint({ x: item.npc.x!, y: item.npc.y! }, item.npc.name, targetZone);
+                              }
+                            }}
+                          />
                         </div>
                       )}
                     </div>

@@ -43,7 +43,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         <ChevronDown size={10} className={`transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
       </div>
       {isOpen && (
-        <div className={`absolute top-full right-0 mt-1 w-max min-w-full bg-[var(--bg-panel)] border border-[var(--border-accent)] rounded-md shadow-xl z-[100] overflow-hidden flex flex-col ${dropdownClassName}`}>
+        <div className={`absolute top-full right-0 mt-1 w-max min-w-full bg-[var(--bg-panel)] border border-[var(--border-accent)] rounded-md shadow-xl z-[100] max-h-[200px] overflow-y-auto overflow-x-hidden flex flex-col [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[var(--accent-primary)]/50 hover:[&::-webkit-scrollbar-thumb]:bg-[var(--accent-primary)] [&::-webkit-scrollbar-thumb]:rounded-full ${dropdownClassName}`}>
           {options.map((opt) => (
             <div 
               key={opt.value} 

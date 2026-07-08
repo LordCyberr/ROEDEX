@@ -30,6 +30,8 @@ export class NotificationManager {
     }
   }
 
+  private static weaponTimer: ReturnType<typeof setTimeout> | null = null;
+
   static onWeaponUnequipped(toolName: string) {
     const gameStore = useTrackerStore.getState();
     const settingsStore = useSettingsStore.getState();
@@ -37,7 +39,8 @@ export class NotificationManager {
     
     const zone = gameStore.currentZone.toLowerCase();
     if (!zone.includes('town') && !zone.includes('bank') && !zone.includes('home')) {
-       setTimeout(() => {
+       if (this.weaponTimer) clearTimeout(this.weaponTimer);
+       this.weaponTimer = setTimeout(() => {
           const currentState = useTrackerStore.getState();
           if (!currentState.weapon) {
             settingsStore.addNotification({
@@ -52,10 +55,12 @@ export class NotificationManager {
 
   private static hasShownInitializing: boolean = false;
   private static hasGreeted: boolean = false;
+  private static bootSequenceFinished: boolean = false;
 
   static resetGreeting() {
     this.hasShownInitializing = false;
     this.hasGreeted = false;
+    this.bootSequenceFinished = false;
   }
   
   static showInitializingToast() {
@@ -111,6 +116,59 @@ export class NotificationManager {
         title: t.bootSequence?.online || 'CONNECTION ESTABLISHED',
         message: fullMessage
       });
+      NotificationManager.bootSequenceFinished = true;
     }, 8000);
+  }
+
+  static showZoneLoadingToast(zoneName: string) {
+    const settingsStore = useSettingsStore.getState();
+    if (!settingsStore.notificationSettings.enabled || !settingsStore.notificationSettings.toasts || !settingsStore.notificationSettings.zoneChange) return;
+    
+    // Ignore early initializations
+    if (!zoneName || zoneName === 'Unknown') return;
+    
+    // Do not show zone toasts if the boot sequence or system-online toast is currently on screen
+    const isBooting = settingsStore.notifications.some((n: any) => n.type === 'boot-sequence' || n.type === 'system-online');
+    if (isBooting) return;
+
+    // Do not show zone toasts if the boot sequence is still running
+    if (!this.bootSequenceFinished) return;
+
+    let title = 'LOADING DATA...';
+    let message = 'Scanning new environment...';
+    let specificType = 'zone-change';
+
+    const lZone = zoneName.toLowerCase();
+    
+    if (lZone.includes('forest') || lZone.includes('woods')) {
+      title = 'ENTERING WILDERNESS';
+      message = 'Scanning for hostiles and mapping resource nodes...';
+      specificType = 'zone-change-forest';
+    } else if (lZone.includes('mine') || lZone.includes('cave') || lZone.includes('dungeon')) {
+      title = 'ENTERING MINES';
+      message = 'Calibrating dark-vision and surveying ore veins...';
+      specificType = 'zone-change-cave';
+    } else if (lZone.includes('home')) {
+      title = 'ENTERING HOME';
+      message = 'Syncing local inventory and safe-storage...';
+      specificType = 'zone-change-home';
+    } else if (lZone.includes('guild') || lZone.includes('tavern') || lZone.includes('city') || lZone.includes('town')) {
+      title = 'ENTERING SOCIAL HUB';
+      message = 'Refreshing multiplayer roster and guild status...';
+      specificType = 'zone-change-social';
+    } else if (lZone.includes('blacksmith') || lZone.includes('forge')) {
+      title = 'ENTERING FORGE';
+      message = 'Analyzing crafting schematics and gear metrics...';
+      specificType = 'zone-change-forge';
+    } else {
+      title = `ENTERING ${zoneName.toUpperCase()}`;
+      message = 'Syncing local coordinates...';
+    }
+
+    settingsStore.addNotification({
+      type: specificType,
+      title,
+      message
+    });
   }
 }

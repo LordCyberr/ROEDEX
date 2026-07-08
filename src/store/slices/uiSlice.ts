@@ -10,7 +10,7 @@ export const createUISlice: StateCreator<UISlice, [], [], UISlice> = (set) => ({
   updateDebugStats: (pps: number) => set({ debugStats: { pps } }),
   
   profilerMetrics: {
-    parseTime: { average: 0, max: 0, lastSpike: 0, totalEvents: 0 },
+    parseTime: { average: 0, max: 0, lastSpike: 0, totalEvents: 0, droppedEvents: 0 },
     renderTime: { average: 0, lastRender: 0 },
     memory: { enemiesCount: 0, resourcesCount: 0, poppedOutWindows: 0, lastUpdate: 0 }
   },
@@ -104,6 +104,8 @@ export const createUISlice: StateCreator<UISlice, [], [], UISlice> = (set) => ({
   setAutoMinimizeOnChest: (val: boolean) => set({ autoMinimizeOnChest: val }),
   isUILocked: false,
   setIsUILocked: (locked: boolean) => set({ isUILocked: locked }),
+  visualQuality: 'high',
+  setVisualQuality: (quality) => set({ visualQuality: quality }),
   globalScale: 1.0,
   setGlobalScale: (val: number) => set({ globalScale: val }),
   minimizeHotkey: 'Ctrl+Shift+M',
@@ -137,6 +139,8 @@ export const createUISlice: StateCreator<UISlice, [], [], UISlice> = (set) => ({
       [key]: pos
     }
   })),
+  
+
   
   categoryOrder: ['mobsForest', 'mobsCave', 'ores', 'trees', 'plants'],
   setCategoryOrder: (order: string[]) => set({ categoryOrder: order }),
@@ -259,7 +263,9 @@ export const createUISlice: StateCreator<UISlice, [], [], UISlice> = (set) => ({
     showCount: true,
     showTimer: true,
     raritySortOrder: 'desc',
-    maxRespawnTooltips: 5
+    maxRespawnTooltips: 5,
+    trackingStyle: 'center',
+    itemGlow: true
   },
   updateTableSettings: (settings) => set((state) => ({
     tableSettings: { ...state.tableSettings, ...settings }

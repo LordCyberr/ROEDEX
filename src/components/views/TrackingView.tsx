@@ -4,7 +4,7 @@ import { useThrottledEntities } from '../../hooks/useThrottledEntities';
 import { useTrackerStore } from '../../store/trackerStore';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useTranslation } from '../../hooks/useTranslation';
-import { GlobalTableHeader, CategorySection, CategoryCard, TableRowData } from '../ui/CategoryTable';
+import { GlobalTableHeader, CategorySection, CategoryCard, TableRowData } from '../ui/table';
 import { Tooltip } from '../ui/Tooltip';
 import { Vector2 } from '../../types/events';
 
@@ -118,6 +118,7 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
         groupItems[name] = {
           id: name,
           name,
+          zone: zoneDisplay,
           dist: dist,
           nearestPos: pos,
           counts: { alive: 0, dead: 0 }

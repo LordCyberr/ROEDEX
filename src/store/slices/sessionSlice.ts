@@ -21,11 +21,11 @@ export const createSessionSlice: StateCreator<TrackerState, [], [], SessionSlice
       set({ currentZone: zone });
     }
   },
-  sessionActive: false,
+  sessionActive: true,
   setSessionActive: (active: boolean) => set({ sessionActive: active }),
   isChestOpen: false,
   setIsChestOpen: (open: boolean) => set({ isChestOpen: open }),
-  sessionStartTime: null,
+  sessionStartTime: Date.now(),
   setSessionStartTime: (time: number | null) => set({ sessionStartTime: time }),
   sessionRunes: 0,
   setSessionRunes: (val: number | ((prev: number) => number)) => set((state) => ({ 

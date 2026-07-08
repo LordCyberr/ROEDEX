@@ -41,7 +41,7 @@ export function onTick(cb: TickCallback) {
 }
 
 export function useGlobalTick() {
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     return onTick(setNow);
   }, []);

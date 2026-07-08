@@ -3,6 +3,11 @@ import { TrackerState, EntitySlice } from '../storeTypes';
 import { EnemyEntity, ResourceNode, LootDrop, RespawnTimer } from '../../types/events';
 
 export const createEntitySlice: StateCreator<TrackerState, [], [], EntitySlice> = (set) => ({
+  activeWaypoint: null,
+  activeWaypointName: null,
+  activeWaypointZone: null,
+  setActiveWaypoint: (pos, name = null, zone = null) => set({ activeWaypoint: pos, activeWaypointName: name, activeWaypointZone: zone }),
+
   enemies: {},
   resources: {},
   loot: {},
@@ -141,6 +146,19 @@ export const createEntitySlice: StateCreator<TrackerState, [], [], EntitySlice> 
   clearLoot: () => set((state) => {
     if (Object.keys(state.loot).length === 0) return state;
     return { loot: {} };
+  }),
+  clearExpiredLoot: () => set((state) => {
+    const now = Date.now();
+    let changed = false;
+    const newLoot = { ...state.loot };
+    for (const dropId in newLoot) {
+       if (now - newLoot[dropId].spawnTime > 60000) {
+          delete newLoot[dropId];
+          changed = true;
+       }
+    }
+    if (changed) return { loot: newLoot };
+    return state;
   }),
 
   addTimer: (timer: RespawnTimer) =>

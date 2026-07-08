@@ -267,7 +267,7 @@ export const CompanionOverlay: React.FC<{ constraintsRef?: React.RefObject<HTMLD
             stiffness: 400, 
             damping: 25 
           }}
-          className={`w-max max-w-[350px] min-h-[48px] flex items-center justify-center pointer-events-auto
+          className={`w-max max-w-[350px] min-h-[48px] flex items-center justify-center ${isUILocked ? 'pointer-events-none' : 'pointer-events-auto'}
             ${currentMessage ? (notificationSettings.companionBubbleTheme === 'floating' ? 'rounded-[16px] backdrop-blur-md bg-[rgba(20,25,35,0.9)] shadow-xl border-[1px]' : notificationSettings.companionBubbleTheme === 'holographic' ? 'rounded-[8px] backdrop-blur-sm border-[1px]' : 'rounded-[24px] backdrop-blur-xl border-[2px] bg-[rgba(10,15,25,0.85)]') : 'bg-transparent border-transparent rounded-[24px]'}
           `}
           style={{

@@ -1,0 +1,5 @@
+{
+  "name": "roedex-swarm",
+  "description": "A multi-agent swarm setup specifically for the ROEDEX overlay extension project. Provides specialized experts for frontend UI, backend parsing, and QA.",
+  "version": "1.0.0"
+}
