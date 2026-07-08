@@ -154,7 +154,7 @@ export const DataRow = memo(({ row, categoryId }: { row: TableRowData, categoryI
         )}
         
         <Tooltip content={ResourceTracker.sanitizeResourceName(row.name)}>
-          <span className={`truncate flex-1 min-w-0 ${getRarityColor(row.name)} ${isCompact ? '' : 'font-semibold drop-shadow-sm'}`}>
+          <span className={`truncate flex-1 min-w-0 ${getRarityColor(row.name)} ${isCompact ? '' : 'font-semibold [text-shadow:0_1px_1px_rgba(0,0,0,0.8)]'}`}>
             {ResourceTracker.sanitizeResourceName(row.name)}
           </span>
         </Tooltip>

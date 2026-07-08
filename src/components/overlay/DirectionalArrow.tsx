@@ -24,8 +24,11 @@ export const DirectionalArrow: React.FC = () => {
 
     if (targetZone && playerZone && targetZone !== playerZone) {
       if (playerZone === 'Town' || playerZone === 'South Town' || playerZone === 'East Town') {
-        if (ZoneEntrances[targetZone]) {
-          effectiveWaypoint = ZoneEntrances[targetZone].townSide;
+        let entrance = ZoneEntrances[targetZone];
+        if (!entrance && targetZone.toLowerCase().includes('mine')) entrance = ZoneEntrances['Mines'];
+        
+        if (entrance) {
+          effectiveWaypoint = entrance.townSide;
           isRoutingToEntrance = true;
         }
       } else {
@@ -62,7 +65,9 @@ export const DirectionalArrow: React.FC = () => {
   let effectiveWaypointName = waypointName;
   if (targetZone && playerZone && targetZone !== playerZone) {
     if (playerZone === 'Town' || playerZone === 'South Town' || playerZone === 'East Town') {
-      if (ZoneEntrances[targetZone]) effectiveWaypointName = `To ${targetZone}`;
+      let entrance = ZoneEntrances[targetZone];
+      if (!entrance && targetZone.toLowerCase().includes('mine')) entrance = ZoneEntrances['Mines'];
+      if (entrance) effectiveWaypointName = `To ${targetZone}`;
     } else {
       if (ZoneEntrances[playerZone]) effectiveWaypointName = `Exit ${playerZone}`;
     }
