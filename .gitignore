@@ -17,6 +17,7 @@ ROEDEX_MASTER_PLAN.md
 .gemini/
 agents/
 skills/
+roedex-swarm-plugins/
 plan.json
 check.json
 diff.txt
