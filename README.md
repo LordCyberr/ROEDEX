@@ -21,8 +21,17 @@
 ## 🌟 Overview
 
 **ROEDEX** is an incredibly advanced, non-intrusive, and beautifully designed overlay extension. By tracking live WebSocket traffic on the client side, ROEDEX provides players with real-time game statistics, spawn timers, and loot efficiencies without ever injecting malicious code or modifying the game client itself. 
-
 Built on **Manifest V3**, React, and Tailwind CSS, it features a deeply customizable UI that seamlessly floats over your gameplay.
+
+---
+
+## 📢 What's New in v0.0.4 (Latest Patch)
+*ROEDEX is under active development! Here are the latest additions:*
+
+- 🌍 **Complete Localization:** Finished migrating all remaining UI strings (Quest Board, Blacksmith, Players View) into our robust translation engine (English, Spanish, Russian, Korean).
+- 🐛 **Chest HUD Hotfix:** Resolved a critical bug where moving items before closing the chest would permanently stick the Minimal Chest HUD to the screen.
+- ⌨️ **Hotkey Persistence:** Custom keybindings (Layout Toggle, Lock UI, Reset Size) now flawlessly persist across extension reloads.
+- ⏱️ **Boot Sequence Timing:** The overlay and AI Companion now intelligently wait for your first active game packet (with a 5-second cinematic delay) before appearing, ensuring a perfectly timed introduction.
 
 ---
 
