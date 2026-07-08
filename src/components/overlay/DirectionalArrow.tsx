@@ -14,28 +14,79 @@ export const DirectionalArrow: React.FC = () => {
   
   const trackingStyle = useSettingsStore(state => state.tableSettings.trackingStyle) || 'center';
 
+  const zoneGraph = useTrackerStore(state => state.zoneGraph) || {};
   const [rotation, setRotation] = useState(0);
   const [distance, setDistance] = useState(0);
+
+  const findNextZone = (start: string, end: string) => {
+    if (start === end) return start;
+    
+    const adj: Record<string, string[]> = {};
+    
+    Object.keys(ZoneEntrances).forEach(zone => {
+      if (!adj['Town']) adj['Town'] = [];
+      if (!adj[zone]) adj[zone] = [];
+      adj['Town'].push(zone);
+      adj[zone].push('Town');
+    });
+    
+    Object.keys(zoneGraph).forEach(z1 => {
+      if (!adj[z1]) adj[z1] = [];
+      Object.keys(zoneGraph[z1]).forEach(z2 => {
+        if (!adj[z1].includes(z2)) adj[z1].push(z2);
+        if (!adj[z2]) adj[z2] = [];
+        if (!adj[z2].includes(z1)) adj[z2].push(z1);
+      });
+    });
+    
+    const queue: string[][] = [[start]];
+    const visited = new Set<string>([start]);
+    
+    while (queue.length > 0) {
+      const path = queue.shift()!;
+      const node = path[path.length - 1];
+      if (node === end) return path[1]; 
+      
+      const neighbors = adj[node] || [];
+      for (const neighbor of neighbors) {
+        if (!visited.has(neighbor)) {
+          visited.add(neighbor);
+          queue.push([...path, neighbor]);
+        }
+      }
+    }
+    return null;
+  };
 
   useEffect(() => {
     if (!waypoint || !playerPos) return;
     let effectiveWaypoint = waypoint;
     let isRoutingToEntrance = false;
 
-    if (targetZone && playerZone && targetZone !== playerZone) {
-      if (playerZone === 'Town' || playerZone === 'South Town' || playerZone === 'East Town') {
-        let entrance = ZoneEntrances[targetZone];
-        if (!entrance && targetZone.toLowerCase().includes('mine')) entrance = ZoneEntrances['Mines'];
-        
-        if (entrance) {
-          effectiveWaypoint = entrance.townSide;
-          isRoutingToEntrance = true;
-        }
-      } else {
-        if (ZoneEntrances[playerZone]) {
-          effectiveWaypoint = ZoneEntrances[playerZone].insideSide;
-          isRoutingToEntrance = true;
-        }
+    if (targetZone && playerZone && targetZone !== playerZone && playerZone !== 'Unknown') {
+      const nextZone = findNextZone(playerZone, targetZone);
+      
+      if (nextZone) {
+         // Try to find coordinate to go from playerZone -> nextZone
+         let doorCoord = null;
+         
+         // 1. Check dynamic graph
+         if (zoneGraph[playerZone] && zoneGraph[playerZone][nextZone]) {
+            doorCoord = zoneGraph[playerZone][nextZone];
+         }
+         // 2. Check hardcoded Town routing
+         else if ((playerZone === 'Town' || playerZone === 'South Town' || playerZone === 'East Town') && ZoneEntrances[nextZone]) {
+            doorCoord = ZoneEntrances[nextZone].townSide;
+         }
+         // 3. Check hardcoded exit to Town
+         else if (nextZone === 'Town' && ZoneEntrances[playerZone]) {
+            doorCoord = ZoneEntrances[playerZone].insideSide;
+         }
+         
+         if (doorCoord) {
+            effectiveWaypoint = doorCoord;
+            isRoutingToEntrance = true;
+         }
       }
     }
 
@@ -63,14 +114,11 @@ export const DirectionalArrow: React.FC = () => {
   if (!waypoint || !playerPos) return null;
 
   let effectiveWaypointName = waypointName;
-  if (targetZone && playerZone && targetZone !== playerZone) {
-    if (playerZone === 'Town' || playerZone === 'South Town' || playerZone === 'East Town') {
-      let entrance = ZoneEntrances[targetZone];
-      if (!entrance && targetZone.toLowerCase().includes('mine')) entrance = ZoneEntrances['Mines'];
-      if (entrance) effectiveWaypointName = `To ${targetZone}`;
-    } else {
-      if (ZoneEntrances[playerZone]) effectiveWaypointName = `Exit ${playerZone}`;
-    }
+  if (targetZone && playerZone && targetZone !== playerZone && playerZone !== 'Unknown') {
+     const nextZone = findNextZone(playerZone, targetZone);
+     if (nextZone) {
+       effectiveWaypointName = nextZone === 'Town' ? `Exit ${playerZone}` : `To ${nextZone}`;
+     }
   }
 
   const stopTracking = () => {

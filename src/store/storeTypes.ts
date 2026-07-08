@@ -434,6 +434,9 @@ export interface PlayerSlice {
   setOnlinePlayer: (id: string, player: Partial<OnlinePlayer>) => void;
   removeOnlinePlayer: (id: string) => void;
   clearOnlinePlayers: () => void;
+  
+  // Dynamic Zone Graph: { "Town": { "Mines": {x: -6, y: 59} } }
+  zoneGraph: Record<string, Record<string, Vector2>>;
 }
 
 export interface EntitySlice {

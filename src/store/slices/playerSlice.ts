@@ -11,6 +11,8 @@ export const createPlayerSlice: StateCreator<TrackerState, [], [], PlayerSlice> 
   sessionPlayerName: null,
   setSessionPlayerName: (name: string) => set({ sessionPlayerName: name }),
   
+  zoneGraph: {},
+  
   playerProfile: {
     level: 1,
     currentRunes: 0,
@@ -61,6 +63,33 @@ export const createPlayerSlice: StateCreator<TrackerState, [], [], PlayerSlice> 
         y: pos?.y || 0,
         detail: zone
       });
+    }
+    
+    // Dynamic Zone Graph Mapping
+    if (zone && zone !== 'Unknown' && state.playerZone && state.playerZone !== 'Unknown' && zone !== state.playerZone) {
+       // Only record if we actually have a position and it's not a respawn (Town jump from far away)
+       // A valid transition usually means the player is close to the door. We don't have door coordinates easily,
+       // but we know the FIRST position in the new zone is the entrance of the new zone.
+       // The LAST position in the old zone is the entrance of the old zone.
+       // We can just record the first position we see in the new zone as the target door for the old zone!
+       // Actually, to get to NEW ZONE from OLD ZONE, you need to go to OLD ZONE's door. We don't have it right now.
+       // But to get to OLD ZONE from NEW ZONE, you need to go to NEW ZONE's door (which is pos).
+       if (pos) {
+          set((s) => {
+             const graph = { ...s.zoneGraph };
+             if (!graph[zone]) graph[zone] = {};
+             // We just entered `zone` from `state.playerZone` at `pos`.
+             // So if we are ever in `zone` and want to go back to `state.playerZone`, we go to `pos`.
+             graph[zone] = { ...graph[zone], [state.playerZone]: { x: pos.x, y: pos.y } };
+             
+             // What about going from state.playerZone to zone? We need the LAST position in state.playerZone.
+             if (state.playerPosition) {
+                if (!graph[state.playerZone]) graph[state.playerZone] = {};
+                graph[state.playerZone] = { ...graph[state.playerZone], [zone]: { x: state.playerPosition.x, y: state.playerPosition.y } };
+             }
+             return { zoneGraph: graph };
+          });
+       }
     }
 
     if (!pos) {

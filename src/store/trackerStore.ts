@@ -181,6 +181,7 @@ export const useTrackerStore = create<TrackerState>()(
         // Session state
         sessionActive: state.sessionActive,
         sessionPlayerName: state.sessionPlayerName,
+        zoneGraph: state.zoneGraph,
         sessionStartTime: state.sessionStartTime,
         sessionRunes: state.sessionRunes,
         sessionLoot: state.sessionLoot,
