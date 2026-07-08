@@ -30,7 +30,8 @@ export let parserState = {
   loginTime: Date.now(),
   pendingUsername: '' as string,
   hasReceivedFirstPacket: false,
-  chestCloseTimeout: null as ReturnType<typeof setTimeout> | null
+  chestCloseTimeout: null as ReturnType<typeof setTimeout> | null,
+  lastDeathTime: 0
 };
 
 export function resetParserState() {
@@ -143,10 +144,6 @@ function processParsedPacket(eventName: string, payload: any, parsed: any) {
     if (!parserState.hasReceivedFirstPacket) {
       parserState.hasReceivedFirstPacket = true;
       NotificationManager.showInitializingToast();
-    }
-    
-    if (eventName === 'user_online') {
-      parserState.loginTime = Date.now();
     }
     
     handleEntityEvent(eventName, payload, store);

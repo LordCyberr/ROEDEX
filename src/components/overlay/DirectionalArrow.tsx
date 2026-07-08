@@ -18,6 +18,21 @@ export const DirectionalArrow: React.FC = () => {
   const [rotation, setRotation] = useState(0);
   const [distance, setDistance] = useState(0);
 
+  const waypointSetTimeRef = React.useRef<number>(0);
+  const prevWaypointRef = React.useRef<string | null>(null);
+
+  useEffect(() => {
+    if (waypoint) {
+      const wpKey = `${waypoint.x},${waypoint.y}`;
+      if (prevWaypointRef.current !== wpKey) {
+        waypointSetTimeRef.current = Date.now();
+        prevWaypointRef.current = wpKey;
+      }
+    } else {
+      prevWaypointRef.current = null;
+    }
+  }, [waypoint]);
+
   const findNextZone = (start: string, end: string) => {
     if (start === end) return start;
     
@@ -107,7 +122,10 @@ export const DirectionalArrow: React.FC = () => {
     setDistance(roundedDist);
 
     if (roundedDist <= 2 && !isRoutingToEntrance) {
-      useTrackerStore.getState().setActiveWaypoint(null, null);
+      // Prevent clearing the waypoint if it was just set (e.g. player died and hasn't teleported to spawn yet)
+      if (Date.now() - waypointSetTimeRef.current > 3000) {
+        useTrackerStore.getState().setActiveWaypoint(null, null);
+      }
     }
   }, [playerPos, waypoint, playerZone, targetZone]);
 
@@ -126,23 +144,24 @@ export const DirectionalArrow: React.FC = () => {
   };
 
   const trackingBadge = (
-    <div className="bg-black/50 border border-white/10 rounded pl-2 pr-1 py-0.5 mb-2 backdrop-blur-sm shadow-lg flex items-center gap-2 pointer-events-auto">
-      <div className="flex flex-col items-center">
+    <div className="bg-black/60 border border-[var(--border-accent)] rounded-lg pl-3 pr-2 py-1 mb-2 backdrop-blur-md shadow-[0_15px_30px_-5px_rgba(0,0,0,0.8)] flex items-center gap-2 pointer-events-auto transform hover:scale-105 transition-transform relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-lg pointer-events-none" />
+      <div className="flex flex-col items-center relative z-10">
         {effectiveWaypointName && (
-          <span className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider drop-shadow-md">
+          <span className="text-[10px] font-black text-yellow-400 uppercase tracking-widest drop-shadow-md">
             {effectiveWaypointName}
           </span>
         )}
-        <span className="text-xs font-mono font-bold text-white drop-shadow-md leading-none pb-0.5">
+        <span className="text-sm font-mono font-black text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] leading-none pb-0.5 mt-0.5">
           {distance}m
         </span>
       </div>
       <button 
         onClick={stopTracking}
-        className="text-white/50 hover:text-red-400 hover:bg-white/10 p-1 rounded transition-colors"
+        className="text-white/50 hover:text-red-400 hover:bg-white/10 p-1 rounded transition-colors relative z-10 ml-1"
         title="Stop Tracking"
       >
-        <X size={12} />
+        <X size={14} />
       </button>
     </div>
   );
@@ -209,23 +228,33 @@ export const DirectionalArrow: React.FC = () => {
   // Default Center Arrow
   return (
     <div className="fixed inset-0 pointer-events-none z-[40] overflow-hidden flex items-center justify-center">
-      <div className="absolute flex flex-col items-center justify-center -translate-y-32">
-        <div className="mb-4">
+      <div className="absolute flex flex-col items-center justify-center -translate-y-44">
+        <div className="mb-6 relative">
           {trackingBadge}
         </div>
-        <motion.div
-          animate={{ y: [-5, 5, -5] }}
-          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          className="filter drop-shadow-[0_0_8px_rgba(34,197,94,0.6)] flex items-center justify-center"
-        >
+        
+        <div className="relative flex items-center justify-center">
+          {/* 3D Ground Shadow */}
+          <motion.div 
+            animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+            className="absolute -bottom-6 w-16 h-4 bg-black blur-[4px] rounded-[100%] pointer-events-none" 
+          />
+          
           <motion.div
-            animate={{ rotate: rotation }}
-            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            className="flex items-center justify-center"
+            animate={{ y: [-5, 5, -5] }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+            className="filter drop-shadow-[0_0_8px_rgba(34,197,94,0.6)] flex items-center justify-center relative z-10"
           >
-            {arrowSvg}
+            <motion.div
+              animate={{ rotate: rotation }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              className="flex items-center justify-center"
+            >
+              {arrowSvg}
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

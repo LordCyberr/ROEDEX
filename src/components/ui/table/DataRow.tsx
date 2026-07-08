@@ -107,12 +107,15 @@ export const DataRow = memo(({ row, categoryId }: { row: TableRowData, categoryI
     rowClasses += 'px-1.5 py-0 text-[9.5px] hover:bg-[var(--bg-hover)] border-b border-[var(--border-subtle)]';
     if (rarity === 'mythic') rowClasses += ` ${tableSettings.itemGlow ? 'animate-rarity-mythic' : ''} ${ThemeColors.rarity.mythic.bg} ${ThemeColors.rarity.mythic.border}`;
     else if (rarity === 'rare') rowClasses += ` ${tableSettings.itemGlow ? 'animate-rarity-rare' : ''} ${ThemeColors.rarity.rare.bg} ${ThemeColors.rarity.rare.border}`;
+    else if (rarity === 'uncommon') rowClasses += ` ${tableSettings.itemGlow ? 'animate-rarity-uncommon' : ''} ${ThemeColors.rarity.uncommon.bg} ${ThemeColors.rarity.uncommon.border}`;
   } else {
     rowClasses += 'px-1.5 py-1 mb-0.5 text-[10px] rounded-md bg-[var(--bg-panel)] border hover:shadow-sm hover:bg-[var(--bg-hover)]';
     if (rarity === 'mythic') {
-      rowClasses += ` ${tableSettings.itemGlow ? 'animate-rarity-mythic' : ''} ${ThemeColors.rarity.mythic.bg}`;
+      rowClasses += ` ${tableSettings.itemGlow ? 'animate-rarity-mythic' : ''} ${ThemeColors.rarity.mythic.bg} ${ThemeColors.rarity.mythic.border}`;
     } else if (rarity === 'rare') {
-      rowClasses += ` ${tableSettings.itemGlow ? 'animate-rarity-rare' : ''} ${ThemeColors.rarity.rare.bg}`;
+      rowClasses += ` ${tableSettings.itemGlow ? 'animate-rarity-rare' : ''} ${ThemeColors.rarity.rare.bg} ${ThemeColors.rarity.rare.border}`;
+    } else if (rarity === 'uncommon') {
+      rowClasses += ` ${tableSettings.itemGlow ? 'animate-rarity-uncommon' : ''} ${ThemeColors.rarity.uncommon.bg} ${ThemeColors.rarity.uncommon.border}`;
     } else {
       rowClasses += ' border-[var(--border-subtle)] hover:border-[var(--text-muted)]';
     }

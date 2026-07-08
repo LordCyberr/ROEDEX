@@ -127,13 +127,11 @@ methods.forEach(method => {
       }
       
       if (stringArgs.includes('OnMMEvent ContentChanged (ChestInventory)')) {
-        if (!isBlacksmithOpen) {
-          window.postMessage({
-            source: 'ROEDEX_INTERCEPTOR',
-            type: 'WS_MESSAGE',
-            data: '42' + JSON.stringify(["chest_opened", {}])
-          }, '*');
-        }
+        window.postMessage({
+          source: 'ROEDEX_INTERCEPTOR',
+          type: 'WS_MESSAGE',
+          data: '42' + JSON.stringify(["chest_opened", {}])
+        }, '*');
       } else if (stringArgs.includes('Close Invoked')) {
         if (isBlacksmithOpen) {
           isBlacksmithOpen = false;

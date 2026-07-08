@@ -46,7 +46,10 @@ export const TrackingSettings: React.FC = () => {
       )}
       {store.minimalChestHud && (
         <button
-          onClick={() => store.setMinimalChestTutorialSeen(false)}
+          onClick={() => {
+            store.setMinimalChestTutorialSeen(false);
+            useSettingsStore.getState().addNotification({ type: 'system-online', title: 'TUTORIAL RESET', message: 'The chest HUD tutorial will play next time you open a chest.' });
+          }}
           className="w-full flex items-center justify-center gap-1 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-[10px] rounded border border-cyan-500/20 transition-colors mb-4 shadow-sm font-bold uppercase tracking-wider"
         >
           <RotateCcw size={11} /> {t('settingsGroup.resetHudTutorial')}
@@ -56,13 +59,19 @@ export const TrackingSettings: React.FC = () => {
       <div className="w-full h-px bg-white/5 my-3" />
 
       <button
-        onClick={trackerStore.clearSessionCache}
+        onClick={() => {
+          trackerStore.clearSessionCache();
+          useSettingsStore.getState().addNotification({ type: 'system-online', title: 'CACHE CLEARED', message: 'Local session cache has been erased.' });
+        }}
         className="w-full flex items-center justify-center gap-1 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[10px] rounded border border-red-500/20 transition-colors mb-1 shadow-sm font-bold uppercase tracking-wider"
       >
         <Trash2 size={11} /> {t('settings.clearSessionCache')}
       </button>
       <button
-        onClick={trackerStore.clearSession}
+        onClick={() => {
+          trackerStore.clearSession();
+          useSettingsStore.getState().addNotification({ type: 'system-online', title: 'SESSION RESET', message: 'Loot tracking session has been reset.' });
+        }}
         className="w-full flex items-center justify-center gap-1 py-1.5 bg-[var(--bg-panel)] hover:bg-[var(--bg-card)] text-[#cfd2d5] text-[10px] rounded border border-[var(--border-subtle)] transition-colors shadow-sm mb-4 font-bold uppercase tracking-wider"
       >
         <RefreshCw size={11} /> {t('settings.resetLootSession')}

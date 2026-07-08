@@ -24,18 +24,18 @@ import { FocusHighlight } from './FocusHighlight';
 // Windows lazy loaded
 import { NPCTranslationBubble } from './NPCTranslationBubble';
 import { DirectionalArrow } from './DirectionalArrow';
-import { Profiler, ProfilerOnRenderCallback, Suspense } from 'react';
+import { Profiler, ProfilerOnRenderCallback } from 'react';
 
-const ChangelogModal = React.lazy(() => import('../ui/ChangelogModal').then(m => ({ default: m.ChangelogModal })));
-const LifetimeStatsWindow = React.lazy(() => import('./LifetimeStatsWindow').then(m => ({ default: m.LifetimeStatsWindow })));
-const RunHistoryWindow = React.lazy(() => import('./RunHistoryWindow').then(m => ({ default: m.RunHistoryWindow })));
+import { ChangelogModal } from '../ui/ChangelogModal';
+import { LifetimeStatsWindow } from './LifetimeStatsWindow';
+import { RunHistoryWindow } from './RunHistoryWindow';
 
-const TrackingView = React.lazy(() => import('../views/TrackingView').then(m => ({ default: m.TrackingView })));
-const LootView = React.lazy(() => import('../views/LootView').then(m => ({ default: m.LootView })));
-const NPCView = React.lazy(() => import('../views/NPCView').then(m => ({ default: m.NPCView })));
-const QuestView = React.lazy(() => import('../views/QuestView').then(m => ({ default: m.QuestView })));
-const PlayersView = React.lazy(() => import('../views/PlayersView').then(m => ({ default: m.PlayersView })));
-const SettingsView = React.lazy(() => import('../views/SettingsView').then(m => ({ default: m.SettingsView })));
+import { TrackingView } from '../views/TrackingView';
+import { LootView } from '../views/LootView';
+import { NPCView } from '../views/NPCView';
+import { QuestView } from '../views/QuestView';
+import { PlayersView } from '../views/PlayersView';
+import { SettingsView } from '../views/SettingsView';
 
 export const OverlayContainer: React.FC = () => {
   const { currentZone } = useTrackerStore(useShallow((state: any) => ({
@@ -74,18 +74,24 @@ export const OverlayContainer: React.FC = () => {
   const [isOverlayReady, setIsOverlayReady] = React.useState(false);
 
   React.useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    
     if (isGameLoaded) {
       if (devForceOverlay || developerMode) {
         setIsOverlayReady(true);
       } else {
-        const timer = setTimeout(() => {
+        // Wait 3 seconds after receiving the first zone packet before showing overlay
+        timer = setTimeout(() => {
           setIsOverlayReady(true);
-        }, 5000); // 5 seconds delay
-        return () => clearTimeout(timer);
+        }, 3000);
       }
     } else {
       setIsOverlayReady(false);
     }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [isGameLoaded, devForceOverlay, developerMode]);
 
   const [isHovered, setIsHovered] = React.useState(false);
@@ -196,13 +202,13 @@ export const OverlayContainer: React.FC = () => {
       switch (activeTab) {
         case 'global':
         case 'favorites':
-          return <Suspense fallback={null}><TrackingView forcedTab={activeTab} /></Suspense>;
-        case 'session': return <Suspense fallback={null}><LootView /></Suspense>;
+          return <TrackingView forcedTab={activeTab} />;
+        case 'session': return <LootView />;
         case 'npcs':
-          return <Suspense fallback={null}><NPCView /></Suspense>;
-        case 'quests': return <Suspense fallback={null}><QuestView /></Suspense>;
-        case 'players': return <Suspense fallback={null}><PlayersView /></Suspense>;
-        case 'settings': return <Suspense fallback={null}><SettingsView /></Suspense>;
+          return <NPCView />;
+        case 'quests': return <QuestView />;
+        case 'players': return <PlayersView />;
+        case 'settings': return <SettingsView />;
         default: return null;
       }
     };
@@ -409,11 +415,9 @@ export const OverlayContainer: React.FC = () => {
       
       <ErrorBoundary><NotificationToaster /></ErrorBoundary>
       <ErrorBoundary><CompanionGuideOverlay /></ErrorBoundary>
-      <Suspense fallback={null}>
-        <ErrorBoundary><ChangelogModal /></ErrorBoundary>
-        <ErrorBoundary><LifetimeStatsWindow /></ErrorBoundary>
-        <ErrorBoundary><RunHistoryWindow /></ErrorBoundary>
-      </Suspense>
+      <ErrorBoundary><ChangelogModal /></ErrorBoundary>
+      <ErrorBoundary><LifetimeStatsWindow /></ErrorBoundary>
+      <ErrorBoundary><RunHistoryWindow /></ErrorBoundary>
 
     </div>
     </Profiler>

@@ -17,6 +17,7 @@ export function handleInventoryEvent(
     isBlacksmithOpen: boolean;
     loginTime: number;
     chestCloseTimeout?: ReturnType<typeof setTimeout> | null;
+    lastDeathTime?: number;
   }
 ) {
   switch (eventName) {
@@ -40,6 +41,7 @@ export function handleInventoryEvent(
       
       parserState.lastChestOpenTime = Date.now();
       state.setIsChestOpen(true);
+      settings.setMinimalChestHud(true);
       AICompanion.onChestOpen();
       
       if (settings.autoMinimizeOnChest) {
@@ -78,32 +80,6 @@ export function handleInventoryEvent(
     case 'chest': {
       const data = payload?.data;
       const items = data?.InventoryItems;
-      
-      const state = useTrackerStore.getState();
-      const settings = useSettingsStore.getState();
-      const timeSinceLogin = Date.now() - (parserState.loginTime || 0);
-      
-      if (!state.isChestOpen && !parserState.isBlacksmithOpen && timeSinceLogin > 3000) {
-        // Prevent opening the chest HUD if the packet was triggered by a weapon break or tool swap
-        if (Date.now() - parserState.lastWeaponBreakTime < 2000) {
-          // Do nothing
-        } else {
-          if (parserState.chestCloseTimeout) {
-            clearTimeout(parserState.chestCloseTimeout);
-            parserState.chestCloseTimeout = null;
-          }
-          parserState.lastChestOpenTime = Date.now();
-          state.setIsChestOpen(true);
-          AICompanion.onChestOpen();
-          
-          if (settings.autoMinimizeOnChest) {
-            settings.setIsMinimized(true);
-            Object.keys(settings.poppedOutWindows).forEach(id => {
-              settings.updatePoppedOutWindow(id, { isMinimized: true });
-            });
-          }
-        }
-      }
       
       if (Array.isArray(items)) {
         const processChest = () => {

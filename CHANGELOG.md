@@ -7,6 +7,8 @@
 - **Missing Translations:** Added missing translations for Minimal Chest HUD across English, Spanish, and Korean.
 
 ### 🛠️ Fixes & Optimizations
+- **Chest HUD Interactions:** Fixed an issue where the Minimal Chest HUD lock and close buttons were unclickable while unlocked due to a drag event conflict, and ensured the close button remains visible in the locked state.
+- **Chest HUD Tutorial:** Fixed a CSS layout bug where the tutorial pop-up inside the Minimal Chest HUD was getting severely squished and cut off; the tutorial now correctly centers on the screen.
 - **Chest HUD Persistence Bug:** Fixed a critical logic bug where moving items right before closing the chest would permanently stick the Minimal Chest HUD to the screen due to a debounce timeout conflict.
 
 ## v0.0.3 - UI Hotfixes & Persistence (2026-06-25)

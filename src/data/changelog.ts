@@ -20,7 +20,7 @@ export const CHANGELOG_DATA: ChangelogEntry[] = [
     ]
   },
   {
-    version: '0.0.3',
+    version: '0.0.4',
     date: '2026-06-25',
     title: 'UI Hotfixes & Persistence',
     features: [],

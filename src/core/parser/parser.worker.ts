@@ -19,6 +19,11 @@ self.onmessage = (e) => {
        return;
     }
     
+    if (parsed[0] === 'town:move') {
+       self.postMessage({ success: false, error: 'skip' });
+       return;
+    }
+    
     // Pass the already parsed object back to the main thread
     self.postMessage({ 
        success: true, 

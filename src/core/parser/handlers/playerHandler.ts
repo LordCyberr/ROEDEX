@@ -115,6 +115,7 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any, p
     }
 
     case 'player_death': {
+      parserState.lastDeathTime = Date.now();
       if (payload?.position && payload?.droppedRunes > 0) {
          const currentZone = useTrackerStore.getState().currentZone;
          const dropped = payload.droppedRunes;
@@ -234,6 +235,7 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any, p
         }
 
         if (d.hp === 0 || d.Hp === 0 || d.health === 0 || d.Health === 0) {
+           parserState.lastDeathTime = Date.now();
            AICompanion.onPlayerDeath();
         }
         
@@ -451,19 +453,6 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any, p
         useTrackerStore.getState().setOnlinePlayer(payload.userId, {
           username: payload.username || payload.displayName || 'Unknown',
           position: payload.position || payload.pos,
-          lastSeen: Date.now()
-        });
-      }
-      break;
-    }
-
-    case 'town:move': {
-      // Sometimes town:move has userId or id, sometimes it might not (if it's our own broadcast)
-      const id = payload?.userId || payload?.id;
-      const pos = payload?.position || payload?.pos;
-      if (id && pos) {
-        useTrackerStore.getState().setOnlinePlayer(id, {
-          position: pos,
           lastSeen: Date.now()
         });
       }
