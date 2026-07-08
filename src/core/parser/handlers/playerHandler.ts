@@ -1,4 +1,5 @@
 import { useTrackerStore } from '../../../store/trackerStore';
+import { useSettingsStore } from '../../../store/settingsStore';
 import { TrackerValidator } from '../../../utils/trackerValidator';
 import { MobTracker } from '../../trackers/MobTracker';
 import { ResourceTracker } from '../../trackers/ResourceTracker';
@@ -109,6 +110,26 @@ export function handlePlayerEvent(eventName: string, payload: any, store: any, p
           };
           store.setPlayerProfile(profileUpdate);
         }
+      }
+      break;
+    }
+
+    case 'player_death': {
+      if (payload?.position && payload?.droppedRunes > 0) {
+         const currentZone = useTrackerStore.getState().currentZone;
+         const dropped = payload.droppedRunes;
+         const pos = payload.position;
+         useTrackerStore.getState().setActiveWaypoint(
+            { x: pos.x, y: pos.y }, 
+            `Recover ${dropped} Runes`, 
+            currentZone
+         );
+         const settingsStore = useSettingsStore.getState();
+         settingsStore.addNotification({
+            type: 'combat',
+            title: 'You Died!',
+            message: `Dropped ${dropped} Runes in ${currentZone}. Tracker active.`
+         });
       }
       break;
     }
