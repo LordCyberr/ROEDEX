@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTrackerStore } from '../../store/trackerStore';
 import { useSettingsStore } from '../../store/settingsStore';
 
 import { useShallow } from 'zustand/react/shallow';
-import { motion } from 'motion/react';
+import { motion, useMotionValue } from 'motion/react';
 import { getResellValue } from '../../data/prices';
 import { useTranslation } from '../../hooks/useTranslation';
-import { Package, Backpack, X, Lock, Unlock } from 'lucide-react';
+import { Package, Backpack, X, Lock, Unlock, GripHorizontal } from 'lucide-react';
 
 export const MinimalChestHUD: React.FC = () => {
   const { t } = useTranslation();
@@ -27,7 +27,28 @@ export const MinimalChestHUD: React.FC = () => {
     bankInventory: state.bankInventory,
   })));
 
-  if (!settingsStore.minimalChestHud) return null;
+  const [isTemporarilyHidden, setIsTemporarilyHidden] = useState(false);
+  const prevChestInventory = useRef(gameStore.chestInventory);
+
+  useEffect(() => {
+    if (gameStore.chestInventory !== prevChestInventory.current) {
+      setIsTemporarilyHidden(false);
+      prevChestInventory.current = gameStore.chestInventory;
+    }
+  }, [gameStore.chestInventory]);
+
+  const x = useMotionValue(settingsStore.chestWidgetPositions?.chest?.x ?? 50);
+  const y = useMotionValue(settingsStore.chestWidgetPositions?.chest?.y ?? 220);
+
+  useEffect(() => {
+    // Only sync if the store values change substantially (e.g. on load)
+    if (settingsStore.chestWidgetPositions?.chest) {
+      x.set(settingsStore.chestWidgetPositions.chest.x);
+      y.set(settingsStore.chestWidgetPositions.chest.y);
+    }
+  }, [settingsStore.chestWidgetPositions?.chest, x, y]);
+
+  if (!settingsStore.minimalChestHud || isTemporarilyHidden) return null;
 
   // Calculate values
   const isToolOrWeapon = (name: string) => {
@@ -50,36 +71,32 @@ export const MinimalChestHUD: React.FC = () => {
     return val.toString();
   };
 
-  const handleDragEnd = (_: any, info: any) => {
-    const current = settingsStore.chestWidgetPositions?.chest || { x: 50, y: 220 };
+  const handleDragEnd = () => {
     settingsStore.setChestWidgetPosition('chest', {
-      x: current.x + info.offset.x,
-      y: current.y + info.offset.y
+      x: x.get(),
+      y: y.get()
     });
   };
 
   return (
     <>
     <motion.div
+      style={{ x, y, scale: settingsStore.globalScale, transformOrigin: 'top left', minWidth: 160 }}
       drag={!settingsStore.minimalChestHudLocked}
       dragMomentum={false}
       onDragEnd={handleDragEnd}
-      initial={{ x: settingsStore.chestWidgetPositions?.chest?.x ?? 50, y: settingsStore.chestWidgetPositions?.chest?.y ?? 220 }}
-      animate={{ x: settingsStore.chestWidgetPositions?.chest?.x ?? 50, y: settingsStore.chestWidgetPositions?.chest?.y ?? 220 }}
       className={`!absolute z-40 rounded-xl overflow-hidden shadow-2xl flex flex-col border ${
         !settingsStore.minimalChestHudLocked 
           ? 'pointer-events-auto cursor-move border-[var(--accent-primary)] bg-[var(--bg-panel)]' 
           : 'pointer-events-auto border-[var(--border-accent)] bg-[var(--bg-panel)] glass-panel'
       }`}
-      style={{ scale: settingsStore.globalScale, transformOrigin: 'top left', minWidth: 160 }}
     >
       {/* Header */}
       <div className={`flex items-center justify-between bg-black/40 px-2 py-1.5 border-b border-white/10 group ${!settingsStore.minimalChestHudLocked ? 'cursor-move' : ''}`}>
-        <span className="text-[9px] font-black tracking-widest text-[var(--text-primary)] uppercase opacity-80 flex items-center gap-1">
-          <Package size={10} className="text-[var(--accent-primary)]" />
-          {t('overlay.storageWealth')}
-        </span>
-        <div className="flex items-center gap-1 transition-opacity">
+        <div className="flex items-center gap-1 opacity-50 hover:opacity-100 transition-opacity">
+          {!settingsStore.minimalChestHudLocked && <GripHorizontal size={12} className="text-[var(--text-primary)]" />}
+        </div>
+        <div className="flex items-center gap-2 transition-opacity">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -90,19 +107,19 @@ export const MinimalChestHUD: React.FC = () => {
             className={`p-0.5 transition-colors ${settingsStore.minimalChestHudLocked ? 'text-[var(--accent-primary)]' : 'text-slate-400 hover:text-white'}`}
             title={settingsStore.minimalChestHudLocked ? "Unlock Tracker" : "Lock Tracker"}
           >
-            {settingsStore.minimalChestHudLocked ? <Lock size={10} /> : <Unlock size={10} />}
+            {settingsStore.minimalChestHudLocked ? <Lock size={12} /> : <Unlock size={12} />}
           </button>
           <button 
             onClick={(e) => {
               e.stopPropagation();
-              settingsStore.setMinimalChestHud(false);
+              setIsTemporarilyHidden(true);
             }} 
             onPointerDown={(e) => e.stopPropagation()}
             onPointerUp={(e) => e.stopPropagation()}
             className="text-slate-400 hover:text-red-400 transition-colors p-0.5"
-            title="Hide Tracker"
+            title="Temporarily Hide (Reappears on chest interact)"
           >
-            <X size={10} />
+            <X size={12} />
           </button>
         </div>
       </div>
@@ -176,7 +193,7 @@ export const MinimalChestHUD: React.FC = () => {
             <div className="w-5 h-5 rounded bg-[var(--accent-primary)] text-black font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">3</div>
             <div>
               <p className="text-[11px] font-bold text-white mb-1">Toggle Visibility</p>
-              <p className="text-[10px] text-slate-400 leading-relaxed">If you want to hide this HUD, you can toggle "Minimal Chest Hud" off in the Settings menu at any time.</p>
+              <p className="text-[10px] text-slate-400 leading-relaxed">If you want to hide this HUD, you can close it temporarily, or toggle it off in the Settings menu at any time.</p>
             </div>
           </div>
         </div>
