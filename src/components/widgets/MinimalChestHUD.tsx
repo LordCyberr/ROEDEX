@@ -83,6 +83,7 @@ export const MinimalChestHUD: React.FC = () => {
       dragMomentum={false}
       onDragEnd={handleDragEnd}
       initial={{ x: settingsStore.chestWidgetPositions?.chest?.x ?? 50, y: settingsStore.chestWidgetPositions?.chest?.y ?? 220 }}
+      animate={{ x: settingsStore.chestWidgetPositions?.chest?.x ?? 50, y: settingsStore.chestWidgetPositions?.chest?.y ?? 220 }}
       className={`absolute z-40 rounded-xl overflow-hidden shadow-2xl flex flex-col border ${
         !settingsStore.minimalChestHudLocked 
           ? 'pointer-events-auto cursor-move border-emerald-500/50 bg-[var(--bg-panel)]' 
