@@ -38,9 +38,8 @@ import { PlayersView } from '../views/PlayersView';
 import { SettingsView } from '../views/SettingsView';
 
 export const OverlayContainer: React.FC = () => {
-  const { currentZone, connected } = useTrackerStore(useShallow((state: any) => ({
-    currentZone: state.currentZone,
-    connected: state.connected
+  const { currentZone } = useTrackerStore(useShallow((state: any) => ({
+    currentZone: state.currentZone
   })));
 
   const {
@@ -48,7 +47,7 @@ export const OverlayContainer: React.FC = () => {
     mergeTab, overlayPosition, setOverlayPosition,
     activeOpacity, idleOpacity, isUILocked, globalScale,
     tabDimensions, theme, tutorialStep, tutorialCompleted,
-    devForceOverlay, visualQuality
+    devForceOverlay, visualQuality, developerMode
   } = useSettingsStore(useShallow((state: any) => ({
     activeTab: state.activeTab,
     isMinimized: state.isMinimized,
