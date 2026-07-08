@@ -66,27 +66,28 @@ export const OverlayContainer: React.FC = () => {
     tutorialStep: state.notificationSettings?.tutorialStep || 0,
     tutorialCompleted: state.notificationSettings?.tutorialCompleted || false,
     devForceOverlay: state.devForceOverlay,
-    visualQuality: state.visualQuality
+    visualQuality: state.visualQuality,
+    developerMode: state.developerMode
   })));
   const { t } = useTranslation();
 
-  const isGameLoaded = devForceOverlay || connected || (!!currentZone && currentZone !== 'Unknown');
+  const isGameLoaded = devForceOverlay || developerMode || (!!currentZone && currentZone !== 'Unknown');
   const [isOverlayReady, setIsOverlayReady] = React.useState(false);
 
   React.useEffect(() => {
     if (isGameLoaded) {
-      if (devForceOverlay) {
+      if (devForceOverlay || developerMode) {
         setIsOverlayReady(true);
       } else {
         const timer = setTimeout(() => {
           setIsOverlayReady(true);
-        }, 10000); // 10 seconds delay
+        }, 5000); // 5 seconds delay
         return () => clearTimeout(timer);
       }
     } else {
       setIsOverlayReady(false);
     }
-  }, [isGameLoaded, devForceOverlay]);
+  }, [isGameLoaded, devForceOverlay, developerMode]);
 
   const [isHovered, setIsHovered] = React.useState(false);
   

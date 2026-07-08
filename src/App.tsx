@@ -18,7 +18,11 @@ function App() {
     // Load persisted settings
     if (typeof chrome !== 'undefined' && chrome?.storage?.local) {
       try {
-        chrome.storage.local.get(['layoutMode', 'verticalGroupingMode', 'collapsedCategories', 'collapsedSidebarZones', 'isMinimized', 'minimizeHotkey'], (result) => {
+        chrome.storage.local.get([
+          'layoutMode', 'verticalGroupingMode', 'collapsedCategories', 
+          'collapsedSidebarZones', 'isMinimized', 'minimizeHotkey',
+          'toggleLayoutHotkey', 'resetSizeHotkey', 'lockUiHotkey'
+        ], (result) => {
           if (chrome.runtime.lastError) return; // Ignore errors
           if (result.layoutMode) {
             useSettingsStore.getState().setLayoutMode(result.layoutMode as 'vertical' | 'horizontal');
@@ -37,6 +41,15 @@ function App() {
           }
           if (result.minimizeHotkey) {
             useSettingsStore.setState({ minimizeHotkey: result.minimizeHotkey as string });
+          }
+          if (result.toggleLayoutHotkey) {
+            useSettingsStore.setState({ toggleLayoutHotkey: result.toggleLayoutHotkey as string });
+          }
+          if (result.resetSizeHotkey) {
+            useSettingsStore.setState({ resetSizeHotkey: result.resetSizeHotkey as string });
+          }
+          if (result.lockUiHotkey) {
+            useSettingsStore.setState({ lockUiHotkey: result.lockUiHotkey as string });
           }
         });
       } catch (err) {
@@ -60,7 +73,10 @@ function App() {
             state.collapsedCategories !== prevState.collapsedCategories ||
             state.collapsedSidebarZones !== prevState.collapsedSidebarZones ||
             state.isMinimized !== prevState.isMinimized ||
-            state.minimizeHotkey !== prevState.minimizeHotkey) {
+            state.minimizeHotkey !== prevState.minimizeHotkey ||
+            state.toggleLayoutHotkey !== prevState.toggleLayoutHotkey ||
+            state.resetSizeHotkey !== prevState.resetSizeHotkey ||
+            state.lockUiHotkey !== prevState.lockUiHotkey) {
           try {
             chrome.storage.local.set({
               layoutMode: state.layoutMode,
@@ -68,7 +84,10 @@ function App() {
               collapsedCategories: state.collapsedCategories,
               collapsedSidebarZones: state.collapsedSidebarZones,
               isMinimized: state.isMinimized,
-              minimizeHotkey: state.minimizeHotkey
+              minimizeHotkey: state.minimizeHotkey,
+              toggleLayoutHotkey: state.toggleLayoutHotkey,
+              resetSizeHotkey: state.resetSizeHotkey,
+              lockUiHotkey: state.lockUiHotkey
             }, () => {
               if (chrome.runtime.lastError) return; // Ignore errors
             });
