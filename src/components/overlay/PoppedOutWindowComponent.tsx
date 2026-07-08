@@ -5,10 +5,10 @@ import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
 import { Suspense } from 'react';
 
-import { TrackingView } from '../views/TrackingView';
-import { LootView } from '../views/LootView';
-import { NPCView } from '../views/NPCView';
-import { SettingsView } from '../views/SettingsView';
+const TrackingView = React.lazy(() => import('../views/TrackingView').then(m => ({ default: m.TrackingView })));
+const LootView = React.lazy(() => import('../views/LootView').then(m => ({ default: m.LootView })));
+const NPCView = React.lazy(() => import('../views/NPCView').then(m => ({ default: m.NPCView })));
+const SettingsView = React.lazy(() => import('../views/SettingsView').then(m => ({ default: m.SettingsView })));
 
 import { Tooltip } from '../ui/Tooltip';
 import { Globe2, Star, PackageOpen, Users, Settings, Minus, X, RefreshCw, ScrollText, Lock, Unlock, User, Activity, Radar } from 'lucide-react';
