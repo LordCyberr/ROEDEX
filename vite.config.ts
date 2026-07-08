@@ -12,16 +12,6 @@ export default defineConfig({
     crx({ manifest }),
   ],
   build: {
-    chunkSizeWarningLimit: 1000,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          ui: ['lucide-react', 'motion/react'],
-          store: ['zustand'],
-          i18n: ['./src/i18n/translations.ts', './src/i18n/companionTranslations.ts']
-        }
-      }
-    }
+    chunkSizeWarningLimit: 2000
   }
 });

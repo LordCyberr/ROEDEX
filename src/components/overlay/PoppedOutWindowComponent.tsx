@@ -3,12 +3,12 @@ import { motion, useMotionValue, useDragControls } from 'motion/react';
 import { PoppedOutWindow } from '../../store/storeTypes';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
-import { Suspense, lazy } from 'react';
+import { Suspense } from 'react';
 
-const TrackingView = lazy(() => import('../views/TrackingView').then(module => ({ default: module.TrackingView })));
-const LootView = lazy(() => import('../views/LootView').then(module => ({ default: module.LootView })));
-const NPCView = lazy(() => import('../views/NPCView').then(module => ({ default: module.NPCView })));
-const SettingsView = lazy(() => import('../views/SettingsView').then(module => ({ default: module.SettingsView })));
+import { TrackingView } from '../views/TrackingView';
+import { LootView } from '../views/LootView';
+import { NPCView } from '../views/NPCView';
+import { SettingsView } from '../views/SettingsView';
 
 import { Tooltip } from '../ui/Tooltip';
 import { Globe2, Star, PackageOpen, Users, Settings, Minus, X, RefreshCw, ScrollText, Lock, Unlock, User, Activity, Radar } from 'lucide-react';

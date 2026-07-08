@@ -24,18 +24,18 @@ import { FocusHighlight } from './FocusHighlight';
 // Windows lazy loaded
 import { NPCTranslationBubble } from './NPCTranslationBubble';
 import { DirectionalArrow } from './DirectionalArrow';
-import { Profiler, ProfilerOnRenderCallback, lazy, Suspense } from 'react';
+import { Profiler, ProfilerOnRenderCallback, Suspense } from 'react';
 
-const ChangelogModal = lazy(() => import('../ui/ChangelogModal').then(module => ({ default: module.ChangelogModal })));
-const LifetimeStatsWindow = lazy(() => import('./LifetimeStatsWindow').then(module => ({ default: module.LifetimeStatsWindow })));
-const RunHistoryWindow = lazy(() => import('./RunHistoryWindow').then(module => ({ default: module.RunHistoryWindow })));
+import { ChangelogModal } from '../ui/ChangelogModal';
+import { LifetimeStatsWindow } from './LifetimeStatsWindow';
+import { RunHistoryWindow } from './RunHistoryWindow';
 
-const TrackingView = lazy(() => import('../views/TrackingView').then(module => ({ default: module.TrackingView })));
-const LootView = lazy(() => import('../views/LootView').then(module => ({ default: module.LootView })));
-const NPCView = lazy(() => import('../views/NPCView').then(module => ({ default: module.NPCView })));
-const QuestView = lazy(() => import('../views/QuestView').then(module => ({ default: module.QuestView })));
-const PlayersView = lazy(() => import('../views/PlayersView').then(module => ({ default: module.PlayersView })));
-const SettingsView = lazy(() => import('../views/SettingsView').then(module => ({ default: module.SettingsView })));
+import { TrackingView } from '../views/TrackingView';
+import { LootView } from '../views/LootView';
+import { NPCView } from '../views/NPCView';
+import { QuestView } from '../views/QuestView';
+import { PlayersView } from '../views/PlayersView';
+import { SettingsView } from '../views/SettingsView';
 
 export const OverlayContainer: React.FC = () => {
   const { currentZone, connected } = useTrackerStore(useShallow((state: any) => ({
