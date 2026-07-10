@@ -186,6 +186,9 @@ export const AboutSettings: React.FC = () => {
             <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">{t('settings.officialSupport') || "Official Support"}</span>
           </div>
         </div>
+        <p className="text-[9px] text-[var(--text-muted)] mt-3 text-center italic leading-relaxed">
+          {t('settings.disclaimer') || "ROEDEX is not audited or officially endorsed by Ruyui Studios."}
+        </p>
       </div>
     </div>
   );

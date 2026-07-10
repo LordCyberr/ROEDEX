@@ -30,7 +30,8 @@
 
 > [!IMPORTANT]
 > **Colaboración y Soporte Oficial:**  
-> ROEDEX se desarrolla en estrecha colaboración con **Voxel Queen** (Co-Fundadora de *Roots of Embervault*) y cuenta con el apoyo oficial de **Ruyui Studios** a través de la entrega de datos brutos del mapa del juego. ¡Esta colaboración permite el funcionamiento de nuestro mapeo de aparición estática de alta precisión y herramientas de navegación avanzada!
+> ROEDEX se desarrolla en estrecha colaboración con **Voxel Queen** (Co-Fundadora de *Roots of Embervault*) y cuenta con el apoyo oficial de **Ruyui Studios** a través de la entrega de datos brutos del mapa del juego. ¡Esta colaboración permite el funcionamiento de nuestro mapeo de aparición estática de alta precisión y herramientas de navegación avanzada!  
+> *Nota: ROEDEX no está auditado ni respaldado oficialmente por Ruyui Studios.*
 
 ---
 
