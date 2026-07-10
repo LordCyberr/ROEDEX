@@ -29,9 +29,9 @@
 </div>
 
 > [!IMPORTANT]
-> **Colaboración y Soporte Oficial:**  
-> ROEDEX se desarrolla en estrecha colaboración con **Voxel Queen** (Co-Fundadora de *Roots of Embervault*) y cuenta con el apoyo oficial de **Ruyui Studios** a través de la entrega de datos brutos del mapa del juego. ¡Esta colaboración permite el funcionamiento de nuestro mapeo de aparición estática de alta precisión y herramientas de navegación avanzada!  
-> *Nota: ROEDEX no está auditado ni respaldado oficialmente por Ruyui Studios.*
+> **Aviso Legal del Proyecto de la Comunidad y Atribuciones:**  
+> ROEDEX es una herramienta independiente gestionada por la comunidad y **no** está auditada ni respaldada oficialmente por **Ruyui Studios**.  
+> Las funciones avanzadas de mapas y los rastreadores de coordenadas funcionan gracias a los datos brutos de mapas proporcionados generosamente por **Voxel Queen** (Co-Fundadora de *Roots of Embervault*).
 
 ---
 
@@ -139,7 +139,7 @@ ROEDEX es posible gracias a la dedicación de nuestra comunidad y el apoyo de lo
 *   👑 **Lord Cyberr** – Desarrollador Principal y Creador del Proyecto
 *   🛠️ **MrSnorch** – Contribuciones, orientación y soporte de arquitectura.
 *   💎 **Voxel Queen** – Co-Fundadora de *Roots of Embervault* — por sus llamadas, orientación y por proveer los archivos brutos de los mapas.
-*   🎮 **Ruyui Studios** – Los desarrolladores de *Roots of Embervault*, por apoyar las modificaciones de la comunidad y la co-creación.
+*   🎮 **Ruyui Studios** – Los desarrolladores de *Roots of Embervault* (Nota: ROEDEX es un proyecto independiente y no está afiliado oficialmente a Ruyui Studios).
 
 ---
 

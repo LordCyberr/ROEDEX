@@ -183,7 +183,7 @@ export const AboutSettings: React.FC = () => {
           </div>
           <div className="flex justify-between items-center bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-subtle)]">
             <span className="text-[11px] text-[var(--text-primary)] font-bold">{t('about.ruyuiStudios') || "Ruyui Studios"}</span>
-            <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">{t('settings.officialSupport') || "Official Support"}</span>
+            <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">{t('settings.gameDevelopers') || "Game Developers"}</span>
           </div>
         </div>
         <p className="text-[9px] text-[var(--text-muted)] mt-3 text-center italic leading-relaxed">
