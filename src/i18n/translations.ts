@@ -28,6 +28,8 @@ export const translations = {
       "credits": "Credits & Acknowledgements",
       "leadDeveloper": "Lead Developer & Creator",
       "guidanceContributions": "Guidance & Contributions",
+      "mapDataSupport": "Map Data Support",
+      "officialSupport": "Official Support",
       "general": "General",
       "uiTheme": "UI Theme",
       "displayDensity": "Display Density",
@@ -238,7 +240,9 @@ export const translations = {
     },
     "about": {
       "lordCyberr": "Lord Cyberr",
-      "mrSnorch": "Mr. Snorch"
+      "mrSnorch": "Mr. Snorch",
+      "voxelQueen": "Voxel Queen",
+      "ruyuiStudios": "Ruyui Studios"
     },
     "debug": {
       "armorUi": "Armor Ui",
@@ -495,6 +499,8 @@ export const translations = {
       "credits": "Créditos y Agradecimientos",
       "leadDeveloper": "Desarrollador Principal y Creador",
       "guidanceContributions": "Orientación y Contribuciones",
+      "mapDataSupport": "Soporte de Datos de Mapa",
+      "officialSupport": "Soporte Oficial",
       "general": "General",
       "uiTheme": "Tema UI",
       "displayDensity": "Densidad de Pantalla",
@@ -704,7 +710,9 @@ export const translations = {
     },
     "about": {
       "lordCyberr": "Lord Cyberr",
-      "mrSnorch": "Mr. Snorch"
+      "mrSnorch": "Mr. Snorch",
+      "voxelQueen": "Voxel Queen",
+      "ruyuiStudios": "Ruyui Studios"
     },
     "debug": {
       "armorUi": "Interfaz de usuario de armadura",
@@ -960,6 +968,8 @@ export const translations = {
       "credits": "크레딧 및 감사",
       "leadDeveloper": "수석 개발자 및 제작자",
       "guidanceContributions": "지도 및 기여",
+      "mapDataSupport": "지도 데이터 지원",
+      "officialSupport": "공식 지원",
       "general": "일반",
       "uiTheme": "UI 테마",
       "displayDensity": "표시 밀도",
@@ -1168,7 +1178,9 @@ export const translations = {
     },
     "about": {
       "lordCyberr": "Lord Cyberr",
-      "mrSnorch": "Mr. Snorch"
+      "mrSnorch": "Mr. Snorch",
+      "voxelQueen": "Voxel Queen",
+      "ruyuiStudios": "Ruyui Studios"
     },
     "debug": {
       "armorUi": "갑옷Ui",

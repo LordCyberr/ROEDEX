@@ -78,7 +78,7 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
     tutorialCompleted: state.notificationSettings?.tutorialCompleted || false
   })));
   
-  const { enemies, resources, timers, throttledPlayerPosition } = useThrottledEntities(300);
+  const { enemies, resources, timers, throttledPlayerPosition, loot } = useThrottledEntities(300);
 
   const effectiveTab = forcedTab || activeTab;
   const isHorizontal = layoutMode === 'horizontal';
@@ -96,7 +96,8 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
       pos: Vector2,
       isAlive: boolean,
       isTimerInjection: boolean,
-      respawnTimeMs?: number
+      respawnTimeMs?: number,
+      quantityAmount?: number
     ) => {
       // Normalize zone name
       const zoneDisplay = zone.replace(/^./, (str) => str.toUpperCase());
@@ -135,12 +136,12 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
       
       if (!isTimerInjection) {
         if (isAlive) {
-          row.counts!.alive++;
+          row.counts!.alive += (quantityAmount || 1);
         } else {
-          row.counts!.dead++;
+          row.counts!.dead += (quantityAmount || 1);
         }
       } else {
-        row.counts!.dead++;
+        row.counts!.dead += (quantityAmount || 1);
       }
 
       if (respawnTimeMs && respawnTimeMs > now) {
@@ -194,6 +195,22 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
       processItem(t.name, t.category, zoneStr, t.pos, false, true, true, t.expectedRespawnTime);
     });
 
+    // 3. Process Loot
+    if (loot) {
+      Object.values(loot).forEach(drop => {
+        const name = formatDisplayName(drop.itemName);
+        const zone = currentZone || 'Unknown';
+        
+        if (effectiveTab === 'favorites' && !isFavorite(name)) return;
+        if (displayMode === 'current_zone' && zone !== currentZone) return;
+
+        const dist = tableSettings.showDistance ? calculateDistance(throttledPlayerPosition, drop.pos) : -1;
+        const categoryKey = 'loot';
+        const categoryDisplayName = t('categories.loot') || 'Loot';
+        addOrUpdate(zone, categoryKey, categoryDisplayName, name, dist, drop.pos, true, false, undefined, drop.quantity);
+      });
+    }
+
     const sortByDist = (a: TableRowData, b: TableRowData) => {
       if (a.dist === -1 && b.dist === -1) {
         if (tableSettings.raritySortOrder && tableSettings.raritySortOrder !== 'none') {
@@ -214,7 +231,7 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
     };
 
     // Convert to sorted arrays
-    const catOrderMap: Record<string, number> = { 'mobs': 1, 'ores': 2, 'trees': 3, 'plants': 4 };
+    const catOrderMap: Record<string, number> = { 'mobs': 1, 'ores': 2, 'trees': 3, 'plants': 4, 'loot': 5 };
 
     const sortedGroups = Object.values(groups).map(g => ({
       id: g.id,
@@ -240,7 +257,7 @@ export const TrackingView: React.FC<TrackingViewProps> = ({ forcedTab }) => {
     });
 
     return sortedGroups;
-  }, [enemies, resources, timers, throttledPlayerPosition, effectiveTab, favorites, displayMode, currentZone, tableSettings.showDistance, tableSettings.raritySortOrder, tutorialStep, tutorialCompleted]);
+  }, [enemies, resources, timers, loot, throttledPlayerPosition, effectiveTab, favorites, displayMode, currentZone, tableSettings.showDistance, tableSettings.raritySortOrder, tutorialStep, tutorialCompleted]);
 
   if (effectiveTab !== 'global' && effectiveTab !== 'favorites') return null;
 

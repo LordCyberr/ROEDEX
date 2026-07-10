@@ -177,6 +177,14 @@ export const AboutSettings: React.FC = () => {
             <span className="text-[11px] text-[var(--text-primary)] font-bold">{t('about.mrSnorch')}</span>
             <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">{t('settings.guidanceContributions')}</span>
           </div>
+          <div className="flex justify-between items-center bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-subtle)]">
+            <span className="text-[11px] text-[var(--text-primary)] font-bold">{t('about.voxelQueen') || "Voxel Queen"}</span>
+            <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">{t('settings.mapDataSupport') || "Map Data Support"}</span>
+          </div>
+          <div className="flex justify-between items-center bg-[var(--bg-card)] p-2 rounded-lg border border-[var(--border-subtle)]">
+            <span className="text-[11px] text-[var(--text-primary)] font-bold">{t('about.ruyuiStudios') || "Ruyui Studios"}</span>
+            <span className="text-[9px] text-[var(--accent-primary)] uppercase tracking-widest">{t('settings.officialSupport') || "Official Support"}</span>
+          </div>
         </div>
       </div>
     </div>

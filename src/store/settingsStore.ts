@@ -144,6 +144,8 @@ export const useSettingsStore = create<UISlice>()(
           };
         }
 
+        const mergedMinimalChestHudOpacity = persistedState?.minimalChestHudOpacity ?? currentState.minimalChestHudOpacity;
+
         const mergedOverlayPosition = {
           ...currentState.overlayPosition,
           ...(persistedState?.overlayPosition || {})
@@ -168,6 +170,7 @@ export const useSettingsStore = create<UISlice>()(
           weaponUISettings: weaponSettings,
           armorUISettings: armorSettings,
 
+          minimalChestHudOpacity: mergedMinimalChestHudOpacity,
           chestWidgetPositions: mergedChestWidgetPositions,
           overlayPosition: mergedOverlayPosition,
           orbPosition: mergedOrbPosition,

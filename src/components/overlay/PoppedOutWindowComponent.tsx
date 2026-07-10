@@ -13,6 +13,7 @@ import { SettingsView } from '../views/SettingsView';
 import { Tooltip } from '../ui/Tooltip';
 import { Globe2, Star, PackageOpen, Users, Settings, Minus, X, RefreshCw, ScrollText, Lock, Unlock, User, Activity, Radar } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { ErrorBoundary } from '../widgets/ErrorBoundary';
 
 const tabsConfig = [
   { id: 'global', icon: Globe2, label: 'Global Data' },
@@ -304,7 +305,9 @@ export const PoppedOutWindowComponent = React.memo<{ window: PoppedOutWindow, co
       </div>
 
       <div className={`flex-1 min-h-0 flex flex-col overflow-y-auto custom-scrollbar ${isHorizontal ? 'p-2 gap-1.5' : 'p-1'} ${effectiveLock ? 'pointer-events-none' : 'pointer-events-auto'}`}>
-        {renderContent()}
+        <ErrorBoundary>
+          {renderContent()}
+        </ErrorBoundary>
       </div>
 
       {/* Custom Resize Handles */}

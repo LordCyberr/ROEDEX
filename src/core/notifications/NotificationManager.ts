@@ -1,6 +1,7 @@
 import { useTrackerStore } from '../../store/trackerStore';
 import { useSettingsStore } from '../../store/settingsStore';
 import { translations } from '../../i18n/translations';
+import { SAFE_ZONES } from '../constants';
 export class NotificationManager {
   private static lastDurabilityWarning: number = 0;
 
@@ -38,7 +39,8 @@ export class NotificationManager {
     if (!settingsStore.notificationSettings.enabled || !settingsStore.notificationSettings.toasts || !settingsStore.notificationSettings.toolWarning) return;
     
     const zone = gameStore.currentZone.toLowerCase();
-    if (!zone.includes('town') && !zone.includes('bank') && !zone.includes('home')) {
+    const isSafeZone = SAFE_ZONES.some(z => zone.includes(z));
+    if (!isSafeZone) {
        if (this.weaponTimer) clearTimeout(this.weaponTimer);
        this.weaponTimer = setTimeout(() => {
           const currentState = useTrackerStore.getState();
@@ -51,6 +53,23 @@ export class NotificationManager {
           }
        }, 1500);
     }
+  }
+
+  private static lastToolWarningTime: number = 0;
+
+  static showToolWarningToast(toolName: string) {
+    const settingsStore = useSettingsStore.getState();
+    if (!settingsStore.notificationSettings.enabled || !settingsStore.notificationSettings.toasts || !settingsStore.notificationSettings.toolWarning) return;
+    
+    const now = Date.now();
+    if (now - this.lastToolWarningTime < 60000) return; // 1 minute cooldown
+    this.lastToolWarningTime = now;
+
+    settingsStore.addNotification({
+      type: 'combat', // Using combat type for red/warning style
+      title: 'Tool Not Equipped!',
+      message: `You have a ${toolName} in your inventory but it is not equipped. Put it in your hotbar to use it!`
+    });
   }
 
   private static hasShownInitializing: boolean = false;

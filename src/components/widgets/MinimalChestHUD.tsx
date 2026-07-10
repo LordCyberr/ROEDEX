@@ -6,7 +6,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { motion, useMotionValue } from 'motion/react';
 import { getResellValue } from '../../data/prices';
 import { useTranslation } from '../../hooks/useTranslation';
-import { Package, Backpack, X, Lock, Unlock, GripHorizontal } from 'lucide-react';
+import { Package, Backpack, X, Lock, Unlock, GripHorizontal, Settings } from 'lucide-react';
 
 export const MinimalChestHUD: React.FC = () => {
   const { t } = useTranslation();
@@ -19,7 +19,9 @@ export const MinimalChestHUD: React.FC = () => {
     setChestWidgetPosition: state.setChestWidgetPosition,
     globalScale: state.globalScale,
     minimalChestTutorialSeen: state.minimalChestTutorialSeen,
-    setMinimalChestTutorialSeen: state.setMinimalChestTutorialSeen
+    setMinimalChestTutorialSeen: state.setMinimalChestTutorialSeen,
+    minimalChestHudOpacity: state.minimalChestHudOpacity,
+    setMinimalChestHudOpacity: state.setMinimalChestHudOpacity
   })));
 
   const gameStore = useTrackerStore(useShallow(state => ({
@@ -28,14 +30,15 @@ export const MinimalChestHUD: React.FC = () => {
   })));
 
   const [isTemporarilyHidden, setIsTemporarilyHidden] = useState(false);
-  const prevChestInventory = useRef(gameStore.chestInventory);
+  const [showSettings, setShowSettings] = useState(false);
+  const prevBankInventory = useRef(gameStore.bankInventory);
 
   useEffect(() => {
-    if (gameStore.chestInventory !== prevChestInventory.current) {
+    if (gameStore.bankInventory !== prevBankInventory.current) {
       setIsTemporarilyHidden(false);
-      prevChestInventory.current = gameStore.chestInventory;
+      prevBankInventory.current = gameStore.bankInventory;
     }
-  }, [gameStore.chestInventory]);
+  }, [gameStore.bankInventory]);
 
   const x = useMotionValue(settingsStore.chestWidgetPositions?.chest?.x ?? 50);
   const y = useMotionValue(settingsStore.chestWidgetPositions?.chest?.y ?? 220);
@@ -81,22 +84,43 @@ export const MinimalChestHUD: React.FC = () => {
   return (
     <>
     <motion.div
-      style={{ x, y, scale: settingsStore.globalScale, transformOrigin: 'top left', minWidth: 160 }}
+      style={{ 
+        x, y, scale: settingsStore.globalScale, transformOrigin: 'top left', minWidth: 160, 
+        resize: settingsStore.minimalChestHudLocked ? 'none' : 'both'
+      }}
       drag={!settingsStore.minimalChestHudLocked}
       dragMomentum={false}
       onDragEnd={handleDragEnd}
-      className={`!absolute z-40 rounded-xl overflow-hidden shadow-2xl flex flex-col border ${
+      className={`!absolute z-40 rounded-xl overflow-hidden shadow-2xl flex flex-col border transition-colors ${
         !settingsStore.minimalChestHudLocked 
-          ? 'pointer-events-auto cursor-move border-[var(--accent-primary)] bg-[var(--bg-panel)]' 
-          : 'pointer-events-auto border-[var(--border-accent)] bg-[var(--bg-panel)] glass-panel'
+          ? 'pointer-events-auto cursor-move border-[var(--accent-primary)]' 
+          : 'pointer-events-none border-[var(--border-accent)]'
       }`}
     >
+      {/* Background with Opacity */}
+      <div 
+        className="absolute inset-0 bg-[var(--bg-panel)] glass-panel -z-10 pointer-events-none"
+        style={{ opacity: settingsStore.minimalChestHudOpacity }}
+      />
+
       {/* Header */}
-      <div className={`flex items-center justify-between bg-black/40 px-2 py-1.5 border-b border-white/10 group ${!settingsStore.minimalChestHudLocked ? 'cursor-move' : ''}`}>
+      <div className={`flex items-center justify-between bg-black/40 px-2 py-1.5 border-b border-white/10 group pointer-events-auto ${!settingsStore.minimalChestHudLocked ? 'cursor-move' : ''}`}>
         <div className="flex items-center gap-1 opacity-50 hover:opacity-100 transition-opacity">
           {!settingsStore.minimalChestHudLocked && <GripHorizontal size={12} className="text-[var(--text-primary)]" />}
         </div>
         <div className="flex items-center gap-2 transition-opacity">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowSettings(!showSettings);
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            onPointerUp={(e) => e.stopPropagation()}
+            className="p-0.5 text-slate-400 hover:text-white transition-colors"
+            title="Settings"
+          >
+            <Settings size={12} />
+          </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -124,8 +148,27 @@ export const MinimalChestHUD: React.FC = () => {
         </div>
       </div>
 
+      {/* Settings Popover */}
+      {showSettings && (
+        <div className="bg-[var(--bg-panel)] border-b border-white/10 p-2 pointer-events-auto">
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Background Opacity</span>
+            <input 
+              type="range" 
+              min="0" 
+              max="1" 
+              step="0.05" 
+              value={settingsStore.minimalChestHudOpacity}
+              onChange={(e) => settingsStore.setMinimalChestHudOpacity(parseFloat(e.target.value))}
+              onPointerDown={(e) => e.stopPropagation()}
+              className="w-full accent-[var(--accent-primary)]"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Body */}
-      <div className="flex flex-col p-2 gap-1.5">
+      <div className={`flex flex-col p-2 gap-1.5 h-full ${!settingsStore.minimalChestHudLocked ? 'pointer-events-auto' : ''}`}>
         
         {/* Backpack Value */}
         <div className="flex items-center justify-between bg-[var(--bg-card)] rounded p-1.5 border border-[var(--border-subtle)]">

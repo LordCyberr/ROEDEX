@@ -19,9 +19,21 @@ export const createPlayerSlice: StateCreator<TrackerState, [], [], PlayerSlice> 
     runesRequired: 1000,
     name: ''
   },
-  setPlayerProfile: (profile: Partial<PlayerSlice['playerProfile']>) => set((state) => ({
-    playerProfile: { ...state.playerProfile, ...profile }
-  })),
+  setPlayerProfile: (profile: Partial<PlayerSlice['playerProfile']>) => set((state) => {
+    let hasChanges = false;
+    for (const key in profile) {
+      const k = key as keyof typeof profile;
+      if (profile[k] !== undefined && profile[k] !== state.playerProfile[k]) {
+        hasChanges = true;
+        break;
+      }
+    }
+    if (!hasChanges) return state;
+    
+    return {
+      playerProfile: { ...state.playerProfile, ...profile }
+    };
+  }),
 
   isGuildPassActive: false,
   setIsGuildPassActive: (active: boolean) => set({ isGuildPassActive: active }),
@@ -125,7 +137,20 @@ export const createPlayerSlice: StateCreator<TrackerState, [], [], PlayerSlice> 
   },
   
   weapon: null,
-  setWeapon: (weapon: WeaponState | null) => set({ weapon }),
+  setWeapon: (weapon: WeaponState | null) => set((state) => {
+    if (!weapon && !state.weapon) return state;
+    if (weapon && state.weapon) {
+      if (
+        weapon.name === state.weapon.name &&
+        weapon.durability === state.weapon.durability &&
+        weapon.maxDurability === state.weapon.maxDurability &&
+        weapon.slot === state.weapon.slot
+      ) {
+        return state; // No changes
+      }
+    }
+    return { weapon };
+  }),
   slotDurabilities: {},
   updateSlotDurability: (slot: number, maxDur: number) => set((state) => ({
     slotDurabilities: { ...state.slotDurabilities, [slot]: maxDur }

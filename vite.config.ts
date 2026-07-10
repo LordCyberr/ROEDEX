@@ -13,7 +13,9 @@ export default defineConfig({
     crx({ manifest }),
   ],
   build: {
-    chunkSizeWarningLimit: 2000
+    rollupOptions: {
+      output: {}
+    }
   },
   test: {
     environment: 'jsdom',

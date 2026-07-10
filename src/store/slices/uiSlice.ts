@@ -128,6 +128,8 @@ export const createUISlice: StateCreator<UISlice, [], [], UISlice> = (set) => ({
   setMinimalChestHudLocked: (val) => set({ minimalChestHudLocked: val }),
   minimalChestTutorialSeen: false,
   setMinimalChestTutorialSeen: (val) => set({ minimalChestTutorialSeen: val }),
+  minimalChestHudOpacity: 1.0,
+  setMinimalChestHudOpacity: (val) => set({ minimalChestHudOpacity: val }),
   chestWidgetPositions: {
     chest: { x: 50, y: 50 },
     inventory: { x: 50, y: 100 },

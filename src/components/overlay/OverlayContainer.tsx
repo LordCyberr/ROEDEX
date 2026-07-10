@@ -4,6 +4,7 @@ import { Header } from '../layout/Header';
 import { useTrackerStore } from '../../store/trackerStore';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
+import { useOverlayResize } from '../../hooks/useOverlayResize';
 
 import { WeaponUI } from '../widgets/WeaponUI';
 import { ArmorUI } from '../widgets/ArmorUI';
@@ -36,10 +37,12 @@ import { NPCView } from '../views/NPCView';
 import { QuestView } from '../views/QuestView';
 import { PlayersView } from '../views/PlayersView';
 import { SettingsView } from '../views/SettingsView';
+import { RoepediaView } from '../views/RoepediaView';
 
 export const OverlayContainer: React.FC = () => {
-  const { currentZone } = useTrackerStore(useShallow((state: any) => ({
-    currentZone: state.currentZone
+  const { currentZone, playerProfile } = useTrackerStore(useShallow((state: any) => ({
+    currentZone: state.currentZone,
+    playerProfile: state.playerProfile
   })));
 
   const {
@@ -70,7 +73,38 @@ export const OverlayContainer: React.FC = () => {
   })));
   const { t } = useTranslation();
 
-  const isGameLoaded = devForceOverlay || developerMode || (!!currentZone && currentZone !== 'Unknown');
+  const hasGameData = devForceOverlay || developerMode || (!!currentZone && currentZone !== 'Unknown' && !!playerProfile?.name);
+  const [isCanvasReady, setIsCanvasReady] = React.useState(devForceOverlay || developerMode);
+
+  React.useEffect(() => {
+    if (devForceOverlay || developerMode) {
+      setIsCanvasReady(true);
+      return;
+    }
+    
+    // Check if the game canvas is actually in the DOM
+    const checkCanvas = () => {
+      const canvas = document.querySelector('canvas');
+      // The canvas should be reasonably sized, not a hidden 1x1 tracking canvas
+      if (canvas && canvas.clientWidth > 100 && canvas.clientHeight > 100 && canvas.style.display !== 'none') {
+        setIsCanvasReady(true);
+        return true;
+      }
+      return false;
+    };
+
+    if (checkCanvas()) return;
+
+    const interval = setInterval(() => {
+      if (checkCanvas()) {
+        clearInterval(interval);
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [devForceOverlay, developerMode]);
+
+  const isGameLoaded = hasGameData && isCanvasReady;
   const [isOverlayReady, setIsOverlayReady] = React.useState(false);
 
   React.useEffect(() => {
@@ -208,12 +242,17 @@ export const OverlayContainer: React.FC = () => {
           return <NPCView />;
         case 'quests': return <QuestView />;
         case 'players': return <PlayersView />;
+        case 'roepedia': return <RoepediaView />;
         case 'settings': return <SettingsView />;
         default: return null;
       }
     };
     
-    return <ErrorBoundary>{renderView()}</ErrorBoundary>;
+    return (
+      <ErrorBoundary>
+        {renderView()}
+      </ErrorBoundary>
+    );
   };
 
   const overlayRef = React.useRef<HTMLDivElement>(null);
@@ -238,80 +277,13 @@ export const OverlayContainer: React.FC = () => {
     }
   }, [currentWidth, currentHeight]);
 
-  const handleResizeDown = (e: React.PointerEvent, dir: string) => {
-    e.stopPropagation();
-    e.preventDefault();
-    const el = overlayRef.current;
-    if (!el) return;
-    
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const startW = el.getBoundingClientRect().width;
-    const startH = el.getBoundingClientRect().height;
-    const startOverlayX = x.get();
-    const startOverlayY = y.get();
-    
-    const minW = isHorizontal ? 420 : 220;
-    const minH = isHorizontal ? 150 : 200;
-    const maxW = window.innerWidth - 16;
-    const maxH = window.innerHeight * 0.85;
-    
-    const onMove = (me: PointerEvent) => {
-      let newW = startW;
-      let newH = startH;
-      let newX = startOverlayX;
-      let newY = startOverlayY;
-      
-      if (dir.includes('e')) {
-        newW = Math.max(minW, Math.min(maxW, startW + (me.clientX - startX)));
-      } else if (dir.includes('w')) {
-        newW = Math.max(minW, Math.min(maxW, startW - (me.clientX - startX)));
-        newX = startOverlayX + (startW - newW);
-      }
-      
-      if (dir.includes('s')) {
-        newH = Math.max(minH, Math.min(maxH, startH + (me.clientY - startY)));
-      } else if (dir.includes('n')) {
-        newH = Math.max(minH, Math.min(maxH, startH - (me.clientY - startY)));
-        newY = startOverlayY + (startH - newH);
-      }
-      
-      if (dir.includes('e') || dir.includes('w')) {
-        el.style.width = `${newW}px`;
-      }
-      if (dir.includes('s') || dir.includes('n')) {
-        // Apply height changes during drag. Even in vertical mode, this works because
-        // on drag end, it converts to minHeight!
-        el.style.height = `${newH}px`;
-      }
-      
-      if (dir.includes('w')) x.set(newX);
-      if (dir.includes('n')) y.set(newY);
-    };
-    
-    const onUp = () => {
-      const w = el.style.width;
-      const h = el.style.height;
-      const finalW = (w && w.endsWith('px')) ? parseInt(w) : undefined;
-      const finalH = (h && h.endsWith('px')) ? parseInt(h) : undefined;
-      
-      const currentDimObj = useSettingsStore.getState().tabDimensions[activeDimKey] || {};
-      
-      const saveW = (dir.includes('e') || dir.includes('w')) ? finalW : currentDimObj.width;
-      const saveH = (dir.includes('s') || dir.includes('n')) ? finalH : currentDimObj.height;
-      
-      if (saveW || saveH) {
-        useSettingsStore.getState().setTabDimensions(activeDimKey, saveW, saveH);
-      }
-      useSettingsStore.getState().setOverlayPosition({ x: x.get(), y: y.get() });
-      
-      document.removeEventListener('pointermove', onMove);
-      document.removeEventListener('pointerup', onUp);
-    };
-    
-    document.addEventListener('pointermove', onMove);
-    document.addEventListener('pointerup', onUp);
-  };
+  const { handleResizeDown } = useOverlayResize({
+    overlayRef,
+    isHorizontal,
+    activeDimKey,
+    x,
+    y
+  });
 
   const onRender: ProfilerOnRenderCallback = (_id, _phase, actualDuration) => {
     const state = useSettingsStore.getState();
@@ -418,7 +390,6 @@ export const OverlayContainer: React.FC = () => {
       <ErrorBoundary><ChangelogModal /></ErrorBoundary>
       <ErrorBoundary><LifetimeStatsWindow /></ErrorBoundary>
       <ErrorBoundary><RunHistoryWindow /></ErrorBoundary>
-
     </div>
     </Profiler>
   );

@@ -4,7 +4,8 @@ import { LootTracker } from '../../trackers/LootTracker';
 import { getResellValue } from '../../../data/prices';
 import { AICompanion } from '../../companion/AICompanion';
 import { NotificationManager } from '../../notifications/NotificationManager';
-import { DropSpawnEvent } from '../../../types/events';
+import { DropSpawnEvent, LootDrop } from '../../../types/events';
+import { SAFE_ZONES } from '../../constants';
 
 export function handleInventoryEvent(
   eventName: string, 
@@ -181,14 +182,44 @@ export function handleInventoryEvent(
         const processInventory = () => {
           let chestItemsVal = 0;
           const currentInventory: Record<string, number> = {};
+          let unequippedToolFound: string | null = null;
           
           for (const item of items) {
             const qty = item.Quantity ?? item.quantity ?? item.qty ?? item.Amount ?? item.amount ?? 0;
             if (item.itemId && qty) {
-              if (item.itemId.toLowerCase() !== 'runes' && item.itemId.toLowerCase() !== 'runestone' && !item.itemId.toLowerCase().startsWith('runes_')) {
+              const lName = item.itemId.toLowerCase();
+              if (lName !== 'runes' && lName !== 'runestone' && !lName.startsWith('runes_')) {
                 chestItemsVal += getResellValue(item.itemId, qty);
               }
               currentInventory[item.itemId] = (currentInventory[item.itemId] || 0) + qty;
+              
+              // Tool warning logic
+              if (
+                lName.includes('sword') || 
+                lName.includes('pickaxe') || 
+                lName.includes('axe') || 
+                lName.includes('tool') || 
+                lName.includes('weapon') || 
+                lName.includes('bow') || 
+                lName.includes('staff') ||
+                lName.includes('wand') ||
+                lName.includes('dagger') ||
+                lName.includes('blade')
+              ) {
+                const equippedWeapon = useTrackerStore.getState().weapon?.name;
+                // Only warn if they have absolutely no weapon/tool equipped
+                if (!equippedWeapon) {
+                  unequippedToolFound = item.itemId;
+                }
+              }
+            }
+          }
+
+          if (unequippedToolFound) {
+            const currentZone = useTrackerStore.getState().currentZone.toLowerCase();
+            const isSafeZone = SAFE_ZONES.some(z => currentZone.includes(z));
+            if (!isSafeZone) {
+              NotificationManager.showToolWarningToast(unequippedToolFound);
             }
           }
 
@@ -224,10 +255,13 @@ export function handleInventoryEvent(
 
     case 'game_loot': {
       const state = useTrackerStore.getState();
+      let totalAddedValue = 0;
+      const currentInv = { ...state.chestInventory };
+
       payload.forEach((item: any) => {
         if (item.name && item.qty) {
           const qty = item.qty;
-          useTrackerStore.getState().addLoot({
+          state.addLoot({
             dropId: Math.random().toString(36).substring(7),
             itemName: item.name,
             quantity: qty,
@@ -235,8 +269,36 @@ export function handleInventoryEvent(
             spawnTime: Date.now()
           });
           LootTracker.notifyLoot(item.name, qty);
+
+          // Optimistically update the chest inventory
+          currentInv[item.name] = (currentInv[item.name] || 0) + qty;
+          const lName = item.name.toLowerCase();
+          if (lName !== 'runes' && lName !== 'runestone' && !lName.startsWith('runes_')) {
+            totalAddedValue += getResellValue(item.name, qty);
+          }
         }
       });
+      
+      state.setChestInventory(currentInv);
+      if (totalAddedValue > 0) {
+        state.setChestTotalValue(state.chestTotalValue + totalAddedValue);
+      }
+      break;
+    }
+
+    case 'loot_drop': {
+      const state = useTrackerStore.getState();
+      if (payload && payload.dropId && payload.itemId && payload.position) {
+        const drop: LootDrop = {
+          dropId: payload.dropId,
+          itemName: payload.itemId,
+          quantity: payload.quantity || 1,
+          pos: { x: payload.position.x, y: payload.position.y },
+          spawnTime: Date.now()
+        };
+        state.addLoot(drop);
+        LootTracker.notifyLoot(payload.itemId, payload.quantity || 1);
+      }
       break;
     }
 

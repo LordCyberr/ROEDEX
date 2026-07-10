@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
-import { Minus, Maximize2, PanelLeft, PanelTop, Globe2, Star, PackageOpen, Settings, Users, ExternalLink, RefreshCw, ArrowDownLeft, Lock, Unlock, Scroll, Radar } from 'lucide-react';
+import { Minus, Maximize2, PanelLeft, PanelTop, Globe2, Star, PackageOpen, Settings, Users, ExternalLink, RefreshCw, ArrowDownLeft, Lock, Unlock, Scroll, Radar, Book } from 'lucide-react';
 import { Tooltip } from '../ui/Tooltip';
 
 import { useTranslation } from '../../hooks/useTranslation';
@@ -56,6 +56,7 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
       if (tabId === 'npcs') text = t('tabHover.npcs' as any);
       if (tabId === 'tracking') text = t('tabHover.tracking' as any);
       if (tabId === 'loot') text = t('tabHover.loot' as any);
+      if (tabId === 'roepedia') text = 'View the in-game knowledge base (ROEpedia)';
       if (tabId === 'settings') text = t('tabHover.settings' as any);
       
       if (text) {
@@ -75,6 +76,7 @@ export const Header: React.FC<HeaderProps> = ({ onPointerDown }) => {
     { id: 'npcs', icon: Users, label: t('tabs.npcs') },
     { id: 'quests', icon: Scroll, label: t('tabs.quests' as any) || 'Quests' },
     { id: 'players', icon: Radar, label: 'Players' },
+    { id: 'roepedia', icon: Book, label: 'ROEpedia' },
     { id: 'settings', icon: Settings, label: t('tabs.settings') }
   ] as const;
 

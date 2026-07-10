@@ -4,8 +4,8 @@ import { useSettingsStore } from '../store/settingsStore';
 
 export function useThrottledEntities(throttleMs = 300) {
   const [state, setState] = useState(() => {
-    const { enemies, resources, timers, throttledPlayerPosition } = useTrackerStore.getState();
-    return { enemies, resources, timers, throttledPlayerPosition };
+    const { enemies, resources, timers, throttledPlayerPosition, loot } = useTrackerStore.getState();
+    return { enemies, resources, timers, throttledPlayerPosition, loot };
   });
 
   useEffect(() => {
@@ -23,7 +23,8 @@ export function useThrottledEntities(throttleMs = 300) {
           enemies: currentState.enemies,
           resources: currentState.resources,
           timers: currentState.timers,
-          throttledPlayerPosition: currentState.throttledPlayerPosition
+          throttledPlayerPosition: currentState.throttledPlayerPosition,
+          loot: currentState.loot
         });
         lastUpdate = Date.now();
       };

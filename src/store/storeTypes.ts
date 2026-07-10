@@ -109,8 +109,8 @@ export interface UISlice {
   language: Language;
   setLanguage: (lang: Language) => void;
 
-  activeTab: 'global' | 'favorites' | 'session' | 'settings' | 'npcs' | 'quests' | 'players';
-  setActiveTab: (tab: 'global' | 'favorites' | 'session' | 'settings' | 'npcs' | 'quests' | 'players') => void;
+  activeTab: 'global' | 'favorites' | 'session' | 'settings' | 'npcs' | 'quests' | 'players' | 'roepedia';
+  setActiveTab: (tab: 'global' | 'favorites' | 'session' | 'settings' | 'npcs' | 'quests' | 'players' | 'roepedia') => void;
   tabDimensions: Record<string, { width?: number, height?: number }>;
   collapsedCategories: Record<string, boolean>;
   toggleCategory: (category: string) => void;
@@ -162,6 +162,8 @@ export interface UISlice {
   setMinimalChestHudLocked: (val: boolean) => void;
   minimalChestTutorialSeen: boolean;
   setMinimalChestTutorialSeen: (val: boolean) => void;
+  minimalChestHudOpacity: number;
+  setMinimalChestHudOpacity: (val: number) => void;
   chestWidgetPositions: {
     chest: { x: number, y: number };
     inventory: { x: number, y: number };

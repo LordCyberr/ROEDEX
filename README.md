@@ -16,6 +16,9 @@
   </p>
 </div>
 
+> [!NOTE]
+> **Official Collaboration:** ROEDEX is built in collaboration with **Voxel Queen** (Co-Founder of *Roots of Embervault*) and officially supported with raw map coordinate data by **Ruyui Studios** to enable high-accuracy tracking features!
+
 ---
 
 ## 🌟 Overview
@@ -93,9 +96,12 @@ If you are cloning this repository to build from the source code:
 
 ## 🏆 Credits & Acknowledgements
 
-ROEDEX wouldn't be possible without the incredible contributions from our community and developers:
+ROEDEX wouldn't be possible without the incredible contributions from our community and developers, and the official support of the game creators:
+
 - **Lord Cyberr** - Lead Developer & Creator
-- **MrSnorch** - For his guidance and contributions to the project.
+- **MrSnorch** - For guidance and contributions to the project.
+- **Voxel Queen** (Co-Founder of *Roots of Embervault*) - For her guidance, calls, and providing the raw map files that power our advanced tracking system.
+- **Ruyui Studios** - The official studio behind *Roots of Embervault*, for supporting community-created tools and co-creation.
 
 ---
 
