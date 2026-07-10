@@ -1,128 +1,165 @@
 <div align="center">
   <img src="public/logo.png" alt="ROEDEX Logo" width="128" />
-  <h1>ROEDEX Tracker and Companion Tool</h1>
-  <p><strong>The Ultimate Real-Time Tracker & Companion Suite for Roots of Embervault</strong></p>
   
-  <p>
+  # ROEDEX Companion Tool
+  
+  ### *The Ultimate Real-Time Tracker & Interactive Overlay Suite for Roots of Embervault*
+
+  <p align="center">
+    <a href="README.md">🇺🇸 English</a> • 
+    <a href="README.es.md">🇪🇸 Español</a> • 
+    <a href="README.ru.md">🇷🇺 Русский</a> • 
+    <a href="README.ko.md">🇰🇷 한국어</a>
+  </p>
+
+  ---
+
+  <p align="center">
     <a href="https://chromewebstore.google.com/detail/roedex/fgdehjebfkbdefdnenpgjejjnhlkchjh" target="_blank">
-      <img src="https://img.shields.io/chrome-web-store/v/fgdehjebfkbdefdnenpgjejjnhlkchjh?label=Download%20on%20Chrome%20Web%20Store&style=for-the-badge&color=success&logo=googlechrome" alt="Download on Chrome Web Store" />
+      <img src="https://img.shields.io/chrome-web-store/v/fgdehjebfkbdefdnenpgjejjnhlkchjh?label=Install%20from%20Chrome%20Web%20Store&style=for-the-badge&color=22d3ee&logo=googlechrome&logoColor=white" alt="Chrome Web Store" />
     </a>
   </p>
-  <p>
-    <img src="https://img.shields.io/badge/version-v0.0.4-blue.svg?style=for-the-badge" alt="Version" />
-    <img src="https://img.shields.io/badge/react-19.0.0-61dafb.svg?style=for-the-badge" alt="React" />
-    <img src="https://img.shields.io/badge/typescript-5.7-blue.svg?style=for-the-badge" alt="TypeScript" />
-    <img src="https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge" alt="License" />
+
+  <p align="center">
+    <img src="https://img.shields.io/badge/Version-v0.0.4-blue.svg?style=flat-square&color=3b82f6" alt="Version" />
+    <img src="https://img.shields.io/badge/React-19.0.0-blue.svg?style=flat-square&color=61dafb&logo=react" alt="React" />
+    <img src="https://img.shields.io/badge/TypeScript-5.7-blue.svg?style=flat-square&color=3178c6&logo=typescript" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square&color=10b981" alt="License" />
   </p>
 </div>
 
-> [!NOTE]
-> **Official Collaboration:** ROEDEX is built in collaboration with **Voxel Queen** (Co-Founder of *Roots of Embervault*) and officially supported with raw map coordinate data by **Ruyui Studios** to enable high-accuracy tracking features!
+> [!IMPORTANT]
+> **Official Support & Collaboration:**  
+> ROEDEX is developed in close partnership with **Voxel Queen** (Co-Founder of *Roots of Embervault*) and is officially supported by **Ruyui Studios** through the provision of raw game map data. This collaboration powers our high-accuracy static spawn mapping and advanced navigational tools!
+
+---
+
+## 📖 Table of Contents
+1. [🌟 Overview](#-overview)
+2. [✨ Key Features](#-key-features)
+3. [📢 What's New in v0.0.4](#-whats-new-in-v004)
+4. [🎮 Keyboard Shortcuts](#-keyboard-shortcuts)
+5. [🔒 Security & Privacy](#-security--privacy)
+6. [🛠️ Installation Guide](#️-installation-guide)
+7. [🏆 Credits & Acknowledgements](#-credits--acknowledgements)
+8. [🤝 Support & Contributions](#-support--contributions)
 
 ---
 
 ## 🌟 Overview
 
-**ROEDEX** is an incredibly advanced, non-intrusive, and beautifully designed overlay extension. By tracking live WebSocket traffic on the client side, ROEDEX provides players with real-time game statistics, spawn timers, and loot efficiencies without ever injecting malicious code or modifying the game client itself. 
-Built on **Manifest V3**, React, and Tailwind CSS, it features a deeply customizable UI that seamlessly floats over your gameplay.
+**ROEDEX** is a premium, non-intrusive client-side overlay extension for *Roots of Embervault*. By passively reading incoming WebSocket traffic, ROEDEX provides players with instant access to real-time statistics, spawn trackers, loot logs, and interactive companions. 
 
----
-
-## 📢 What's New in v0.0.4 (Latest Patch)
-*ROEDEX is under active development! Here are the latest additions:*
-
-- 🌍 **Complete Localization:** Finished migrating all remaining UI strings (Quest Board, Blacksmith, Players View) into our robust translation engine (English, Spanish, Russian, Korean).
-- 🐛 **Chest HUD Hotfix:** Resolved a critical bug where moving items before closing the chest would permanently stick the Minimal Chest HUD to the screen.
-- ⌨️ **Hotkey Persistence:** Custom keybindings (Layout Toggle, Lock UI, Reset Size) now flawlessly persist across extension reloads.
-- ⏱️ **Boot Sequence Timing:** The overlay and AI Companion now intelligently wait for your first active game packet (with a 5-second cinematic delay) before appearing, ensuring a perfectly timed introduction.
+Built using **Manifest V3**, **React**, and **Tailwind CSS**, it features a gorgeous floating Glassmorphism UI that matches the high-quality feel of AAA gaming dashboards.
 
 ---
 
 ## ✨ Key Features
 
-- 🟢 **Live Session Tracking**: Calculate your runestones per hour, XP per hour, and raw loot efficiency entirely in real-time.
-- 🤖 **4 Unique AI Companions**: Choose between Bob, Kaya, Lia, and Crash! Highly interactive, customizable pixel-matrix companions that guide you through the overlay and react to your live game events.
-- 🗺️ **Distance & Spawns**: Tracks the exact distance of NPCs, resources, and enemies. Calculates exact respawn intervals for highly-contested resources.
-- ⚔️ **Quests & Combat Tracking**: View active quests and track weapon/armor durability dynamically.
-- 🌐 **Multi-Language Support**: Fully localized in **English, Spanish, Russian, and Korean**, including pinpoint MMO-style location guides.
-- 🎨 **Glassmorphism UI**: Featuring Obsidian Gold, Hologram, and Ruby Glass themes with draggable, detachable, and minimizable windows.
-- 📏 **Unrestricted Customization**: Full 8-way custom resizing for all pop-out windows with intelligent auto-expand support.
-- ⚡ **Highly Optimized**: Passed rigorous memory leak audits for 12+ hour gaming sessions, with fully compressed pure-PNG assets and lean Vite build chunks.
+| Feature | Description |
+| :--- | :--- |
+| **📈 Live Session Tracking** | Real-time calculations of XP/hr, Runestones/hr, and raw gold/loot value. |
+| **🤖 Interactive AI Companions** | 4 unique companions (**Bob**, **Kaya**, **Lia**, and **Crash**) who react dynamically to game events. |
+| **🗺️ High-Accuracy Spawns** | Tracks distance and precise respawn queues for resources, NPCs, and bosses using official map data. |
+| **⚔️ Gear Durability Alerts** | Real-time monitoring of weapon and armor durability with breaking warnings. |
+| **🌐 Multi-Language Core** | Fully translated into **English, Spanish, Russian, and Korean** with custom location guides. |
+| **🎨 Glassmorphism Themes** | Obsidian Gold, Hologram, and Ruby Glass themes with draggable, detachable pop-out windows. |
+| **📐 Dynamic Customization** | Complete 8-way resizing, layout flipping (vertical/horizontal), and positioning persistence. |
+| **⚡ Audit-Passed Optimization** | Zero memory leaks (audited for 12+ hr sessions), fully compressed assets, and lean Vite build chunks. |
+
+---
+
+## 📢 What's New in v0.0.4
+
+*   🌍 **Complete Localization:** Migrated all remaining UI screens (Quest Board, Blacksmith, Players View) into our localization engine.
+*   🐛 **Chest HUD Sticky Bug:** Fixed an issue where closing chests while moving items kept the minimal chest value stuck on the screen.
+*   ⌨️ **Hotkey Persistence:** Custom keybindings (lock UI, layout toggle, reset size) now successfully persist across extension reloads.
+*   ⏱️ **Delayed Boot Sequence:** The overlay now waits for your first active game packet (with a 5-second cinematic fade-in) for a clean entry.
+
+---
+
+## 🎮 Keyboard Shortcuts
+
+The following hotkeys can be fully customized within the **Settings Tab**:
+
+| Action | Default Shortcut | Description |
+| :--- | :--- | :--- |
+| **Minimize / Maximize HUD** | `Ctrl + Shift + M` | Toggle the entire ROEDEX UI into a floating minimized orb. |
+| **Toggle Layout Mode** | `Shift + H` | Swap between Vertical Column and Horizontal Row display modes. |
+| **Reset Overlay Size** | `Shift + R` | Reset all window dimensions to their standard optimized defaults. |
+| **Lock / Unlock UI** | `Shift + U` | Lock window positions and enable click-through mode for uninterrupted gameplay. |
 
 ---
 
 ## 🔒 Security & Privacy
 
-ROEDEX is built with absolute privacy in mind. **We collect ZERO user data.** 
-- **100% Local**: All loot history, statistics, and settings are saved locally on your own machine. We use no external databases or analytics.
-- **Strictly Scoped**: The extension only runs on the game domain and cannot see or access any other websites you visit.
-- **Passive Listening**: ROEDEX only reads incoming game packets. It does not inject macros, automate gameplay, or violate fair-play anti-cheat systems.
+We believe in absolute transparency. **ROEDEX collects ZERO user data.**
 
-Please read our full [Privacy Policy](PRIVACY_POLICY.md) for more details.
+*   **100% Client-Side:** All settings, loot histories, and custom layouts are stored locally on your machine via IndexedDB/localStorage.
+*   **No Injection:** ROEDEX does not inject scripts or modify the game client. It is anti-cheat compliant.
+*   **Passive Listening:** The extension acts purely as a spectator on the game's WebSocket traffic to display data.
+*   **Scoped Permissions:** The extension only requests host permission for the official game domain.
+
+For details, view our [Privacy Policy](PRIVACY_POLICY.md).
 
 ---
 
-## 🚀 Installation (Web Store)
+## 🛠️ Installation Guide
 
-Once approved on the Google Chrome Web Store:
-1. Navigate to the ROEDEX Chrome Extension Page.
+### Option A: Web Store (Recommended)
+1. Visit the **ROEDEX** Chrome Web Store page.
 2. Click **Add to Chrome**.
-3. Pin the extension to your toolbar.
-4. Navigate to the game website and click the ROEDEX icon to initialize!
+3. Pin the extension to your browser toolbar.
+4. Launch the game; the extension will initialize automatically!
 
----
-
-## 🛠️ Installation (Developer Mode)
-
-If you are cloning this repository to build from the source code:
-
-1. Clone this repository:
+### Option B: Developer Mode (From Source)
+1. Clone the repository:
    ```bash
    git clone https://github.com/LordCyberr/ROEDEX.git
    ```
-2. Install dependencies:
+2. Navigate to the directory and install dependencies:
    ```bash
    npm install
    ```
-3. Build the production extension:
+3. Run the compiler:
    ```bash
    npm run build
    ```
-4. Navigate to `chrome://extensions/` in your browser.
-5. Enable **Developer Mode** in the top right corner.
-6. Click **Load Unpacked** and select the newly generated `dist` folder.
+4. Open Chrome and navigate to `chrome://extensions/`.
+5. Enable **Developer Mode** (top-right toggle).
+6. Click **Load Unpacked** and select the generated `dist` folder.
 
 ---
 
 ## 🏆 Credits & Acknowledgements
 
-ROEDEX wouldn't be possible without the incredible contributions from our community and developers, and the official support of the game creators:
+ROEDEX is made possible by the dedication of our community and the support of the game creators:
 
-- **Lord Cyberr** - Lead Developer & Creator
-- **MrSnorch** - For guidance and contributions to the project.
-- **Voxel Queen** (Co-Founder of *Roots of Embervault*) - For her guidance, calls, and providing the raw map files that power our advanced tracking system.
-- **Ruyui Studios** - The official studio behind *Roots of Embervault*, for supporting community-created tools and co-creation.
+*   👑 **Lord Cyberr** – Lead Developer & Project Creator
+*   🛠️ **MrSnorch** – Contributions, guidance, and architecture support.
+*   💎 **Voxel Queen** – Co-Founder of *Roots of Embervault* — for her calls, guidance, and providing the raw map files.
+*   🎮 **Ruyui Studios** – The developers of *Roots of Embervault*, for supporting community modding and co-creation.
 
 ---
 
 ## 🤝 Support & Contributions
 
-ROEDEX is an open-source project maintained by the community. Developing and updating this tool requires countless late-night coding sessions. If ROEDEX has helped you track that ultra-rare drop or level up faster, consider giving the repository a ⭐! 
+ROEDEX is free, open-source, and maintained in our spare time. If this tool has made your adventures more efficient, please consider starring the repository ⭐!
 
-If you would like to support ongoing development, server costs, and future updates, contributions are strictly optional but immensely appreciated:
+If you wish to support server costs, assets, and future updates, optional donations can be sent to:
 
 <details>
-<summary><b>🪙 Click to show Crypto Donation Addresses</b></summary>
+<summary><b>🪙 Click to expand EVM & Solana Donation Addresses</b></summary>
 
-- **Abstract Chain**: `0xeb6C0506F624239dAa704c375d0494B14ea81322`
-- **Global Wallet (EVM)**: `0x364aC821eEf0D90678F0B6df44b700d3Df14D89a`
-- **Solana**: `GzRU5v4Tyqx7iGrc7Saed943gMnbMuEDwrpC9vZWyreq`
+*   **Abstract Chain**: `0xeb6C0506F624239dAa704c375d0494B14ea81322`
+*   **Global Wallet (EVM)**: `0x364aC821eEf0D90678F0B6df44b700d3Df14D89a`
+*   **Solana**: `GzRU5v4Tyqx7iGrc7Saed943gMnbMuEDwrpC9vZWyreq`
 
 </details>
 
-We also welcome pull requests! Please follow standard TypeScript and React best practices when submitting new features or bug fixes. Ensure you test your WebSocket parsing logic carefully to prevent memory leaks!
+*Contributions are entirely optional. Thank you for supporting the community!*
 
 ---
 <div align="center">
-  <p><i>Crafted with ❤️ for the gaming community.</i></p>
+  <p><i>Crafted with ❤️ for the Roots of Embervault community.</i></p>
 </div>
