@@ -102,6 +102,11 @@ export interface UISlice {
   mergeAllTabs: () => void;
   updatePoppedOutWindow: (id: string, updates: Partial<PoppedOutWindow>) => void;
   
+  showRadarMinimap: boolean;
+  setShowRadarMinimap: (show: boolean) => void;
+  radarMinimapPosition: Vector2;
+  setRadarMinimapPosition: (pos: Vector2) => void;
+  
   // NPC Dialogue
   currentNpcDialogue: NpcDialogueData | null;
   setCurrentNpcDialogue: (dialogue: NpcDialogueData | null) => void;

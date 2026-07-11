@@ -160,6 +160,13 @@ export const useSettingsStore = create<UISlice>()(
           ...currentState.companionPosition,
           ...(persistedState?.companionPosition || {})
         };
+        
+        const mergedRadarMinimapPosition = {
+          ...currentState.radarMinimapPosition,
+          ...(persistedState?.radarMinimapPosition || {})
+        };
+
+        const mergedShowRadarMinimap = persistedState?.showRadarMinimap ?? currentState.showRadarMinimap;
 
 
 
@@ -175,6 +182,8 @@ export const useSettingsStore = create<UISlice>()(
           overlayPosition: mergedOverlayPosition,
           orbPosition: mergedOrbPosition,
           companionPosition: mergedCompanionPosition,
+          radarMinimapPosition: mergedRadarMinimapPosition,
+          showRadarMinimap: mergedShowRadarMinimap,
         };
       }
     }

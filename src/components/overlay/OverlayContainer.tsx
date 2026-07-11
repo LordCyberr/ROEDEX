@@ -25,6 +25,7 @@ import { FocusHighlight } from './FocusHighlight';
 // Windows lazy loaded
 import { NPCTranslationBubble } from './NPCTranslationBubble';
 import { DirectionalArrow } from './DirectionalArrow';
+import { RadarMinimap } from '../widgets/RadarMinimap';
 import { Profiler, ProfilerOnRenderCallback } from 'react';
 
 import { ChangelogModal } from '../ui/ChangelogModal';
@@ -382,6 +383,7 @@ export const OverlayContainer: React.FC = () => {
         <NPCTranslationBubble />
 
         <ErrorBoundary><DirectionalArrow /></ErrorBoundary>
+        <ErrorBoundary><RadarMinimap /></ErrorBoundary>
       </div>
       )}
       

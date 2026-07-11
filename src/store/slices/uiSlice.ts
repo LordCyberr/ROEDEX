@@ -49,6 +49,11 @@ export const createUISlice: StateCreator<UISlice, [], [], UISlice> = (set) => ({
       }
     })),
     
+  showRadarMinimap: true,
+  setShowRadarMinimap: (show) => set({ showRadarMinimap: show }),
+  radarMinimapPosition: { x: window.innerWidth - 300, y: 150 },
+  setRadarMinimapPosition: (pos) => set({ radarMinimapPosition: pos }),
+    
   currentNpcDialogue: null,
   setCurrentNpcDialogue: (dialogue) => set({ currentNpcDialogue: dialogue }),
   
