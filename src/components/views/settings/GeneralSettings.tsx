@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSettingsStore } from '../../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
-import { ToggleRow, SliderRow, SelectRow, HotkeyRow } from './SettingsControls';
+import { SliderRow, SelectRow } from './SettingsControls';
 import { useTranslation } from '../../../hooks/useTranslation';
 
 export const GeneralSettings: React.FC = () => {
@@ -21,24 +21,6 @@ export const GeneralSettings: React.FC = () => {
     setActiveOpacity: state.setActiveOpacity,
     idleOpacity: state.idleOpacity,
     setIdleOpacity: state.setIdleOpacity,
-    orbSize: state.orbSize,
-    setOrbSize: state.setOrbSize,
-    minimizedIcon: state.minimizedIcon,
-    setMinimizedIcon: state.setMinimizedIcon,
-    minimizedIconUrl: state.minimizedIconUrl,
-    setMinimizedIconUrl: state.setMinimizedIconUrl,
-    orbBorderThickness: state.orbBorderThickness,
-    setOrbBorderThickness: state.setOrbBorderThickness,
-    autoMinimizeOnChest: state.autoMinimizeOnChest,
-    setAutoMinimizeOnChest: state.setAutoMinimizeOnChest,
-    minimizeHotkey: state.minimizeHotkey,
-    setMinimizeHotkey: state.setMinimizeHotkey,
-    toggleLayoutHotkey: state.toggleLayoutHotkey,
-    setToggleLayoutHotkey: state.setToggleLayoutHotkey,
-    resetSizeHotkey: state.resetSizeHotkey,
-    setResetSizeHotkey: state.setResetSizeHotkey,
-    lockUiHotkey: state.lockUiHotkey,
-    setLockUiHotkey: state.setLockUiHotkey,
     visualQuality: state.visualQuality,
     setVisualQuality: state.setVisualQuality
   })));
@@ -62,38 +44,36 @@ export const GeneralSettings: React.FC = () => {
         value={store.theme}
         options={[
           { label: 'Dark Mode (Default)', value: 'default' },
-          { label: "Bob's Adventure (Premium)", value: 'ruyui' },
-          { label: "Kaya's Flame (Premium)", value: 'ruyui-demon' },
-          { label: "Lia's Magic (Premium)", value: 'ruyui-witch' },
-          { label: "Crash's Resolve (Premium)", value: 'ruyui-orc' },
-          { label: 'Abstract Chain (Premium)', value: 'abstract' },
-          { label: 'Obsidian Gold (Premium)', value: 'obsidian' },
+          { label: "Bob's Adventure (Premium)", value: 'bob-theme' },
+          { label: "Kaya's Flame (Premium)", value: 'kaya-theme' },
+          { label: "Lia's Magic (Premium)", value: 'lia-theme' },
+          { label: "Crash's Resolve (Premium)", value: 'crash-theme' },
+          { label: 'Obsidian Gold (Premium)', value: 'gold' },
           { label: 'Neon Cyberpunk (Premium)', value: 'cyberpunk' },
-          { label: 'Holographic Blue (Premium)', value: 'hologram' },
-          { label: 'Amethyst Violet (Premium)', value: 'amethyst' },
-          { label: 'Ruby Glass (Premium)', value: 'ruby_glass' },
+          { label: 'Emerald Green (Premium)', value: 'emerald' },
+          { label: 'Ruby Glass (Premium)', value: 'glass' },
+          { label: 'Neon Purple (Premium)', value: 'neon' },
           { label: 'Ocean Blue', value: 'ocean' },
-          { label: 'Crimson Red', value: 'crimson' },
-          { label: 'Midnight Black', value: 'midnight' },
-          { label: 'Tokyo Night', value: 'tokyo-night' },
+          { label: 'Midnight Black', value: 'amoled' },
+          { label: 'Volcano (Premium)', value: 'volcano' },
+          { label: 'The Void (Premium)', value: 'void' },
+          { label: 'Arctic Frost (Premium)', value: 'arctic' },
+          { label: 'Toxic Waste (Premium)', value: 'toxin' },
+          { label: 'Bloodmoon (Premium)', value: 'bloodmoon' },
+          { label: 'Sandstorm (Premium)', value: 'sandstorm' },
+          { label: 'Celestial (Premium)', value: 'celestial' },
+          { label: 'Ironforge (Premium)', value: 'ironforge' },
+          { label: 'Wisp (Premium)', value: 'wisp' },
+          { label: 'Aurora Borealis (Premium)', value: 'aurora' },
+          { label: 'Rose Gold (Premium)', value: 'rose' },
+          { label: 'Monochrome (Premium)', value: 'monochrome' },
+          { label: 'Forest Life (Premium)', value: 'forest' },
+          { label: 'Royal Purple (Premium)', value: 'royal' },
           { label: 'Light Mode', value: 'light' }
         ]}
         onChange={(v) => store.setTheme(v)}
       />
-      <SelectRow
-        label="Visual Quality"
-        value={store.visualQuality || 'high'}
-        options={[
-          { label: 'High (Glass & Animations)', value: 'high' },
-          { label: 'Max Performance (Solid & Fast)', value: 'performance' }
-        ]}
-        onChange={(v) => store.setVisualQuality(v as any)}
-      />
-      {store.visualQuality === 'performance' && (
-        <div className="px-2 py-1 mb-2 text-[9px] text-[var(--accent-primary)] font-bold bg-[var(--accent-primary)]/10 rounded border border-[var(--accent-primary)]/30">
-          Max Performance enabled. Blurs and heavy shadows are disabled to maximize your in-game FPS.
-        </div>
-      )}
+
       <SelectRow
         label={t('settings.displayDensity')}
         value={store.displayDensity}
@@ -110,36 +90,6 @@ export const GeneralSettings: React.FC = () => {
       <SliderRow label={t('settings.globalScale')} value={store.globalScale || 1.0} min={0.5} max={2.5} step={0.05} display={(v) => `${Math.round((v || 1.0) * 100)}%`} onChange={store.setGlobalScale} realTime={false} />
       <SliderRow label={t('settings.activeOpacity')} value={store.activeOpacity} min={0.1} max={1} step={0.05} display={(v) => `${Math.round(v * 100)}%`} onChange={store.setActiveOpacity} />
       <SliderRow label={t('settings.idleOpacity')} value={store.idleOpacity} min={0.1} max={1} step={0.05} display={(v) => `${Math.round(v * 100)}%`} onChange={store.setIdleOpacity} />
-      <SliderRow label={t('settings.minimizedOrbSize')} value={store.orbSize} min={30} max={100} step={2} display={(v) => `${v}px`} onChange={store.setOrbSize} />
-      {store.minimizedIcon === 'custom' && (
-        <div className="flex flex-col gap-1 px-2 py-1.5 mb-1 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-md">
-          <span className="text-[11px] text-[var(--text-primary)] font-medium">{t('settings.customImageUrl')}</span>
-          <input type="text" value={store.minimizedIconUrl || ''} onChange={e => store.setMinimizedIconUrl(e.target.value)} className="w-full bg-[var(--bg-base)] border border-[var(--border-accent)] rounded px-1.5 py-1 text-[10px] text-white outline-none" placeholder="https://example.com/icon.png" />
-        </div>
-      )}
-      <SliderRow label={t('settings.orbBorderThickness')} value={store.orbBorderThickness} min={0} max={10} step={1} display={`${store.orbBorderThickness}px`} onChange={store.setOrbBorderThickness} />
-      <SelectRow
-        label={t('settings.minimizedIcon')}
-        value={store.minimizedIcon}
-        options={[
-          { label: 'Tracking Pulse', value: 'pulse' },
-          { label: 'Lightning', value: 'lightning' },
-          { label: 'Sword', value: 'sword' },
-          { label: 'Pickaxe', value: 'pickaxe' },
-          { label: 'Shield', value: 'shield' },
-          { label: 'ROEDEX', value: 'roedex' },
-          { label: 'RX', value: 'rx' },
-          { label: 'Custom Image URL', value: 'custom' }
-        ]}
-        onChange={(v) => store.setMinimizedIcon(v as any)}
-      />
-
-      <div className="text-[9px] font-bold text-[var(--text-muted)] mt-4 mb-1 pl-1">{t('settings.behavior')}</div>
-      <ToggleRow label={t('settings.autoMinimizeOnChest')} value={store.autoMinimizeOnChest} onChange={(v) => store.setAutoMinimizeOnChest(v)} />
-      <HotkeyRow label={t('settings.minimizeHotkey')} value={store.minimizeHotkey || 'Ctrl+Shift+M'} onChange={store.setMinimizeHotkey} />
-      <HotkeyRow label={t('settings.toggleLayoutHotkey')} value={store.toggleLayoutHotkey || 'Shift+H'} onChange={store.setToggleLayoutHotkey} />
-      <HotkeyRow label={t('settings.resetSizeHotkey')} value={store.resetSizeHotkey || 'Shift+R'} onChange={store.setResetSizeHotkey} />
-      <HotkeyRow label={t('settings.lockUiHotkey')} value={store.lockUiHotkey || 'Shift+U'} onChange={store.setLockUiHotkey} />
     </>
   );
 };

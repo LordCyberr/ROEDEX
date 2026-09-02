@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSettingsStore } from '../../store/settingsStore';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 
 export const NPCTranslationBubble: React.FC = () => {
   const currentDialogue = useSettingsStore((state) => state.currentNpcDialogue);

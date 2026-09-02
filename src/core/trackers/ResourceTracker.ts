@@ -1,18 +1,30 @@
 import { useTrackerStore } from '../../store/trackerStore';
-import { useSettingsStore } from '../../store/settingsStore';
 import { ResourceRespawnEvent, ResourceNode } from '../../types/events';
-import { getFallbackCooldown } from '../../data/cooldowns';
 import { AICompanion } from '../companion/AICompanion';
+import { DB_LOOKUP } from '../../data/gameDatabase';
+import { StringCache } from '../../utils/stringCache';
+import { formatInternalName } from '../../utils/formatters';
 
 export class ResourceTracker {
+  private static nameCache = new Map<string, string>();
+
   static sanitizeResourceName(raw: string): string {
-    let clean = raw.trim();
-    
-    // Format camelCase to Title Case if needed (e.g., bloodrootVine -> Bloodroot Vine)
-    clean = clean.replace(/([a-z])([A-Z])/g, '$1 $2');
-    
-    // Capitalize the first letter of every word
-    return clean.replace(/\b\w/g, (c) => c.toUpperCase());
+    if (!raw) return 'Unknown';
+    let cached = this.nameCache.get(raw);
+    if (cached) return cached;
+
+    const key = StringCache.sanitize(raw);
+    let entry = DB_LOOKUP[key];
+    // Suffix-strip fallback: 'witchbaneflower' → 'witchbane' → DB hit
+    if (!entry) {
+      const stripped = key.replace(/(flower|node|tree|vine|plant|leafy)$/, '');
+      if (stripped !== key) entry = DB_LOOKUP[stripped];
+    }
+    const result = entry ? entry.sanitizedName : formatInternalName(raw);
+
+    if (this.nameCache.size > 2000) this.nameCache.clear();
+    this.nameCache.set(raw, result);
+    return result;
   }
 
   static parseSpawn(event: ResourceRespawnEvent, zone: string): ResourceNode {
@@ -21,13 +33,26 @@ export class ResourceTracker {
     const existing = store.resources[key];
     const rawResource = event.resource || existing?.resource || 'Unknown';
     
+    const dbKey = StringCache.sanitize(rawResource);
+    let dbEntry = DB_LOOKUP[dbKey];
+    // Fallback: strip common game entity suffixes (flower, node, tree, vine, leafy, plant)
+    // to match DB keys that were pre-indexed without these suffixes.
+    // e.g. 'witchbaneflower' → 'witchbane' → found in DB_LOOKUP
+    if (!dbEntry) {
+      const strippedKey = dbKey.replace(/(flower|node|tree|vine|plant|leafy)$/, '');
+      if (strippedKey !== dbKey) dbEntry = DB_LOOKUP[strippedKey];
+    }
+    if (!dbEntry && rawResource !== 'Unknown') {
+      console.warn(`[ResourceTracker] Unknown resource entity detected: ${rawResource}`);
+    }
+
     return {
       idx: event.idx,
       type: event.type || existing?.type || 'Unknown',
       resource: rawResource,
-      rarity: event.rarity || existing?.rarity || 'Common',
-      hp: event.hp !== undefined ? event.hp : (existing ? existing.hp : 1),
-      maxHp: event.maxHp !== undefined ? event.maxHp : (existing ? existing.maxHp : 1),
+      rarity: event.rarity || existing?.rarity || (dbEntry ? dbEntry.rarity : 'common'),
+      hp: event.hp !== undefined ? event.hp : (existing ? existing.hp : (dbEntry ? dbEntry.maxHp : 1)),
+      maxHp: event.maxHp !== undefined ? event.maxHp : (existing ? existing.maxHp : (dbEntry ? dbEntry.maxHp : 1)),
       pos: event.pos || existing?.pos || { x: 0, y: 0 },
       weakness: event.weakness || existing?.weakness || '',
       gathered: event.hp !== undefined ? event.hp <= 0 : false,
@@ -37,27 +62,51 @@ export class ResourceTracker {
 
   static handleSpawn(event: ResourceRespawnEvent, zone: string) {
     const node = this.parseSpawn(event, zone);
-    if (node.gathered) return; // Prevent dead entities from entering the store on initial zone load
+    if (node.gathered) return; 
+    
     const key = `${zone}-${event.idx}`;
     const store = useTrackerStore.getState();
     const isNew = !store.resources[key];
     
     store.setResource(key, node);
+    if (store.timers[`resource-${key}`]) {
+      store.removeTimer(`resource-${key}`);
+    }
 
     if (isNew && node.resource) {
-      const name = node.resource.toLowerCase();
-      const isRare = name.includes('rare') || name.includes('crystal') || name.includes('gem') || name.includes('titanium') || name.includes('goldleaf') || name.includes('moonpetal');
+      const dbKey = StringCache.sanitize(node.resource);
+      let dbEntry = DB_LOOKUP[dbKey];
+      if (!dbEntry) {
+        const stripped = dbKey.replace(/(flower|node|tree|vine|plant|leafy)$/, '');
+        if (stripped !== dbKey) dbEntry = DB_LOOKUP[stripped];
+      }
       
-      const settings = useSettingsStore.getState();
-      if (isRare) {
-        AICompanion.onRareResource();
+      if (dbEntry) {
+        const isRare = dbEntry.rarity === 'rare' || dbEntry.rarity === 'mystical' || dbEntry.rarity === 'uncommon';
         
-        if (settings.notificationSettings.enabled && settings.notificationSettings.toasts && settings.notificationSettings.rareDrop) {
-          settings.addNotification({ 
-            type: 'mythic', 
-            title: 'Rare Node Spotted!', 
-            message: `A highly valuable ${node.resource} has spawned in ${zone}!` 
-          });
+        if (dbEntry.rarity === 'mystical' || dbEntry.rarity === 'rare') {
+          // The user explicitly requested to "remove respawn alerts"
+          // We are disabling both the rareSpawn log and the toast popup.
+          /*
+          if (settings.notificationSettings.notifyResources && !settings.notifiedEntities[`resource_${dbKey}`]) {
+            settings.markEntityNotified(`resource_${dbKey}`);
+            NotificationManager.rareSpawn(dbEntry.sanitizedName, node.pos, distanceToPlayer);
+          }
+          */
+          AICompanion.onRareSpawn(dbEntry.sanitizedName);
+        } else if (isRare) {
+          AICompanion.onRareResource();
+          
+          /*
+          if (settings.notificationSettings.enabled && settings.notificationSettings.toasts && settings.notificationSettings.notifyResources && !settings.notifiedEntities[`resource_${dbKey}`]) {
+            settings.markEntityNotified(`resource_${dbKey}`);
+            settings.addNotification({ 
+              type: dbEntry.rarity, 
+              title: 'Rare Node Spotted!', 
+              message: `A highly valuable ${dbEntry.sanitizedName} has spawned in ${zone}!` 
+            } as any);
+          }
+          */
         }
       }
     }
@@ -69,15 +118,15 @@ export class ResourceTracker {
     const store = useTrackerStore.getState();
     const data = payload?.data || payload;
 
-    const index = data.spawnIndex !== undefined ? data.spawnIndex : data.nodeIndex;
+    const index = data.spawnIndex !== undefined ? data.spawnIndex : (data.nodeIndex !== undefined ? data.nodeIndex : data.id);
     if (data.cooldownSeconds !== undefined && index !== undefined) {
        const key = `${currentZone}-${index}`;
        this.lastCooldowns[key] = data.cooldownSeconds;
        return;
     }
 
-    if (data.nodeIndex !== undefined) {
-      const key = `${currentZone}-${data.nodeIndex}`;
+    if (index !== undefined) {
+      const key = `${currentZone}-${index}`;
       const resource = store.resources[key];
       
       if (data.isGathered === true && resource) {
@@ -85,66 +134,74 @@ export class ResourceTracker {
           const updates: any = {};
           
           if (!resource.gathered) {
-            if (state.isRecording) {
-              state.addRoutePoint({
-                action: 'gather',
-                x: resource.pos.x,
-                y: resource.pos.y,
-                detail: resource.resource
-              });
-            }
-
-            const typeStr = (resource.type || '').toLowerCase();
-            const resName = (resource.resource || '').toLowerCase();
-            const isOre = typeStr.includes('ore') || typeStr.includes('rock') || resName.includes('ore') || resName.includes('rock') || resName.includes('copper') || resName.includes('iron') || resName.includes('gold') || resName.includes('silver') || resName.includes('crystal');
-            const isTree = typeStr.includes('tree') || typeStr.includes('wood') || resName.includes('tree') || resName.includes('wood') || resName.includes('log') || resName.includes('oak') || resName.includes('pine') || resName.includes('palm');
-
-            if (isOre) {
-              updates.sessionOresMined = state.sessionOresMined + 1;
-              updates.lifetimeStats = {
-                ...state.lifetimeStats,
-                oresMined: { ...state.lifetimeStats.oresMined, [resource.resource]: (state.lifetimeStats.oresMined[resource.resource] || 0) + 1 }
-              };
-            } else if (isTree) {
-              updates.sessionTreesCut = state.sessionTreesCut + 1;
-              updates.lifetimeStats = {
-                ...state.lifetimeStats,
-                treesCut: { ...state.lifetimeStats.treesCut, [resource.resource]: (state.lifetimeStats.treesCut[resource.resource] || 0) + 1 }
-              };
-            } else {
-              updates.sessionPlantsHarvested = state.sessionPlantsHarvested + 1;
-              updates.lifetimeStats = {
-                ...state.lifetimeStats,
-                plantsHarvested: { ...state.lifetimeStats.plantsHarvested, [resource.resource]: (state.lifetimeStats.plantsHarvested[resource.resource] || 0) + 1 }
-              };
+            const dbKey = (resource.resource || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            const dbEntry = DB_LOOKUP[dbKey];
+            
+            if (dbEntry) {
+              if (dbEntry.category === 'ore') {
+                updates.sessionOresMined = state.sessionOresMined + 1;
+                updates.lifetimeStats = {
+                  ...state.lifetimeStats,
+                  oresMined: { ...state.lifetimeStats.oresMined, [dbEntry.sanitizedName]: (state.lifetimeStats.oresMined[dbEntry.sanitizedName] || 0) + 1 }
+                };
+              } else if (dbEntry.category === 'tree') {
+                updates.sessionTreesCut = state.sessionTreesCut + 1;
+                updates.lifetimeStats = {
+                  ...state.lifetimeStats,
+                  treesCut: { ...state.lifetimeStats.treesCut, [dbEntry.sanitizedName]: (state.lifetimeStats.treesCut[dbEntry.sanitizedName] || 0) + 1 }
+                };
+              } else {
+                updates.sessionPlantsHarvested = state.sessionPlantsHarvested + 1;
+                updates.lifetimeStats = {
+                  ...state.lifetimeStats,
+                  plantsHarvested: { ...state.lifetimeStats.plantsHarvested, [dbEntry.sanitizedName]: (state.lifetimeStats.plantsHarvested[dbEntry.sanitizedName] || 0) + 1 }
+                };
+              }
             }
           }
 
           const exactCooldown = this.lastCooldowns[key];
-          let dbCooldown = getFallbackCooldown(resource.resource);
+          const dbKey = (resource.resource || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          const dbEntry = DB_LOOKUP[dbKey];
           
-          // Use our local database as the absolute source of truth since the game server sometimes sends incorrect default 30m cooldowns.
-          // Only use the server's cooldown if our database doesn't know the entity (returns default 300s).
-          let cooldown = (dbCooldown !== 300) ? dbCooldown : (exactCooldown !== undefined ? exactCooldown : 300);
+          let cooldown = exactCooldown !== undefined ? exactCooldown : (dbEntry ? dbEntry.cooldown : undefined);
 
-          const respawnTime = Date.now() + (cooldown * 1000);
           delete this.lastCooldowns[key];
-    
-          const newTimer = {
-            id: `resource-${key}`,
-            name: resource.resource,
-            category: resource.type as 'Trees' | 'Ores' | 'Plants',
-            expectedRespawnTime: respawnTime,
-            pos: resource.pos,
-            zone: currentZone
-          };
-          updates.timers = { ...state.timers, [newTimer.id]: newTimer };
           
-          const { [key]: _, ...remainingResources } = state.resources;
-          updates.resources = remainingResources;
+          if (cooldown !== undefined && dbEntry) {
+            const respawnTime = Date.now() + (cooldown * 1000);
+            const newTimer = {
+              id: `resource-${key}`,
+              name: dbEntry.sanitizedName,
+              category: (dbEntry && dbEntry.category === 'ore') ? 'Ores' : (dbEntry && dbEntry.category === 'tree') ? 'Trees' : 'Plants',
+              expectedRespawnTime: respawnTime,
+              pos: resource.pos,
+              zone: currentZone
+            };
+            updates.timers = { ...state.timers, [newTimer.id]: newTimer };
+          }
+          
+          updates.resources = {
+            ...state.resources,
+            [key]: { ...resource, gathered: true, hp: 0 }
+          };
 
           return updates;
         });
+
+        const dbKey = (resource.resource || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const dbEntry = DB_LOOKUP[dbKey];
+
+        if (dbEntry) {
+          useTrackerStore.getState().setCurrentTarget({
+            type: 'resource',
+            key,
+            name: dbEntry.sanitizedName,
+            hp: 0,
+            maxHp: resource.maxHp,
+            lastHit: Date.now()
+          });
+        }
       } else if (resource && data.nodeHp !== undefined) {
         useTrackerStore.setState((state) => ({
           resources: {
@@ -152,6 +209,20 @@ export class ResourceTracker {
             [key]: { ...state.resources[key], hp: data.nodeHp, gathered: false }
           }
         }));
+        
+        const dbKey = (resource.resource || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const dbEntry = DB_LOOKUP[dbKey];
+
+        if (dbEntry) {
+          useTrackerStore.getState().setCurrentTarget({
+            type: 'resource',
+            key,
+            name: dbEntry.sanitizedName,
+            hp: data.nodeHp,
+            maxHp: resource.maxHp,
+            lastHit: Date.now()
+          });
+        }
       }
     }
   }

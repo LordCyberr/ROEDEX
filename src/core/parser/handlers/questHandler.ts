@@ -1,16 +1,27 @@
 import { useTrackerStore } from '../../../store/trackerStore';
 import { Quest } from '../../../store/storeTypes';
+import { getNPCInfo } from '../../../data/npcs';
+import { useAnalyticsStore } from '../../../store/analyticsStore';
 
 export function handleQuestData(data: any) {
   if (!Array.isArray(data)) return;
   const [event, payload] = data;
 
-  if (event === 'npcquest_all_result' && payload.success) {
+  if (event === 'npcquest_all_result' && payload?.success) {
     // Parse the master list of all quests
     const store = useTrackerStore.getState();
     const npcs = payload.npcs || [];
     
     let allQuests: Quest[] = [];
+
+    // Mark NPC on map at their ACTUAL database coordinates (NOT at player respawn position)
+    if (npcs.length === 1 && npcs[0].quest_giver) {
+      const giverName = npcs[0].quest_giver;
+      const npcInfo = getNPCInfo(giverName);
+      if (npcInfo && npcInfo.x !== undefined && npcInfo.y !== undefined) {
+        // Route tracking removed
+      }
+    }
 
     for (const npc of npcs) {
       if (Array.isArray(npc.quests)) {
@@ -64,14 +75,23 @@ export function handleQuestData(data: any) {
     store.setQuests(currentQuests);
   }
 
-  else if ((event === 'npcquest_ack' || event === 'npc_quest_generate_ack') && (payload.ok || payload.success)) {
+  else if ((event === 'npcquest_ack' || event === 'npc_quest_generate_ack') && (payload?.ok || payload?.success)) {
     const store = useTrackerStore.getState();
     const questData = event === 'npc_quest_generate_ack' ? payload.data?.quest : payload.quest;
 
     if (!questData) return;
 
-    const action = payload.action; // e.g. "accept", "deliver"
+    const action = payload?.action; // e.g. "accept", "deliver"
     
+    // Auto-mark the NPC at their actual database coordinates
+    if (questData.quest_giver) {
+      const giverName = questData.quest_giver;
+      const npcInfo = getNPCInfo(giverName);
+      if (npcInfo && npcInfo.x !== undefined && npcInfo.y !== undefined) {
+        // Route tracking removed
+      }
+    }
+
     // Find the quest in the store and update it
     const currentQuests = [...store.quests];
     const index = currentQuests.findIndex(q => q.quest_id === questData.quest_id);
@@ -104,5 +124,22 @@ export function handleQuestData(data: any) {
     }
 
     store.setQuests(currentQuests);
+
+    // Analytics: Record Net Quest Profit if delivering
+    if (action === 'deliver' || questData.status === 'completed') {
+      let materialsCost = 0;
+      // Rough estimation if exact market data is unavailable:
+      if (questData.reward_cost_difference !== undefined) {
+         materialsCost = Math.max(0, (questData.reward || 0) - questData.reward_cost_difference);
+      } else {
+         materialsCost = (questData.quantity || 1) * 20; // fallback arbitrary weight
+      }
+      // We calculate the materialsCost and use it in addQuestEarnings directly.
+      
+      useAnalyticsStore.getState().addQuestEarnings(
+        questData.reward || 0,
+        materialsCost
+      );
+    }
   }
 }

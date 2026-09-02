@@ -74,7 +74,7 @@ export const TimerDisplay = memo(({ targetMsArray, textSmall }: { targetMsArray:
     <Tooltip content={tooltipContent}>
       <div 
         id="tutorial-timer-row" 
-        className={`text-right ${textSmall} ${timerColor} cursor-help`}
+        className={`text-right ${textSmall} ${timerColor} cursor-help font-bold`}
         onMouseEnter={() => useSettingsStore.getState().setHoveredTimerId('tutorial-timer-row')}
         onMouseLeave={() => useSettingsStore.getState().setHoveredTimerId(null)}
       >

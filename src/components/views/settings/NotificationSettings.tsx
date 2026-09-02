@@ -1,17 +1,41 @@
 import React from 'react';
 import { useTranslation } from '../../../hooks/useTranslation';
-// import React from 'react';
 import { useSettingsStore } from '../../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
-import { ToggleRow, SliderRow, SelectRow } from './SettingsControls';
+import { ToggleRow, SelectRow } from './SettingsControls';
+import { UIAppearanceSettings } from './UIAppearanceSettings';
+import { X } from 'lucide-react';
 
 export const NotificationSettings: React.FC = () => {
   const { t } = useTranslation();
   const store = useSettingsStore(useShallow(state => ({
     notificationSettings: state.notificationSettings,
     updateNotificationSettings: state.updateNotificationSettings,
-    notifications: state.notifications
+    notifications: state.notifications,
+    targetUISettings: state.targetUISettings,
+    updateTargetUISettings: state.updateTargetUISettings
   })));
+
+  const [muteInput, setMuteInput] = React.useState('');
+
+  const handleAddMute = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && muteInput.trim()) {
+      const sanitized = muteInput.trim().toLowerCase();
+      const currentDisabled = store.notificationSettings.disabledItems || {};
+      store.updateNotificationSettings({
+        disabledItems: { ...currentDisabled, [sanitized]: true }
+      });
+      setMuteInput('');
+    }
+  };
+
+  const handleRemoveMute = (item: string) => {
+    const currentDisabled = { ...(store.notificationSettings.disabledItems || {}) };
+    delete currentDisabled[item];
+    store.updateNotificationSettings({
+      disabledItems: currentDisabled
+    });
+  };
 
   return (
     <>
@@ -20,10 +44,10 @@ export const NotificationSettings: React.FC = () => {
           <div className="mt-2 mb-2">
             <ToggleRow 
               label={t('settings.showPreviewDummy')}
-              value={!!useSettingsStore.getState().notifications.find(n => n.id === 'placeholder')}
+              value={!!store.notifications.find(n => n.id === 'placeholder')}
               onChange={(v) => {
                 if (v) {
-                  if (!useSettingsStore.getState().notifications.find(n => n.id === 'placeholder')) {
+                  if (!store.notifications.find(n => n.id === 'placeholder')) {
                     useSettingsStore.setState((s) => ({
                       notifications: [...s.notifications, { id: 'placeholder', title: 'Preview', message: 'Drag me to set position', type: 'info', timestamp: Date.now() }]
                     }));
@@ -52,10 +76,7 @@ export const NotificationSettings: React.FC = () => {
               onChange={(v) => store.updateNotificationSettings({ toastShape: v as any })} 
             />
             <ToggleRow label={t('settings.enableNeonGlow')} value={store.notificationSettings.neonGlow} onChange={(v) => store.updateNotificationSettings({ neonGlow: v })} />
-            <SliderRow label={t('settings.barWidth')} value={store.notificationSettings.width} min={150} max={400} step={10} display={`${store.notificationSettings.width}px`} onChange={(v) => store.updateNotificationSettings({ width: v })} />
-            <SliderRow label={t('settings.toastHeight')} value={store.notificationSettings.height} min={30} max={120} step={5} display={`${store.notificationSettings.height}px`} onChange={(v) => store.updateNotificationSettings({ height: v })} />
-            <SliderRow label={t('settings.scale')} value={store.notificationSettings.scale} min={0.5} max={1.5} step={0.1} display={`${(store.notificationSettings.scale * 100).toFixed(0)}%`} onChange={(v) => store.updateNotificationSettings({ scale: v })} />
-            <SliderRow label={t('settings.opacity')} value={store.notificationSettings.opacity} min={0.2} max={1} step={0.05} display={`${(store.notificationSettings.opacity * 100).toFixed(0)}%`} onChange={(v) => store.updateNotificationSettings({ opacity: v })} />
+            <UIAppearanceSettings settings={store.notificationSettings} onUpdate={store.updateNotificationSettings} showDuration={true} widthRange={[150, 400]} heightRange={[30, 120]} />
 
             <div className="text-[9px] font-bold text-[var(--text-muted)] mt-4 mb-1 pl-1">{t('settings.positionAnimation')}</div>
             <SelectRow 
@@ -68,12 +89,40 @@ export const NotificationSettings: React.FC = () => {
               onChange={(v) => store.updateNotificationSettings({ position: v as any })} 
             />
 
-            <SliderRow label={t('settings.toastDuration')} value={store.notificationSettings.duration} min={1000} max={10000} step={500} display={`${(store.notificationSettings.duration / 1000).toFixed(1)}s`} onChange={(v) => store.updateNotificationSettings({ duration: v })} />
-            
             <div className="text-[9px] font-bold text-[var(--text-muted)] mt-4 mb-1 pl-1">{t('settings.eventTriggers')}</div>
             <ToggleRow label={t('settings.zoneChanges')} value={store.notificationSettings.zoneChange} onChange={(v) => store.updateNotificationSettings({ zoneChange: v })} />
             <ToggleRow label={t('settings.toolWarnings')} value={store.notificationSettings.toolWarning} onChange={(v) => store.updateNotificationSettings({ toolWarning: v })} />
-            <ToggleRow label={t('settings.rareDrops')} value={store.notificationSettings.lootEvents} onChange={(v) => store.updateNotificationSettings({ lootEvents: v })} />
+            
+            <ToggleRow label={t('settings.notifyItems')} value={store.notificationSettings.notifyItems} onChange={(v) => store.updateNotificationSettings({ notifyItems: v })} />
+            <ToggleRow label={t('settings.notifyResources')} value={store.notificationSettings.notifyResources} onChange={(v) => store.updateNotificationSettings({ notifyResources: v })} />
+            <ToggleRow label={t('settings.notifyLoot')} value={store.notificationSettings.notifyLoot} onChange={(v) => store.updateNotificationSettings({ notifyLoot: v })} />
+            
+            <div className="text-[9px] font-bold text-[var(--text-muted)] mt-4 mb-1 pl-1">{t('settings.rareItemToggles')}</div>
+            <ToggleRow label={t('settings.notifyRareMobDrops')} value={store.notificationSettings.notifyRareMobDrops ?? true} onChange={(v) => store.updateNotificationSettings({ notifyRareMobDrops: v })} />
+            <ToggleRow label={t('settings.notifyRareOres')} value={store.notificationSettings.notifyRareOres ?? true} onChange={(v) => store.updateNotificationSettings({ notifyRareOres: v })} />
+            <ToggleRow label={t('settings.notifyRarePlants')} value={store.notificationSettings.notifyRarePlants ?? true} onChange={(v) => store.updateNotificationSettings({ notifyRarePlants: v })} />
+            
+            <div className="text-[9px] font-bold text-[var(--text-muted)] mt-4 mb-1 pl-1">{t('settings.mutedSpawnsItems')}</div>
+            <div className="px-1 mb-2">
+              <input
+                type="text"
+                value={muteInput}
+                onChange={(e) => setMuteInput(e.target.value)}
+                onKeyDown={handleAddMute}
+                placeholder="Type name (e.g. Slime) and press Enter..."
+                className="w-full bg-[var(--bg-base)] border border-[var(--border-subtle)] focus:border-[var(--accent-primary)] rounded-lg px-2.5 py-1.5 text-[10px] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none transition-colors"
+              />
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {Object.keys(store.notificationSettings.disabledItems || {}).map((item) => (
+                  <div key={item} className="flex items-center gap-1 px-2 py-0.5 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-full text-[9px] text-[var(--text-secondary)] capitalize group">
+                    <span>{item}</span>
+                    <button onClick={() => handleRemoveMute(item)} className="text-[var(--text-muted)] hover:text-red-400 opacity-50 group-hover:opacity-100 transition-opacity">
+                      <X size={10} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
     </>
   );

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { rafScheduler } from '../../core/RafScheduler';
 
 interface ParticleGlobeProps {
   color?: string;
@@ -101,11 +102,10 @@ export const ParticleGlobe: React.FC<ParticleGlobeProps> = ({
       }
     }
 
-    let animationFrameId: number;
-    let throttleTimer: ReturnType<typeof setTimeout>;
     let time = 0;
     let globalRotY = 0;
     let globalRotX = 0;
+    let lastRenderTimestamp = 0; // tracks when we last actually rendered, for FPS throttling
     
     // Smooth transition state
     let currentTransition = moodRef.current === 'dimmed' ? 0 : 1;
@@ -133,15 +133,7 @@ export const ParticleGlobe: React.FC<ParticleGlobeProps> = ({
       return `rgba(${c.r}, ${c.g}, ${c.b}, ${alpha})`;
     };
 
-    const render = () => {
-      if (document.hidden) {
-         // Pause heavy canvas drawing if the tab is not visible
-         throttleTimer = setTimeout(() => {
-           animationFrameId = requestAnimationFrame(render);
-         }, 500);
-         return;
-      }
-      
+    const render = (_timestamp: number) => {
       ctx.clearRect(0, 0, width, height);
       
       const currentMood = moodRef.current;
@@ -307,26 +299,29 @@ export const ParticleGlobe: React.FC<ParticleGlobeProps> = ({
       ctx.arc(PROJECTION_CENTER_X, PROJECTION_CENTER_Y, finalRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      // Throttle FPS based on mood to preserve game performance
+    };
+
+    // Outer tick: receives timestamp from RafScheduler, applies per-mood FPS throttle.
+    // document.hidden check here is cheaper than re-scheduling via setTimeout.
+    const tick = (_dt: number, timestamp: number) => {
+      if (document.hidden) return;
+
       const targetFPS = forceHighFPSRef.current ? 60 : (
-        currentMood === 'dimmed' ? 5 
-        : currentIsTalking ? 30 : 15
+        moodRef.current === 'dimmed' ? 5
+        : isTalkingRef.current ? 30 : 15
       );
-      
-      if (targetFPS >= 60) {
-        animationFrameId = requestAnimationFrame(render);
-      } else {
-        throttleTimer = setTimeout(() => {
-          animationFrameId = requestAnimationFrame(render);
-        }, 1000 / targetFPS);
+      const minInterval = 1000 / targetFPS;
+
+      if (timestamp - lastRenderTimestamp >= minInterval) {
+        lastRenderTimestamp = timestamp;
+        render(timestamp);
       }
     };
 
-    render();
+    const unsubscribe = rafScheduler.register(tick);
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
-      clearTimeout(throttleTimer);
+      unsubscribe();
     };
   }, []); // Empty dependency array! Will never unmount on prop changes!
 

@@ -17,6 +17,9 @@ export interface CompanionProfile {
     rareLoot: string[];
     levelUp: string[];
     tutorial: string[];
+    mapDiscovery?: string[];
+    waypointPing?: string[];
+    zoneTransition?: string[];
   };
   theme: string;
 }
@@ -64,6 +67,21 @@ export const COMPANIONS: Record<CompanionId, CompanionProfile> = {
         "Level up! Let's go!",
         "We're making great progress."
       ],
+      mapDiscovery: [
+        "Aha! We're uncovering more of the map!",
+        "Look at that unexplored territory clearing up!",
+        "Almost full map coverage! We're true cartographers now!"
+      ],
+      waypointPing: [
+        "Waypoint set! Follow the glowing path!",
+        "Target coordinates locked in! Lead the way!",
+        "A new destination! I'm right behind you!"
+      ],
+      zoneTransition: [
+        "Entering a new zone! Stay alert!",
+        "New area unlocked! Let me scan for nodes...",
+        "Ah, fresh air in a new zone!"
+      ],
       tutorial: [
         "Welcome to Town! Before we leave, make sure your health is topped off. Head inside your house and click the bed if you need healing!",
         "Time to calibrate the ROEDEX with some real data. Run out to the Cave or Forest and defeat 3 monsters!",
@@ -80,7 +98,7 @@ export const COMPANIONS: Record<CompanionId, CompanionProfile> = {
         "You can tweak my settings or shut me up in the Settings tab. Click it to finish the tutorial!"
       ]
     },
-    theme: 'ruyui'
+    theme: 'bob-theme'
   },
   kaya: {
     id: 'kaya',
@@ -140,7 +158,7 @@ export const COMPANIONS: Record<CompanionId, CompanionProfile> = {
         "Go to the Settings tab if you want to tweak things. That's it, tutorial over. Let's go fight something!"
       ]
     },
-    theme: 'ruyui-demon'
+    theme: 'kaya-theme'
   },
   lia: {
     id: 'lia',
@@ -200,7 +218,7 @@ export const COMPANIONS: Record<CompanionId, CompanionProfile> = {
         "You may attune my settings to your liking in the final tab. Our preparations are complete. Let us seek knowledge."
       ]
     },
-    theme: 'ruyui-witch'
+    theme: 'lia-theme'
   },
   crash: {
     id: 'crash',
@@ -260,6 +278,6 @@ export const COMPANIONS: Record<CompanionId, CompanionProfile> = {
         "Go to Settings to change Crash. Crash done talking now. CRASH WANT TO FIGHT!"
       ]
     },
-    theme: 'ruyui-orc'
+    theme: 'crash-theme'
   }
 };

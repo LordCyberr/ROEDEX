@@ -39,8 +39,7 @@ export class AICompanion {
     const activeCompId = settings.activeCompanion || 'bob';
     if (activeCompId === 'bob') return baseQuotes;
     
-    const premiumQuotes = (companionTranslations as any)[lang] || companionTranslations.en;
-    const activePremium = premiumQuotes[activeCompId];
+    const activePremium = (companionTranslations as any)[activeCompId];
     
     if (activePremium) {
       return {
@@ -84,14 +83,7 @@ export class AICompanion {
     
     if (wasBored) {
       useSettingsStore.getState().setBobMood('idle');
-      
-      const lang = useSettingsStore.getState().language || 'en';
-      let backMsg = "Welcome back! Ready to get back to the grind?";
-      if (lang === 'es') backMsg = "¡Bienvenido de vuelta! ¿Listo para volver al trabajo?";
-      if (lang === 'ru') backMsg = "С возвращением! Готов вернуться к гринду?";
-      if (lang === 'ko') backMsg = "돌아온 걸 환영해요! 다시 파밍을 시작해볼까요?";
-      
-      this.sendBobMessage('chat', backMsg);
+      this.sendBobMessage('chat', this.pickRandom(this.getQuotes().welcomeBack));
     }
   }
 
@@ -107,13 +99,7 @@ export class AICompanion {
         this.isBored = true;
         useSettingsStore.getState().setBobMood('thinking');
         
-        const lang = settings.language || 'en';
-        let boredMsg = "Are we just standing here? I'm getting a bit bored...";
-        if (lang === 'es') boredMsg = "¿Nos vamos a quedar aquí parados? Me estoy aburriendo un poco...";
-        if (lang === 'ru') boredMsg = "Мы просто стоим здесь? Мне становится скучновато...";
-        if (lang === 'ko') boredMsg = "우리 그냥 여기 서 있는 건가요? 조금 지루해지네요...";
-        
-        this.sendBobMessage('chat', boredMsg);
+        this.sendBobMessage('chat', this.pickRandom(this.getQuotes().bored));
       }
     }, 30000); // Check every 30 seconds
   }
@@ -132,13 +118,7 @@ export class AICompanion {
       }
     }, 10000);
 
-    const lang = useSettingsStore.getState().language || 'en';
-    let excitedMsg = `Whoa! ${pps} packets/sec! Combat is getting intense, stay focused!`;
-    if (lang === 'es') excitedMsg = `¡Guau! ¡${pps} paquetes/seg! ¡El combate se está poniendo tenso, mantén la concentración!`;
-    if (lang === 'ru') excitedMsg = `Ого! ${pps} пак/сек! Бой становится жарким, сосредоточься!`;
-    if (lang === 'ko') excitedMsg = `와우! 초당 ${pps} 패킷! 전투가 치열해지고 있어요. 집중하세요!`;
-
-    this.sendBobMessage('chat', excitedMsg);
+    this.sendBobMessage('chat', this.pickRandom(this.getQuotes().excited).replace('{pps}', pps.toString()));
   }
 
   private static resetIdleTimer() {
@@ -156,12 +136,7 @@ export class AICompanion {
     if (!store.sessionActive || !store.sessionStartTime) return;
     const hoursElapsed = (Date.now() - store.sessionStartTime) / (1000 * 60 * 60);
     if (hoursElapsed > 2) {
-      this.triggerCategory('fatigue', [
-        "You've been grinding for over 2 hours straight! Don't forget to hydrate!",
-        "Take a quick break, champion. Even the best need to rest their eyes.",
-        "Your dedication is insane, but maybe stretch your legs for a minute?",
-        "Two hours of non-stop action! Grab some water!"
-      ], 3600000, 'bobTips', true); // 1 hour cooldown for fatigue
+      this.triggerCategory('fatigue', this.getQuotes().fatigue, 3600000, 'bobTips', true); // 1 hour cooldown for fatigue
     }
   }
 
@@ -243,20 +218,6 @@ export class AICompanion {
       // Replace {username} or {name} if it exists in the localized string
       if (line.includes('{username}') || line.includes('{name}')) {
         line = line.replace(/\{name\}/g, username).replace(/\{username\}/g, username);
-      } else {
-        // Fallback for strings that don't have the template yet
-        const settings = useSettingsStore.getState();
-        const lang = settings.language || 'en';
-        
-        if (lang === 'ko') {
-          line = `${username}님! ${line}`;
-        } else if (lang === 'es') {
-          line = `¡Hola ${username}! ${line}`;
-        } else if (lang === 'ru') {
-          line = `Эй, ${username}! ${line}`;
-        } else {
-          line = `Hey ${username}! ${line}`;
-        }
       }
     }
     
@@ -299,7 +260,9 @@ export class AICompanion {
       } else if (lowerName.includes('wooden golem')) {
          specificMonsterQuoteKey = 'monsterWoodenGolem';
       } else if (lowerName.includes('golem')) {
-         specificMonsterQuoteKey = 'monsterGolem';
+         specificMonsterQuoteKey = 'monsterWoodenGolem';
+      } else if (lowerName.includes('ore elemental') || lowerName.includes('elemental')) {
+         specificMonsterQuoteKey = 'monsterOreElemental';
       } else if (lowerName.includes('slime')) {
          specificMonsterQuoteKey = 'monsterSlime';
       }
@@ -330,45 +293,23 @@ export class AICompanion {
     this.onActivity();
   }
 
+  static onRareSpawn(resourceName: string) {
+    this.onActivity();
+    const settings = useSettingsStore.getState();
+    if (!settings.notificationSettings.companionMode || !settings.notificationSettings.bobRareResource) return;
+    
+    this.sendBobMessage('chat', this.pickRandom(this.getQuotes().rareSpawn).replace('{resource}', resourceName));
+  }
+
   private static getContextualLootCommentary(itemName: string, quantity: number, rarity: string): string {
     const cleanName = itemName.replace(/^./, str => str.toUpperCase());
     const qtyStr = quantity > 1 ? `${quantity}x ` : '';
-    const isSword = cleanName.toLowerCase().includes('sword') || cleanName.toLowerCase().includes('blade') || cleanName.toLowerCase().includes('dagger') || cleanName.toLowerCase().includes('staff') || cleanName.toLowerCase().includes('bow');
-    const isMaterial = cleanName.toLowerCase().includes('core') || cleanName.toLowerCase().includes('crystal') || cleanName.toLowerCase().includes('essence') || cleanName.toLowerCase().includes('ore') || cleanName.toLowerCase().includes('crown') || cleanName.toLowerCase().includes('heart');
+    const quotes = this.getQuotes();
 
-    const lang = useSettingsStore.getState().language || 'en';
-
-    if (lang === 'es') {
-      if (rarity === 'mythic' || rarity === 'priority') {
-        if (isSword) return `¡¿Guau! ¡¿Un ${cleanName}?! ¿Vas a equiparlo o a vendérselo al herrero?`;
-        if (isMaterial) return `¡¿Un ${cleanName}?! ¡Ese material mítico vale una fortuna, no lo pierdas!`;
-        return `¡Cielos, un ${cleanName}! ¡Eso es increíblemente raro!`;
-      }
-      return `¡Mira eso! Encontraste ${qtyStr}${cleanName}. ¡Un botín genial!`;
-    }
-    if (lang === 'ru') {
-      if (rarity === 'mythic' || rarity === 'priority') {
-        if (isSword) return `ОГО! ${cleanName}?! Собираешься экипировать его или продашь кузнецу?`;
-        if (isMaterial) return `${cleanName}?! Этот мифический материал стоит целое состояние, не потеряй его!`;
-        return `Ого, ${cleanName}! Это невероятно редко!`;
-      }
-      return `Посмотри на это! Ты нашел ${qtyStr}${cleanName}. Отличный лут!`;
-    }
-    if (lang === 'ko') {
-      if (rarity === 'mythic' || rarity === 'priority') {
-        if (isSword) return `와우! ${cleanName}?! 장착하실 건가요, 아니면 대장장이에게 파실 건가요?`;
-        if (isMaterial) return `${cleanName}?! 이 신화적인 재료는 어마어마한 가치가 있어요. 절대 잃어버리지 마세요!`;
-        return `세상에, ${cleanName}이라니! 정말 엄청나게 희귀하네요!`;
-      }
-      return `이것 좀 보세요! ${qtyStr}${cleanName}을(를) 찾았어요. 멋진 전리품이네요!`;
-    }
-    // Default to English
     if (rarity === 'mythic' || rarity === 'priority') {
-      if (isSword) return `WHOA! A ${cleanName}?! Are you going to equip that or sell it to the Blacksmith?`;
-      if (isMaterial) return `A ${cleanName}?! That mythic material is worth a fortune, don't lose it!`;
-      return `Holy moly, a ${cleanName}! That is incredibly rare!`;
+      return this.pickRandom(quotes.mythicLootCommentary).replace('{qty}', qtyStr).replace('{item}', cleanName);
     }
-    return `Look at that! You found ${qtyStr}${cleanName}. Nice loot!`;
+    return this.pickRandom(quotes.rareLootCommentary).replace('{qty}', qtyStr).replace('{item}', cleanName);
   }
 
   static onRareDrop(itemName?: string, quantity: number = 1) {
@@ -419,13 +360,7 @@ export class AICompanion {
   }
 
   static onLevelUpNear() {
-    this.triggerCategory('levelUpNear', [
-      "You're almost there! Just a few more to level up!",
-      "I can feel the power growing! So close to the next level!",
-      "Push it! You're about to level up!",
-      "Just a tiny bit more XP to go!",
-      "Level up incoming! Keep grinding!"
-    ], 300000, 'bobAchievement', false); // 5 minutes cooldown
+    this.triggerCategory('levelUpNear', this.getQuotes().levelUpNear, 300000, 'bobAchievement', false); // 5 minutes cooldown
   }
 
   // Roasting Tracking
@@ -605,6 +540,10 @@ export class AICompanion {
   }
 
   private static sendBobMessage(type: string, message: string) {
+    // Suppress all chatter during death recovery mode — player needs focus
+    const trackerState = useTrackerStore.getState();
+    if (trackerState.isDeathRecoveryMode) return;
+
     const settingsStore = useSettingsStore.getState();
     settingsStore.addBobMessage({
       title: 'Bob',
@@ -657,5 +596,65 @@ export class AICompanion {
       const alertStr = this.getAlerts().mythicDrop || "HURRAY! You finally got {qty}x {item}!";
       this.sendBobMessage('chat', alertStr.replace('{qty}', quantity.toString()).replace('{item}', itemName));
     }
+  }
+
+  // --- New Hooks (Phase 12) ---
+  
+  static onMarketActivity(action: 'buy' | 'sell', _itemName: string) {
+    this.onActivity();
+    const quotes = this.getQuotes() as any;
+    if (action === 'buy') {
+      this.triggerCategory('marketBuy', quotes.marketBuy || quotes.idle || [], 60000, 'bobTips');
+    } else {
+      this.triggerCategory('marketSell', quotes.marketSell || quotes.idle || [], 60000, 'bobTips');
+    }
+  }
+
+  static onRuneRecovered() {
+    this.onActivity();
+    const quotes = this.getQuotes() as any;
+    this.triggerCategory('runeRecovered', quotes.runeRecovered || quotes.achievement || [], 60000, 'bobAchievement');
+  }
+
+  static onLongSession() {
+    this.onActivity();
+    const quotes = this.getQuotes() as any;
+    this.triggerCategory('longSession', quotes.fatigue || quotes.idle || [], 3600000, 'bobTips');
+  }
+  
+  static onQuestComplete(_questName: string) {
+    this.onActivity();
+    this.triggerCategory('questComplete', this.getQuotes().questComplete, 5000, 'bobAchievement', true);
+    
+    useSettingsStore.getState().setBobMood('happy');
+    setTimeout(() => useSettingsStore.getState().setBobMood('idle'), 10000);
+  }
+
+  static onPlayerSpotted(_playerName: string) {
+    this.onActivity();
+    this.triggerCategory('playerSpotted', this.getQuotes().playerSpotted, 300000, 'bobZone'); // 5 minute cooldown for spotting players
+  }
+
+  static onInventoryNearFull(count: number) {
+    this.onActivity();
+    if (count > 30) {
+      this.triggerCategory('inventoryFull', this.getQuotes().inventoryFull, 300000, 'bobTips', true); // 5 min cooldown
+    }
+  }
+
+  static onRouteTargetReached() {
+    this.onActivity();
+    this.triggerCategory('routeTarget', this.getQuotes().routeTarget, 30000, 'bobTips', true);
+    
+    useSettingsStore.getState().setBobMood('happy');
+    setTimeout(() => useSettingsStore.getState().setBobMood('idle'), 8000);
+  }
+
+  static onLostOnRoute() {
+    this.onActivity();
+    this.triggerCategory('routeLost', this.getQuotes().routeLost, 60000, 'bobTips');
+    
+    useSettingsStore.getState().setBobMood('thinking');
+    setTimeout(() => useSettingsStore.getState().setBobMood('idle'), 8000);
   }
 }

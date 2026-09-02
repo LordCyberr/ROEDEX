@@ -1,42 +1,35 @@
 import React, { useState, useMemo } from 'react';
 import { useTrackerStore } from '../../../store/trackerStore';
 import { useShallow } from 'zustand/react/shallow';
-import { PackageOpen } from 'lucide-react';
+import { PackageOpen, ShoppingCart, Sword, PawPrint, Axe, Pickaxe, Leaf, Box } from 'lucide-react';
+import { useSettingsStore } from '../../../store/settingsStore';
 import { getResellValue } from '../../../data/prices';
 import { getItemInfo } from '../../../data/rarity';
+import { getRarityColor, getRarityWeight } from '../../../utils/rarity';
 import { formatInternalName } from '../../../utils/formatters';
 import { CustomSelect } from '../../ui/CustomSelect';
 import { Tooltip } from '../../ui/Tooltip';
 import { useTranslation } from '../../../hooks/useTranslation';
 
-const getRarityColor = (name: string) => {
-  const info = getItemInfo(name);
-  if (!info) return 'text-slate-300';
-  switch (info.rarity) {
-    case 'uncommon': return 'text-blue-400 font-medium';
-    case 'rare': return 'text-green-400 font-bold';
-    case 'mythic': return 'text-purple-400 font-black';
-    case 'common':
-    default: return 'text-slate-300';
-  }
-};
-
-const getRarityWeight = (name: string) => {
-  const info = getItemInfo(name);
-  if (!info) return 0;
-  switch (info.rarity) {
-    case 'mythic': return 3;
-    case 'rare': return 2;
-    case 'uncommon': return 1;
-    case 'common':
-    default: return 0;
-  }
+const getCategoryIcon = (categoryId: string | undefined, rarityClass: string, isExcluded: boolean) => {
+  const sz = 12;
+  const cls = `shrink-0 ${isExcluded ? 'opacity-50 text-slate-500' : rarityClass}`;
+  const iconProps = { size: sz, className: cls };
+  if (!categoryId) return <Box {...iconProps} />;
+  const id = categoryId.toLowerCase();
+  if (id.includes('mob') || id.includes('monster') || id.includes('hostile')) return <Sword {...iconProps} />;
+  if (id.includes('neutral')) return <PawPrint {...iconProps} />;
+  if (id.includes('tree') || id.includes('wood')) return <Axe {...iconProps} />;
+  if (id.includes('ore') || id.includes('rock') || id.includes('vein')) return <Pickaxe {...iconProps} />;
+  if (id.includes('plant') || id.includes('herb') || id.includes('flower')) return <Leaf {...iconProps} />;
+  return <Box {...iconProps} />;
 };
 
 export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: string }> = ({ isHorizontal, compactHeightClass }) => {
   const { t } = useTranslation();
-  const { chestInventory, playerProfile } = useTrackerStore(useShallow((state: any) => ({
+  const { chestInventory, bankInventory, playerProfile } = useTrackerStore(useShallow((state: any) => ({
     chestInventory: state.chestInventory,
+    bankInventory: state.bankInventory,
     playerProfile: state.playerProfile
   })));
 
@@ -55,8 +48,8 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
 
   const chestItemsListUI = useMemo(() => {
     const combinedInventory: Record<string, number> = { ...chestInventory };
-    for (const [key, qty] of Object.entries(useTrackerStore.getState().bankInventory || {})) {
-       combinedInventory[key] = (combinedInventory[key] || 0) + qty;
+    for (const [key, qty] of Object.entries(bankInventory || {})) {
+       combinedInventory[key] = (combinedInventory[key] || 0) + (qty as number);
     }
 
     let actualRunesInChest = 0;
@@ -92,7 +85,7 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
        return 0;
     });
     return list;
-  }, [chestInventory, includeRunesInChest, playerProfile.currentRunes, chestSortBy]);
+  }, [chestInventory, bankInventory, includeRunesInChest, playerProfile.currentRunes, chestSortBy]);
 
   const displayTotalValue = useMemo(() => chestItemsListUI.reduce((acc, item) => {
     return acc + (excludedItems.has(item.name) ? 0 : item.totVal);
@@ -115,7 +108,7 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
     <div className={`flex ${isHorizontal ? 'flex-row' : 'flex-col'} gap-2 h-full w-full`}>
       {/* Summary Card */}
       {isHorizontal ? (
-        <div className={`flex flex-col gap-1.5 w-[140px] shrink-0 h-full overflow-y-auto custom-scrollbar`}>
+        <div className={`flex flex-col gap-1.5 w-[140px] shrink-0 h-full overflow-y-auto`}>
           <div className="flex flex-col items-center justify-start bg-[var(--bg-panel)] p-3 border border-[var(--border-subtle)] rounded shrink-0 gap-3 h-full">
             <div className="flex flex-col items-center gap-3 w-full text-center mt-1">
               <Tooltip content={t('chestTab.totalValueDesc')}>
@@ -148,14 +141,25 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
                   className="w-full h-[26px] bg-[var(--bg-card)] text-[9px] text-slate-300 uppercase tracking-widest font-bold px-2 rounded border border-[var(--border-subtle)] hover:border-white/20 transition-colors flex items-center justify-center text-center"
                 />
               </div>
-              <Tooltip content={t('chestTab.includeRunesDesc')}>
-                <button 
-                  onClick={() => setIncludeRunesInChest(!includeRunesInChest)} 
-                  className={`w-full h-[26px] text-[9px] font-bold uppercase px-2 rounded border transition-colors flex items-center justify-center ${includeRunesInChest ? 'bg-purple-500/20 text-purple-400 border-purple-500/30 shadow-inner' : 'bg-[var(--bg-card)] text-slate-400 border-white/5 hover:border-white/20'}`}
-                >
-                  {t('stats.runes')}
-                </button>
-              </Tooltip>
+              <div className="flex w-full gap-1.5">
+                <Tooltip content={t('chestTab.includeRunesDesc')}>
+                  <button 
+                    onClick={() => setIncludeRunesInChest(!includeRunesInChest)} 
+                    className={`flex-1 h-[26px] text-[9px] font-bold uppercase px-2 rounded border transition-colors flex items-center justify-center ${includeRunesInChest ? 'bg-purple-500/20 text-purple-400 border-purple-500/30 shadow-inner' : 'bg-[var(--bg-card)] text-slate-400 border-white/5 hover:border-white/20'}`}
+                  >
+                    {t('stats.runes')}
+                  </button>
+                </Tooltip>
+                <Tooltip content="Open ROEDEX Bazaar">
+                  <button 
+                    onClick={() => useSettingsStore.getState().setIsMarketplaceOpen(true)}
+                    className="flex-1 h-[26px] text-[9px] font-bold uppercase px-2 rounded border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 transition-colors flex items-center justify-center gap-1.5 shadow-inner"
+                  >
+                    <ShoppingCart size={12} />
+                    Bazaar
+                  </button>
+                </Tooltip>
+              </div>
             </div>
           </div>
         </div>
@@ -175,8 +179,8 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
               </div>
             </Tooltip>
           </div>
-          <div className="flex items-center justify-between gap-2 mt-1">
-            <div className="w-1/2 relative">
+          <div className="flex items-center justify-between gap-1.5 mt-1">
+            <div className="w-1/3 relative">
               <CustomSelect 
                 value={chestSortBy} 
                 onChange={(v) => setChestSortBy(v as any)}
@@ -185,15 +189,24 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
                   { label: 'Count', value: 'count' },
                   { label: 'Rarity', value: 'rarity' }
                 ]}
-                className="w-full h-[22px] bg-[var(--bg-card)] text-[9px] text-slate-300 uppercase tracking-widest font-bold px-2 rounded border border-[var(--border-subtle)] hover:border-white/20 transition-colors flex items-center justify-center text-center"
+                className="w-full h-[22px] bg-[var(--bg-card)] text-[9px] text-slate-300 uppercase tracking-widest font-bold px-1 rounded border border-[var(--border-subtle)] hover:border-white/20 transition-colors flex items-center justify-center text-center"
               />
             </div>
             <Tooltip content={t('chestTab.includeRunesDesc')}>
               <button 
                 onClick={() => setIncludeRunesInChest(!includeRunesInChest)} 
-                className={`w-1/2 h-[22px] text-[9px] font-bold uppercase px-2 rounded border transition-colors flex items-center justify-center ${includeRunesInChest ? 'bg-purple-500/20 text-purple-400 border-purple-500/30 shadow-inner' : 'bg-[var(--bg-card)] text-slate-400 border-white/5 hover:border-white/20'}`}
+                className={`w-1/3 h-[22px] text-[9px] font-bold uppercase px-1 rounded border transition-colors flex items-center justify-center ${includeRunesInChest ? 'bg-purple-500/20 text-purple-400 border-purple-500/30 shadow-inner' : 'bg-[var(--bg-card)] text-slate-400 border-white/5 hover:border-white/20'}`}
               >
                 Runes
+              </button>
+            </Tooltip>
+            <Tooltip content="Open ROEDEX Bazaar">
+              <button 
+                onClick={() => useSettingsStore.getState().setIsMarketplaceOpen(true)}
+                className="w-1/3 h-[22px] text-[9px] font-bold uppercase px-1 rounded border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 transition-colors flex items-center justify-center gap-1 shadow-inner"
+              >
+                <ShoppingCart size={10} />
+                Bazaar
               </button>
             </Tooltip>
           </div>
@@ -202,7 +215,7 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
 
       {/* Right Card: Chest List */}
       <div className="flex-1 flex flex-col gap-0.5 bg-[var(--bg-panel)] border border-[var(--border-subtle)] p-2 rounded-lg overflow-hidden h-full">
-        <div className={`flex flex-col gap-0.5 overflow-y-auto custom-scrollbar flex-1 min-h-0 ${compactHeightClass}`}>
+        <div className={`flex flex-col gap-0.5 overflow-y-auto flex-1 min-h-0 ${compactHeightClass}`}>
           {chestItemsListUI.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-[#3a3f47] italic text-[9px] gap-1 py-4">
               <PackageOpen size={16} className="opacity-50" />
@@ -225,7 +238,10 @@ export const ChestTab: React.FC<{ isHorizontal: boolean; compactHeightClass: str
                       <button onClick={() => toggleExclude(item.name)} className="shrink-0 w-3.5 h-3.5 flex items-center justify-center rounded bg-[var(--bg-card)] border border-white/10 hover:border-white/30 transition-colors">
                         <div className={`w-1.5 h-1.5 rounded-full ${isExcluded ? 'bg-transparent' : 'bg-emerald-500'}`}></div>
                       </button>
-                      <div className="flex flex-col truncate">
+                      <div className="w-4 flex items-center justify-center shrink-0 ml-1">
+                        {getCategoryIcon(getItemInfo(item.name)?.category, getRarityColor(item.name).split(' ')[0], isExcluded)}
+                      </div>
+                      <div className="flex flex-col truncate ml-1.5">
                         <span className={`truncate text-[10px] ${isExcluded ? 'text-slate-500 line-through' : getRarityColor(item.name)}`}>{formatInternalName(item.name)}</span>
                         {getItemInfo(item.name)?.rarity && (
                           <span className={`text-[7px] uppercase tracking-widest opacity-80 -mt-0.5 ${isExcluded ? 'text-slate-600' : getRarityColor(item.name)}`}>{getItemInfo(item.name)?.rarity}</span>

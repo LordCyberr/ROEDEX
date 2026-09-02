@@ -2,11 +2,16 @@ import { StateCreator } from 'zustand';
 import { TrackerState, EntitySlice } from '../storeTypes';
 import { EnemyEntity, ResourceNode, LootDrop, RespawnTimer } from '../../types/events';
 
+
+
 export const createEntitySlice: StateCreator<TrackerState, [], [], EntitySlice> = (set) => ({
   activeWaypoint: null,
   activeWaypointName: null,
   activeWaypointZone: null,
   setActiveWaypoint: (pos, name = null, zone = null) => set({ activeWaypoint: pos, activeWaypointName: name, activeWaypointZone: zone }),
+
+  currentTarget: null,
+  setCurrentTarget: (target) => set({ currentTarget: target }),
 
   enemies: {},
   resources: {},
@@ -30,31 +35,13 @@ export const createEntitySlice: StateCreator<TrackerState, [], [], EntitySlice> 
       const newTimers = { ...state.timers };
       const newEnemies = { ...state.enemies };
       enemiesList.forEach(enemy => {
-        const key = `${enemy.zone || state.currentZone}-${enemy.entityIndex}`;
+        const key = `${enemy.zone || state.currentZone || 'Unknown'}-${enemy.entityIndex}`;
         if (!enemy.isDead) {
           delete newTimers[`mob-${key}`];
         }
         newEnemies[key] = enemy;
       });
       return { enemies: newEnemies, timers: newTimers };
-    }),
-  updateEnemyHp: (key: string, hp: number, isDead: boolean) =>
-    set((state) => {
-      const enemy = state.enemies[key];
-      if (!enemy) return state;
-      
-      let newMobsKilled = state.sessionMobsKilled;
-      if (isDead && !enemy.isDead && state.sessionActive) {
-        newMobsKilled += 1;
-      }
-
-      return {
-        sessionMobsKilled: newMobsKilled,
-        enemies: {
-          ...state.enemies,
-          [key]: { ...enemy, hp, isDead }
-        }
-      };
     }),
   removeEnemy: (key: string) =>
     set((state) => {
@@ -85,40 +72,13 @@ export const createEntitySlice: StateCreator<TrackerState, [], [], EntitySlice> 
       const newTimers = { ...state.timers };
       const newResources = { ...state.resources };
       resourcesList.forEach(res => {
-        const key = `${res.zone || state.currentZone}-${res.idx}`;
+        const key = `${res.zone || state.currentZone || 'Unknown'}-${res.idx}`;
         if (!res.gathered) {
           delete newTimers[`resource-${key}`];
         }
         newResources[key] = res;
       });
       return { resources: newResources, timers: newTimers };
-    }),
-  updateResourceHp: (key: string, hp: number, gathered?: boolean) =>
-    set((state) => {
-      const res = state.resources[key];
-      if (!res) return state;
-      
-      let { sessionTreesCut, sessionOresMined, sessionPlantsHarvested } = state;
-      
-      if (gathered && !res.gathered && state.sessionActive) {
-        if (res.type === 'Trees') {
-          sessionTreesCut += 1;
-        } else if (res.type === 'Ores') {
-          sessionOresMined += 1;
-        } else {
-          sessionPlantsHarvested += 1;
-        }
-      }
-
-      return {
-        sessionTreesCut,
-        sessionOresMined,
-        sessionPlantsHarvested,
-        resources: {
-          ...state.resources,
-          [key]: { ...res, hp, gathered: gathered !== undefined ? gathered : res.gathered }
-        }
-      };
     }),
   removeResource: (key: string) =>
     set((state) => {
@@ -160,6 +120,35 @@ export const createEntitySlice: StateCreator<TrackerState, [], [], EntitySlice> 
     if (changed) return { loot: newLoot };
     return state;
   }),
+  clearExpiredEntities: (maxDist = 1500) => set((state) => {
+    if (!state.playerPosition) return state;
+    const px = state.playerPosition.x;
+    const py = state.playerPosition.y;
+    const maxDistSq = maxDist * maxDist;
+    
+    let changed = false;
+    const newEnemies = { ...state.enemies };
+    for (const key in newEnemies) {
+       const e = newEnemies[key];
+       if (e.pos && ((e.pos.x - px) ** 2 + (e.pos.y - py) ** 2 > maxDistSq)) {
+          delete newEnemies[key];
+          changed = true;
+       }
+    }
+    
+    const newResources = { ...state.resources };
+    for (const key in newResources) {
+       const r = newResources[key];
+       if (r.pos && ((r.pos.x - px) ** 2 + (r.pos.y - py) ** 2 > maxDistSq)) {
+          delete newResources[key];
+          changed = true;
+       }
+    }
+    
+    if (changed) return { enemies: newEnemies, resources: newResources };
+    return state;
+  }),
+
 
   addTimer: (timer: RespawnTimer) =>
     set((state) => ({

@@ -1,6 +1,18 @@
 import { motion } from 'motion/react';
 
-export const BootSequenceToast = ({ notif, animConfig, width, height, opacity, isTop, toastShape }: any) => {
+import { OverlayNotification } from '../../../types/events';
+
+interface BootSequenceToastProps {
+  notif: OverlayNotification;
+  animConfig: any;
+  width?: number;
+  height?: number;
+  opacity?: number;
+  isTop?: boolean;
+  toastShape?: string;
+}
+
+export const BootSequenceToast = ({ notif, animConfig, width, height, opacity, isTop, toastShape }: BootSequenceToastProps) => {
   const subTexts = [
     'INITIALIZING MODULES',
     'SYNCING GAME STATE',

@@ -1,47 +1,57 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTrackerStore } from '../store/trackerStore';
 import { useSettingsStore } from '../store/settingsStore';
 
-export function useThrottledEntities(throttleMs = 300) {
+export function useThrottledEntities(throttleMs = 100) {
   const [state, setState] = useState(() => {
     const { enemies, resources, timers, throttledPlayerPosition, loot } = useTrackerStore.getState();
     return { enemies, resources, timers, throttledPlayerPosition, loot };
   });
 
+  // Use a ref to always have latest throttleMs without re-subscribing
+  const throttleMsRef = useRef(throttleMs);
+  throttleMsRef.current = throttleMs;
+
   useEffect(() => {
-    let lastUpdate = Date.now();
+    let lastUpdate = 0; // Force first update immediately
     let timer: ReturnType<typeof setTimeout> | null = null;
 
-    const unsub = useTrackerStore.subscribe((currentState) => {
+    const doUpdate = () => {
+      // Always read FRESH state at flush time, not stale closure
+      const fresh = useTrackerStore.getState();
+      setState({
+        enemies: fresh.enemies,
+        resources: fresh.resources,
+        timers: fresh.timers,
+        throttledPlayerPosition: fresh.throttledPlayerPosition,
+        loot: fresh.loot,
+      });
+      lastUpdate = Date.now();
+      timer = null;
+    };
+
+    const unsub = useTrackerStore.subscribe(() => {
       const now = Date.now();
       const activeTab = useSettingsStore.getState().activeTab;
       const isTrackingTab = activeTab === 'global' || activeTab === 'favorites';
-      const currentThrottleMs = document.hidden ? 2000 : (isTrackingTab ? throttleMs : 1500);
-      
-      const updateState = () => {
-        setState({
-          enemies: currentState.enemies,
-          resources: currentState.resources,
-          timers: currentState.timers,
-          throttledPlayerPosition: currentState.throttledPlayerPosition,
-          loot: currentState.loot
-        });
-        lastUpdate = Date.now();
-      };
+      const ms = document.hidden
+        ? 2000
+        : isTrackingTab
+        ? throttleMsRef.current
+        : 1500;
 
-      if (now - lastUpdate > currentThrottleMs) {
+      const elapsed = now - lastUpdate;
+
+      if (elapsed >= ms) {
+        // Ready to update now — cancel any pending deferred update
         if (timer) {
           clearTimeout(timer);
           timer = null;
         }
-        updateState();
-      } else {
-        if (!timer) {
-          timer = setTimeout(() => {
-            updateState();
-            timer = null;
-          }, currentThrottleMs - (now - lastUpdate));
-        }
+        doUpdate();
+      } else if (!timer) {
+        // Schedule a flush for the remaining window
+        timer = setTimeout(doUpdate, ms - elapsed);
       }
     });
 
@@ -49,7 +59,7 @@ export function useThrottledEntities(throttleMs = 300) {
       unsub();
       if (timer) clearTimeout(timer);
     };
-  }, [throttleMs]);
+  }, []); // No deps — uses refs for throttleMs
 
   return state;
 }

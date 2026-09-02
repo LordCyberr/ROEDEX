@@ -321,30 +321,11 @@ export const RESELL_VALUES: Record<string, number> = {
   'primordialcore': 2100,
 };
 
-// Pre-compute a fully normalized dictionary where keys have no spaces/special chars
-const NORMALIZED_RESELL_VALUES: Record<string, number> = {};
-for (const [key, value] of Object.entries(RESELL_VALUES)) {
-  const superKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
-  NORMALIZED_RESELL_VALUES[superKey] = value;
-}
-
 export const getResellValue = (name: string, qty: number) => {
-  const normalized = name.toLowerCase().replace(/\s+/g, '').trim();
-  const superNormalized = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-  
-  // Try exact match first
   let val = RESELL_VALUES[name.toLowerCase().trim()];
   
-  // Try fallback matches using the pre-computed dictionary
   if (val === undefined) {
-    val = NORMALIZED_RESELL_VALUES[normalized];
-  }
-  if (val === undefined) {
-    val = NORMALIZED_RESELL_VALUES[superNormalized];
-  }
-  
-  if (val === undefined) {
-    val = 0; // Default fallback for unknown items
+    val = 0;
   }
 
   return val * qty;

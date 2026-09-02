@@ -2,7 +2,7 @@ export const companionTranslations = {
   en: {
     alerts: {
       slayerMilestone: "Slayer Milestone reached! You've killed 10 {monster}s in a row!",
-      levelUpReady: "You've got enough Runes to level up! Let's hit the Temple!",
+      levelUpReady: "You've got enough Runestones to level up! Let's hit the Temple!",
       mythicDrop: "HURRAY! You finally got {qty}x {item}!",
       zoneEnter: "You have entered {zone}.",
       cheatDetected: "Cheat detected!"
@@ -20,7 +20,7 @@ export const companionTranslations = {
       "Let's go break some rocks and extract some value!",
       "I have a good feeling about our RNG today.",
       "Time for another journey into the abyss!",
-      "Welcome back. Try not to lose all your Runes today.",
+      "Welcome back. Try not to lose all your Runestones today.",
       "I've been waiting! My circuits need some action.",
       "The Abstract Chain was quiet without you."
     ],
@@ -103,7 +103,7 @@ export const companionTranslations = {
       "I don't know what that plant does. Check the wiki.",
       "Looks useful for a potion.",
       "That's a healthy harvest.",
-      "The alchemists will pay good Runes for that.",
+      "The alchemists will pay good Runestones for that.",
       "Another plant saved from despawning.",
       "Fresh ingredients for the grind!",
       "Nice find. Verify it on-chain.",
@@ -147,7 +147,7 @@ export const companionTranslations = {
       "That's about to break. Durability is a harsh mechanic.",
       "Careful, your gear is barely holding together.",
       "You should probably fix that before the next fight.",
-      "Don't push it too hard. Repairs cost Runes.",
+      "Don't push it too hard. Repairs cost Runestones.",
       "Almost broken! Switch weapons!",
       "Time for some maintenance. Don't lose it!"
     ],
@@ -175,6 +175,16 @@ export const companionTranslations = {
       "That's worth celebrating. True Web3 value!",
       "Very nice roll on those stats.",
       "Great luck today. Let's keep grinding."
+    ],
+    rareLootCommentary: [
+      "Wow, a {item}! The drop rate for that is insane!",
+      "You got a {item}! I bet other players are jealous right now.",
+      "Nice, {qty}{item}! That's going to be really useful for crafting."
+    ],
+    mythicLootCommentary: [
+      "By the Abstract Chain... a {item}! Do you know how rare that is?!",
+      "I'm speechless. A {item}?! We are rich!",
+      "No way! You actually got a {item}! The Embervault has blessed us!"
     ],
     roedexTips: [
       "Did you know you can track your farming efficiency? Open the Loot tab and try doing a 10-minute Time Attack!",
@@ -211,12 +221,12 @@ export const companionTranslations = {
       "I am speechless. Ruyui themselves must have blessed you."
     ],
     levelUpReady: [
-      "You've got enough Runes to level up! Let's hit the Temple!",
-      "I sense immense power. Spend those Runes!",
-      "Your Runes are overflowing! Time to upgrade your stats.",
-      "We should visit the Temple. Don't lose those Runes dying!",
+      "You've got enough Runestones to level up! Let's hit the Temple!",
+      "I sense immense power. Spend those Runestones!",
+      "Your Runestones are overflowing! Time to upgrade your stats.",
+      "We should visit the Temple. Don't lose those Runestones dying!",
       "Level up available! Pump those numbers up.",
-      "You've gathered enough Runes to grow stronger!",
+      "You've gathered enough Runestones to grow stronger!",
       "A new level awaits you at the Temple. Go rest!"
     ],
     achievement: [
@@ -269,7 +279,7 @@ export const companionTranslations = {
     ],
     zoneBank: [
       "I love the vibes here... the pond, the water... it is very quiet. I like this vibe.",
-      "It's finally time to level up! Let's spend those Runes.",
+      "It's finally time to level up! Let's spend those Runestones.",
       "A peaceful place to reflect on your grind."
     ],
     zoneSmith: [
@@ -342,7 +352,7 @@ export const companionTranslations = {
     ],
     deathRoastsSavage: [
       "Again? Really? I'm running out of memory just logging your respawns.",
-      "Are you doing a speedrun to see how fast you can lose all your Runes?",
+      "Are you doing a speedrun to see how fast you can lose all your Runestones?",
       "Have you considered... dodging?",
       "I think the tutorial is that way, if you want to replay it.",
       "My grandmother plays better than this, and she's a subroutine.",
@@ -370,6 +380,26 @@ export const companionTranslations = {
       "You can use the dodge roll button, you know. It's free!",
       "I'm calculating the odds of you surviving this fight. It's not looking good.",
       "Are you trying to tank the boss with your face?"
+    ],
+    monsterShadowWolf: [
+      "The Alpha has fallen! Good boy... down.",
+      "Shadow Wolf eliminated. Keep the pelt!",
+      "That bite looked painful. Glad it's over."
+    ],
+    monsterWoodenGolem: [
+      "Timber! The ancient golem has fallen!",
+      "Wooden Golem defeated! The forest breathes a sigh of relief.",
+      "Watch out for splinters on that loot."
+    ],
+    monsterOreElemental: [
+      "The Elemental is crumbling! Quick, grab the primordial core!",
+      "Rock beats scissors, but you beat the rock! Ore Elemental down!",
+      "That was a tough fight. Let's mine the remains!"
+    ],
+    monsterSlime: [
+      "Squish! Slime defeated.",
+      "Gelatinous mass neutralized. Yuck.",
+      "That was messy, but we got the loot."
     ]
   },
   
@@ -461,7 +491,42 @@ export const companionTranslations = {
           "The enchantments protecting this place are incredibly complex.",
           "A fine place to exchange knowledge and rare components."
         ]
-      }
+      },
+      idle: [
+        "The mana currents are strong today.",
+        "I am calculating the optimal trajectory for our next encounter.",
+        "Remember to manage your cooldowns efficiently."
+      ],
+      combatWin: [
+        "Target neutralized. Commencing mana regeneration.",
+        "An expected outcome based on my calculations.",
+        "Flawless magical execution."
+      ],
+      deathRoastsMild: [
+        "Your mana shielding failed. We must adjust our strategy.",
+        "A tactical miscalculation. Let us recalibrate."
+      ],
+      deathRoastsSavage: [
+        "Are you intentionally ignoring my tactical advice?",
+        "Your reaction time was highly sub-optimal.",
+        "I cannot cast a shield if you dive directly into their attacks."
+      ],
+      slimeRoastsMild: [
+        "These gelatinous entities are highly resistant to physical trauma.",
+        "Evasion is recommended against their acidic properties."
+      ],
+      slimeRoastsSavage: [
+        "Did you truly fail to evade an entity with no locomotive limbs?",
+        "Your kinetic energy was entirely absorbed. And you still took damage."
+      ],
+      bossRoastsMild: [
+        "A formidable opponent. We require more preparation.",
+        "Their magical output exceeds our current defenses."
+      ],
+      bossRoastsSavage: [
+        "You stood in the telegraph for 3.4 seconds. What did you expect?",
+        "I recommend avoiding the giant glowing attacks."
+      ]
     },
     crash: {
       lowDurability: [
@@ -491,7 +556,42 @@ export const companionTranslations = {
           "CRASH WANT TO FIGHT GUILD MASTER!",
           "SHINY BANNERS! CRASH WANT TO TEAR THEM DOWN!"
         ]
-      }
+      },
+      idle: [
+        "CRASH BORED! WANT TO SMASH!",
+        "WHEN WE FIGHT? CRASH READY!",
+        "PUNY ROCKS EVERYWHERE! CRASH WANT BIGGER ROCKS!"
+      ],
+      combatWin: [
+        "CRASH SMASHED IT GOOD!",
+        "HA! PUNY MONSTER GO SQUISH!",
+        "CRASH IS THE STRONGEST!"
+      ],
+      deathRoastsMild: [
+        "YOU SLEEPING? WAKE UP AND FIGHT!",
+        "CRASH NO LIKE LOSING! GET UP!"
+      ],
+      deathRoastsSavage: [
+        "YOU FIGHT LIKE PUNY GOBLIN!",
+        "CRASH COULD FIGHT BETTER BLINDFOLDED!",
+        "WHY YOU LET MONSTER HIT YOU? JUST HIT THEM HARDER!"
+      ],
+      slimeRoastsMild: [
+        "YUCK! STICKY JELLY!",
+        "CRASH CANNOT SMASH WATER!"
+      ],
+      slimeRoastsSavage: [
+        "HA HA! YOU GOT BEAT BY JELLY!",
+        "EVEN CRASH KNOWS TO RUN FROM JELLY!"
+      ],
+      bossRoastsMild: [
+        "THAT WAS BIG MONSTER! WE NEED BIGGER WEAPON!",
+        "OUCH! THAT LOOKED LIKE IT HURT!"
+      ],
+      bossRoastsSavage: [
+        "WHY YOU STAND IN FIRE? CRASH KNOW BETTER!",
+        "YOU WEAK! LET CRASH FIGHT NEXT TIME!"
+      ]
     },
   es: {
     login: ["¡Oye! ¿Listo para otra aventura?", "¡Bienvenido de nuevo!", "¡Qué bueno verte otra vez!", "¡La aventura aguarda!", "¡Listo cuando tú lo estés!", "¡Veamos qué descubrimos hoy!", "Eché un ojo mientras estabas fuera.", "El mundo se ve diferente hoy.", "¿Listo para explorar?", "¡Vamos a romper algunas rocas!", "Tengo un buen presentimiento sobre hoy.", "¡Hora de otro viaje!", "Bienvenido de nuevo, amigo.", "¡Te he estado esperando!", "El bosque te echaba de menos."],
@@ -531,7 +631,7 @@ export const companionTranslations = {
     zoneCave: ["Está más oscuro aquí abajo.", "Escucho algo moverse.", "Mantente alerta.", "Lugar perfecto para minar.", "La cueva nunca duerme.", "Mantén los ojos abiertos.", "Algo se siente diferente.", "Cuidado donde pisas."],
     zoneTown: ["¡Civilización!", "Hora de relajarse.", "El pueblo se siente ocupado hoy.", "Un lugar seguro al fin.", "Tal vez alguien venda nubes de caramelo.", "Caras amigables por todas partes.", "Buen lugar para descansar."],
     zoneGuild: ["Entrando al Salón del Gremio... ¡Veamos qué hay en el tablero de tareas y ganemos algo de dinero!", "¡El Salón del Gremio! Solo los mejores vienen aquí.", "Hora de revisar las recompensas y cobrar."],
-    zoneBank: ["Me encanta el ambiente de aquí... el estanque, el agua... es muy tranquilo. Me gusta esta vibra.", "¡Finalmente es hora de subir de nivel! Vamos a gastar esas Runas.", "Un lugar pacífico para reflexionar sobre tu esfuerzo."],
+    zoneBank: ["Me encanta el ambiente de aquí... el estanque, el agua... es muy tranquilo. Me gusta esta vibra.", "¡Finalmente es hora de subir de nivel! Vamos a gastar esas Piedras Rúnicas.", "Un lugar pacífico para reflexionar sobre tu esfuerzo."],
     zoneSmith: ["Vamos a reparar nuestras herramientas y prepararnos para la siguiente vuelta.", "¡La forja está caliente! Veamos si podemos mejorar algo.", "¡Durabilidad restaurada! De vuelta al Embervault."],
     zoneTavern: ["Me vendría bien una bebida fría... o al menos para enfriar mis procesadores.", "¡La Taberna! Buena música, buena compañía y sin monstruos.", "Hora de relajarse y tomar una bien fría después de tanto farmear."],
     zoneHome: ["Ah, por fin, hogar dulce hogar.", "A salvo de los monstruos... por ahora.", "Un buen lugar para descansar.", "¡Hogar! Hora de guardar el botín.", "Se siente bien estar bajo techo."],
@@ -546,7 +646,7 @@ export const companionTranslations = {
     ],
     deathRoastsSavage: [
       "¿Otra vez? ¿En serio? Me estoy quedando sin memoria solo de registrar tus reapariciones.",
-      "¿Estás haciendo un speedrun para ver qué tan rápido puedes perder todas tus Runas?",
+      "¿Estás haciendo un speedrun para ver qué tan rápido puedes perder todas tus Piedras Rúnicas?",
       "¿Has considerado... esquivar?",
       "Creo que el tutorial es por allá, por si quieres volver a jugarlo.",
       "Mi abuela juega mejor que esto, y ella es una subrutina.",

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTrackerStore } from '../../../store/trackerStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '../../../store/settingsStore';
 import { useTranslation } from '../../../hooks/useTranslation';
 
@@ -99,7 +100,7 @@ const CompactQuestCard = ({ quest, inventory, isExpanded, onToggle }: { quest: Q
             </div>
           </div>
           
-          <div className="mt-2 flex items-center justify-between px-2 py-1.5 bg-white/5 rounded-md border border-white/5">
+          <div className="mt-2 flex items-center justify-between px-2 py-1.5 bg-white/5 rounded-lg border border-white/5">
              <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Est. Profit:</span>
              <span className={`text-[10px] font-black ${
               profit > 0 ? 'text-green-400 drop-shadow-[0_0_4px_rgba(74,222,128,0.5)]' : 
@@ -147,7 +148,7 @@ const FullQuestDetails = ({ quest, inventory }: { quest: Quest, inventory: Recor
       <div className="p-4 border-b border-white/5 bg-black/20">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <div className={`p-1.5 rounded-md ${getQuestTypeColor(quest.quest_type)}`}>
+            <div className={`p-1.5 rounded-lg ${getQuestTypeColor(quest.quest_type)}`}>
               {getQuestIcon(quest.quest_type)}
             </div>
             <span className="text-sm font-black text-white/90">{quest.quest_giver}</span>
@@ -172,8 +173,8 @@ const FullQuestDetails = ({ quest, inventory }: { quest: Quest, inventory: Recor
             <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest mb-1.5">{t('ui.required')}</span>
             <span className="text-xs font-bold text-white/90 flex items-center gap-2">
               <span className={`shrink-0 w-2 h-2 rounded-full shadow-sm ${
-                quest.item_rarity === 'uncommon' ? 'bg-green-400 shadow-green-400/50' :
-                quest.item_rarity === 'rare' ? 'bg-blue-400 shadow-blue-400/50' :
+                quest.item_rarity === 'uncommon' ? 'bg-blue-400 shadow-blue-400/50' :
+                quest.item_rarity === 'rare' ? 'bg-green-400 shadow-green-400/50' :
                 quest.item_rarity === 'mythic' ? 'bg-purple-400 shadow-purple-400/50' : 'bg-zinc-400 shadow-zinc-400/50'
               }`} />
               {quest.quantity}x {quest.required_item}
@@ -226,14 +227,22 @@ const FullQuestDetails = ({ quest, inventory }: { quest: Quest, inventory: Recor
   );
 };
 
-export const QuestBoard: React.FC = () => {
+export const QuestBoardComponent: React.FC = () => {
   const { t } = useTranslation();
   const layoutMode = useSettingsStore(state => state.layoutMode);
   const isHorizontal = layoutMode === 'horizontal';
 
-  const quests = useTrackerStore(state => state.quests || []);
-  const inventory = useTrackerStore(state => state.chestInventory || {});
-  const isGuildPassActive = useTrackerStore(state => state.isGuildPassActive);
+  const rawState = useTrackerStore(
+    useShallow(state => ({
+      quests: state.quests,
+      inventory: state.chestInventory,
+      isGuildPassActive: state.isGuildPassActive
+    }))
+  );
+  
+  const quests = rawState.quests || [];
+  const inventory = rawState.inventory || {};
+  const isGuildPassActive = rawState.isGuildPassActive;
   
   const dailyLimit = isGuildPassActive ? 15 : 5;
   const completedToday = quests.filter(q => q.status === 'completed').length;
@@ -254,7 +263,7 @@ export const QuestBoard: React.FC = () => {
       {/* Header */}
       <div className={`flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--bg-panel)] shrink-0 ${isHorizontal ? 'px-4 py-3' : 'px-3 py-2'}`}>
         <div className="flex items-center gap-2">
-          <div className="p-1 bg-[#3b82f6]/20 rounded-md">
+          <div className="p-1 bg-[#3b82f6]/20 rounded-lg">
             <ScrollText className="text-[#3b82f6]" size={isHorizontal ? 18 : 14} />
           </div>
           <div className="flex flex-col">
@@ -350,7 +359,7 @@ export const QuestBoard: React.FC = () => {
           <div className="flex bg-[var(--bg-panel)] p-2 border-b border-white/5 gap-2 shrink-0">
             <button
               onClick={() => setFilter('available')}
-              className={`flex-1 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
                 filter === 'available' 
                   ? 'bg-zinc-700 text-white shadow-md' 
                   : 'bg-black/20 text-[var(--text-muted)] hover:text-white hover:bg-white/5'
@@ -360,7 +369,7 @@ export const QuestBoard: React.FC = () => {
             </button>
             <button
               onClick={() => setFilter('active')}
-              className={`flex-1 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
                 filter === 'active' 
                   ? 'bg-[#3b82f6] text-white shadow-md' 
                   : 'bg-black/20 text-[var(--text-muted)] hover:text-white hover:bg-white/5'

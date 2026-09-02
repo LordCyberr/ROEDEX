@@ -50,13 +50,17 @@ export const WeaponUI: React.FC = () => {
 
   const ref = React.useRef<HTMLDivElement>(null);
 
-  const x = useMotionValue(position === 'custom' ? customPositionX : 0);
-  const y = useMotionValue(position === 'custom' ? customPositionY : 0);
+  const safeX = typeof customPositionX === 'number' && !isNaN(customPositionX) ? customPositionX : 0;
+  const safeY = typeof customPositionY === 'number' && !isNaN(customPositionY) ? customPositionY : 0;
+  const x = useMotionValue(position === 'custom' ? safeX : 0);
+  const y = useMotionValue(position === 'custom' ? safeY : 0);
 
   React.useEffect(() => {
     if (position === 'custom') {
-      x.set(customPositionX);
-      y.set(customPositionY);
+      const sx = typeof customPositionX === 'number' && !isNaN(customPositionX) ? customPositionX : 0;
+      const sy = typeof customPositionY === 'number' && !isNaN(customPositionY) ? customPositionY : 0;
+      x.set(sx);
+      y.set(sy);
     }
   }, [position, customPositionX, customPositionY, x, y]);
 
@@ -73,7 +77,8 @@ export const WeaponUI: React.FC = () => {
 
   const isDraggable = !locked;
 
-  const percentage = Math.max(0, Math.min(100, (displayWeapon.durability / displayWeapon.maxDurability) * 100));
+  const percentageRaw = displayWeapon.durability / displayWeapon.maxDurability;
+  const percentage = isNaN(percentageRaw) ? 0 : Math.max(0, Math.min(100, percentageRaw * 100));
   
   let color = 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]';
   let textColor = 'text-emerald-400 drop-shadow-[0_0_4px_rgba(16,185,129,0.5)]';
@@ -114,7 +119,7 @@ export const WeaponUI: React.FC = () => {
   };
 
   const pctStr = `${Math.round(percentage)}%`;
-  const durStr = `${displayWeapon.durability} / ${displayWeapon.maxDurability}`;
+  const durStr = `${displayWeapon.durability} Hits`;
 
   const hasText = style !== 'bar';
   const hasBar = style === 'bar' || style.includes('bar_');

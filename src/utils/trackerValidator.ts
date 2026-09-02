@@ -37,7 +37,7 @@ export class TrackerValidator {
       if (isDev) console.warn("[Zod Validator] Enemy spawn schema mismatch:", result.error);
     }
     
-    return true; // Fallback gracefully instead of dropping
+    return result.success;
   }
 
   static validateCombatHit(payload: any): boolean {
@@ -54,7 +54,7 @@ export class TrackerValidator {
       if (isDev) console.warn("[Zod Validator] Negative damage detected:", payload);
     }
 
-    return true;
+    return result.success;
   }
 
   static validateResourceSpawn(payload: any): boolean {
@@ -66,7 +66,7 @@ export class TrackerValidator {
       if (isDev) console.warn("[Zod Validator] Resource spawn schema mismatch:", result.error);
     }
     
-    return true;
+    return result.success;
   }
   
   static validateTimer(respawnTimeMs: number | undefined): void {

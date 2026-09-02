@@ -31,7 +31,7 @@ export const CategorySection = memo(({ categoryId, title, data, align = 'center'
         <button
           id={categoryId === 'npcs_alchemist' ? 'tutorial-alchemist-category' : undefined}
           onClick={() => toggleCategory(categoryId)}
-          className={`flex items-center ${align === 'left' ? 'justify-start pl-4 pr-4 mx-4' : 'justify-center mx-6'} gap-1 my-0.5 ${py} ${textSz} font-bold text-[var(--text-secondary)] uppercase tracking-[0.15em] select-none hover:text-white hover:bg-[var(--bg-hover)] transition-colors border border-[var(--border-subtle)] rounded-full bg-black/30 shadow-none font-[var(--font-heading)] min-w-0 overflow-hidden`}
+          className={`flex items-center ${align === 'left' ? 'justify-start pl-4 pr-4 mx-4' : 'justify-center mx-6'} gap-1 my-0.5 ${py} ${textSz} font-bold text-[var(--text-secondary)] uppercase tracking-[0.15em] select-none hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors border border-[var(--border-subtle)] rounded-full bg-[var(--bg-base)] shadow-none font-[var(--font-heading)] min-w-0 overflow-hidden`}
         >
           <div className="shrink-0">{collapsed ? <ChevronRight size={10} strokeWidth={3} /> : <ChevronDown size={10} strokeWidth={3} />}</div>
           <span className="truncate block whitespace-nowrap overflow-hidden text-ellipsis">{title}</span>

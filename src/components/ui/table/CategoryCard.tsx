@@ -43,6 +43,25 @@ export const CategoryCard = memo(({ categoryId, title, data, showHeader = false 
       )}
     </div>
   );
+}, (prevProps, nextProps) => {
+  if (prevProps.categoryId !== nextProps.categoryId) return false;
+  if (prevProps.title !== nextProps.title) return false;
+  if (prevProps.showHeader !== nextProps.showHeader) return false;
+  
+  if (prevProps.data.length !== nextProps.data.length) return false;
+  
+  // Shallow array contents check
+  for (let i = 0; i < prevProps.data.length; i++) {
+    const pRow = prevProps.data[i];
+    const nRow = nextProps.data[i];
+    if (pRow.id !== nRow.id) return false;
+    if (pRow.dist !== nRow.dist) return false;
+    if (pRow.counts?.alive !== nRow.counts?.alive) return false;
+    if (pRow.counts?.dead !== nRow.counts?.dead) return false;
+    if ((pRow.respawnTimesMs?.length || 0) !== (nRow.respawnTimesMs?.length || 0)) return false;
+  }
+  
+  return true;
 });
 
 export const CategoryTable = CategoryCard;

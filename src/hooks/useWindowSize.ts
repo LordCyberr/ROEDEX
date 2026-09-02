@@ -14,7 +14,7 @@ export function useWindowSize() {
       });
     }
     
-    globalThis.addEventListener('resize', handleResize);
+    globalThis.addEventListener('resize', handleResize, { passive: true });
     handleResize();
     
     return () => globalThis.removeEventListener('resize', handleResize);

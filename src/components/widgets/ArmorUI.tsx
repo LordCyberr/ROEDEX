@@ -3,7 +3,7 @@ import { useTrackerStore } from '../../store/trackerStore';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
 import { motion, useMotionValue } from 'motion/react';
-import { Shield, Shirt, Footprints, HardHat, Hand } from 'lucide-react';
+import { Shirt, Footprints, HardHat, Hand } from 'lucide-react';
 
 export const ArmorUI: React.FC = () => {
   const { armor } = useTrackerStore(useShallow((state) => ({
@@ -55,13 +55,17 @@ export const ArmorUI: React.FC = () => {
     dynamicBorderColor = true
   } = settings;
 
-  const x = useMotionValue(position === 'custom' ? customPositionX : 0);
-  const y = useMotionValue(position === 'custom' ? customPositionY : 0);
+  const safeX = typeof customPositionX === 'number' && !isNaN(customPositionX) ? customPositionX : 0;
+  const safeY = typeof customPositionY === 'number' && !isNaN(customPositionY) ? customPositionY : 0;
+  const x = useMotionValue(position === 'custom' ? safeX : 0);
+  const y = useMotionValue(position === 'custom' ? safeY : 0);
 
   useEffect(() => {
     if (position === 'custom') {
-      x.set(customPositionX);
-      y.set(customPositionY);
+      const sx = typeof customPositionX === 'number' && !isNaN(customPositionX) ? customPositionX : 0;
+      const sy = typeof customPositionY === 'number' && !isNaN(customPositionY) ? customPositionY : 0;
+      x.set(sx);
+      y.set(sy);
     }
   }, [position, customPositionX, customPositionY, x, y]);
 
@@ -111,9 +115,9 @@ export const ArmorUI: React.FC = () => {
       case 'Helmet': return <HardHat size={12} />;
       case 'Torso': return <Shirt size={12} />;
       case 'Gloves': return <Hand size={12} />;
-      case 'Pants': return <Shield size={12} />; // lucide doesn't have good pants, shield fallback
+      case 'Pants': return null; 
       case 'Boots': return <Footprints size={12} />;
-      default: return <Shield size={12} />;
+      default: return null;
     }
   };
 
@@ -155,7 +159,8 @@ export const ArmorUI: React.FC = () => {
       {Object.entries(displayArmor).map(([slot, item]: [string, any]) => {
         if (!item) return null;
         
-        const percentage = Math.max(0, Math.min(100, (item.durability / item.maxDurability) * 100));
+        const percentageRaw = item.durability / item.maxDurability;
+        const percentage = isNaN(percentageRaw) ? 0 : Math.max(0, Math.min(100, percentageRaw * 100));
         let color = 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]';
         let textColor = 'text-emerald-400 drop-shadow-[0_0_4px_rgba(16,185,129,0.5)]';
         let borderColor = 'border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]';

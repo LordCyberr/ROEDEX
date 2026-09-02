@@ -1,4 +1,4 @@
-import { parsePacket, resetParserState } from '../parser';
+import { parsePacket, resetParserState, parseTimeAggregator, initParserWorkerPort } from '../parser';
 import { useTrackerStore } from '../../store/trackerStore';
 import { useSettingsStore } from '../../store/settingsStore';
 
@@ -6,22 +6,28 @@ import { NotificationManager } from '../notifications/NotificationManager';
 import { AICompanion } from '../companion/AICompanion';
 
 let packetInterval: ReturnType<typeof setInterval> | null = null;
+let profilerInterval: ReturnType<typeof setInterval> | null = null;
 let messageListener: ((event: MessageEvent) => void) | null = null;
 
 export function connectWebSocket() {
-  console.log('[ROEDEX] Content Script listening for Interceptor data...');
+  if (Boolean((import.meta as any).env?.DEV)) {
+    console.log('[ROEDEX] Content Script listening for Interceptor data...');
+  }
   let packetCount = 0;
   
   // Clear any existing connections to prevent duplicates
   disconnectWebSocket();
 
+  // Create zero-latency pipeline between interceptor and parser worker
+  const channel = new MessageChannel();
+  initParserWorkerPort(channel.port2);
+  window.postMessage({ type: 'ROEDEX_INIT_PORT', source: 'ROEDEX_EXTENSION' }, '*', [channel.port1]);
+
   // Always minimize on reload/restart
   setTimeout(() => {
     const settings = useSettingsStore.getState();
     settings.setIsMinimized(true);
-    Object.keys(settings.poppedOutWindows).forEach(id => {
-      settings.updatePoppedOutWindow(id, { isMinimized: true });
-    });
+    settings.minimizeAllPoppedOutWindows(true);
   }, 100);
   
   messageListener = (event: MessageEvent) => {
@@ -33,11 +39,12 @@ export function connectWebSocket() {
       const settings = useSettingsStore.getState();
       
       state.setConnected(true);
+      state.setIsLoadingZone(true);
+      setTimeout(() => useTrackerStore.getState().setIsLoadingZone(false), 5000); // Wait 5 seconds for initial load
+      
       settings.setIsMinimized(true);
 
-      Object.keys(settings.poppedOutWindows).forEach(id => {
-        settings.updatePoppedOutWindow(id, { isMinimized: true });
-      });
+      settings.minimizeAllPoppedOutWindows(true);
 
       // Reset greeting flags so the next player packet triggers the boot sequence
       AICompanion.resetGreeting();
@@ -49,9 +56,7 @@ export function connectWebSocket() {
       const settings = useSettingsStore.getState();
       state.setConnected(false);
       settings.setIsMinimized(true);
-      Object.keys(settings.poppedOutWindows).forEach(id => {
-        settings.updatePoppedOutWindow(id, { isMinimized: true });
-      });
+      settings.minimizeAllPoppedOutWindows(true);
     }
     else if (event.data.type === 'WS_MESSAGE' || event.data.type === 'WS_MESSAGE_SEND') {
       const rawMessage = event.data.data;
@@ -95,6 +100,28 @@ export function connectWebSocket() {
     }
     packetCount = 0;
   }, 1000);
+
+  // Sync profiler metrics every second, outside the hot parse path
+  profilerInterval = setInterval(() => {
+    const settings = useSettingsStore.getState();
+    if (settings.isDebugPanelOpen && parseTimeAggregator.count > 0) {
+      const avg = parseTimeAggregator.totalTime / parseTimeAggregator.count;
+      settings.updateProfilerMetrics({
+        parseTime: {
+          average: Number(avg.toFixed(3)),
+          max: Number(parseTimeAggregator.maxTime.toFixed(3)),
+          lastSpike: Number(parseTimeAggregator.lastSpike.toFixed(3)),
+          totalEvents: settings.profilerMetrics.parseTime.totalEvents + parseTimeAggregator.count,
+          droppedEvents: settings.profilerMetrics.parseTime.droppedEvents
+        }
+      });
+      parseTimeAggregator.count = 0;
+      parseTimeAggregator.totalTime = 0;
+      parseTimeAggregator.lastSpike = 0;
+      parseTimeAggregator.maxTime = 0;
+      parseTimeAggregator.lastSync = Date.now();
+    }
+  }, 1000);
 }
 
 export function disconnectWebSocket() {
@@ -107,12 +134,15 @@ export function disconnectWebSocket() {
     clearInterval(packetInterval);
     packetInterval = null;
   }
+  
+  if (profilerInterval) {
+    clearInterval(profilerInterval);
+    profilerInterval = null;
+  }
 
   const state = useTrackerStore.getState();
   const settings = useSettingsStore.getState();
   state.setConnected(false);
   settings.setIsMinimized(true);
-  Object.keys(settings.poppedOutWindows).forEach(id => {
-    settings.updatePoppedOutWindow(id, { isMinimized: true });
-  });
+  settings.minimizeAllPoppedOutWindows(true);
 }

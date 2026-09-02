@@ -82,7 +82,11 @@ export const BlacksmithUI: React.FC = () => {
       {activeJobs.map(job => {
         const totalDuration = job.duration * 1000;
         const timeRemaining = Math.max(0, job.endTime - now);
-        const percentage = totalDuration > 0 ? Math.min(100, Math.max(0, 100 - (timeRemaining / totalDuration) * 100)) : 100;
+        let percentage = 100;
+        if (totalDuration > 0) {
+          const raw = 100 - (timeRemaining / totalDuration) * 100;
+          percentage = isNaN(raw) ? 100 : Math.min(100, Math.max(0, raw));
+        }
         const isDone = timeRemaining === 0;
 
         const formatTime = (ms: number) => {

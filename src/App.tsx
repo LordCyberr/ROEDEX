@@ -6,12 +6,13 @@ import { useTrackerStore } from './store/trackerStore';
 import { useSettingsStore } from './store/settingsStore';
 import { initializeErrorInterceptor } from './core/utils/ErrorInterceptor';
 import { LootTracker } from './core/trackers/LootTracker';
-
+import { useMapDbSync } from './core/hooks/useMapDbSync';
 // Initialize error logger immediately
 initializeErrorInterceptor();
 
 function App() {
   const [isHydrated, setIsHydrated] = useState(false);
+  useMapDbSync();
   useEffect(() => {
     LootTracker.initCleanup();
     
@@ -62,6 +63,7 @@ function App() {
       // Nothing needed to persist from tracker store for now
     });
 
+    let saveTimeout: any = null;
     const unsubscribeSettings = useSettingsStore.subscribe((state, prevState) => {
       // Bob Tour Guide hook
       if (state.activeTab !== prevState.activeTab) {
@@ -77,26 +79,49 @@ function App() {
             state.toggleLayoutHotkey !== prevState.toggleLayoutHotkey ||
             state.resetSizeHotkey !== prevState.resetSizeHotkey ||
             state.lockUiHotkey !== prevState.lockUiHotkey) {
-          try {
-            chrome.storage.local.set({
-              layoutMode: state.layoutMode,
-              verticalGroupingMode: state.verticalGroupingMode,
-              collapsedCategories: state.collapsedCategories,
-              collapsedSidebarZones: state.collapsedSidebarZones,
-              isMinimized: state.isMinimized,
-              minimizeHotkey: state.minimizeHotkey,
-              toggleLayoutHotkey: state.toggleLayoutHotkey,
-              resetSizeHotkey: state.resetSizeHotkey,
-              lockUiHotkey: state.lockUiHotkey
-            }, () => {
-              if (chrome.runtime.lastError) return; // Ignore errors
-            });
-          } catch (err) {
-            // Extension context invalidated
-          }
+          
+          if (saveTimeout) clearTimeout(saveTimeout);
+          saveTimeout = setTimeout(() => {
+            const currentState = useSettingsStore.getState();
+            try {
+              chrome.storage.local.set({
+                layoutMode: currentState.layoutMode,
+                verticalGroupingMode: currentState.verticalGroupingMode,
+                collapsedCategories: currentState.collapsedCategories,
+                collapsedSidebarZones: currentState.collapsedSidebarZones,
+                isMinimized: currentState.isMinimized,
+                minimizeHotkey: currentState.minimizeHotkey,
+                toggleLayoutHotkey: currentState.toggleLayoutHotkey,
+                resetSizeHotkey: currentState.resetSizeHotkey,
+                lockUiHotkey: currentState.lockUiHotkey
+              }, () => {
+                if (chrome.runtime.lastError) return; // Ignore errors
+              });
+            } catch (err) {
+              // Extension context invalidated
+            }
+          }, 500);
         }
       }
     });
+
+    // Emergency save on beforeunload — captures state before the 5s IndexedDB debounce fires
+    const handleBeforeUnload = () => {
+      try {
+        const state = useTrackerStore.getState();
+        localStorage.setItem('roedex-emergency-save', JSON.stringify({
+          sessionLoot: state.sessionLoot,
+          runHistory: state.runHistory,
+          timers: state.timers,
+          lifetimeStats: state.lifetimeStats,
+          playerProfile: state.playerProfile,
+          timestamp: Date.now()
+        }));
+      } catch (e) {
+        // ignore
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
     // Phase 1: Initialize connection
     connectWebSocket();
@@ -222,6 +247,7 @@ function App() {
     return () => {
       unsubscribeTracker();
       unsubscribeSettings();
+      window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('keydown', handleKeyDown, true);
       disconnectWebSocket();
     };
@@ -229,10 +255,32 @@ function App() {
 
   useEffect(() => {
     // Wait for Zustand persist hydration to finish before rendering UI
-    const unsubHydrate = useTrackerStore.persist.onFinishHydration(() => setIsHydrated(true));
-    setIsHydrated(useTrackerStore.persist.hasHydrated());
+    const handleHydration = () => {
+      setIsHydrated(true);
+      
+      // Apply persisted theme on load
+      const theme = useSettingsStore.getState().theme;
+      document.documentElement?.setAttribute('data-theme', theme || 'default');
+      document.body?.setAttribute('data-theme', theme || 'default');
+    };
+
+    const unsubHydrate = useTrackerStore.persist.onFinishHydration(handleHydration);
+    
+    if (useTrackerStore.persist.hasHydrated()) {
+      handleHydration();
+    }
+
+    // Subscribe specifically to theme changes for real-time updates across tabs/iframes
+    const unsubTheme = useSettingsStore.subscribe((state, prevState) => {
+      if (state.theme !== prevState.theme) {
+        document.documentElement?.setAttribute('data-theme', state.theme || 'default');
+        document.body?.setAttribute('data-theme', state.theme || 'default');
+      }
+    });
+
     return () => {
       unsubHydrate();
+      unsubTheme();
     };
   }, []);
 

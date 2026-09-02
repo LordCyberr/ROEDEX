@@ -2,8 +2,67 @@ import { useTrackerStore } from '../../store/trackerStore';
 import { useSettingsStore } from '../../store/settingsStore';
 import { translations } from '../../i18n/translations';
 import { SAFE_ZONES } from '../constants';
+import { ResourceTracker } from '../trackers/ResourceTracker';
 export class NotificationManager {
   private static lastDurabilityWarning: number = 0;
+
+  static showLootToast(_items: Array<{ name: string; qty: number; rarity?: string }>, _runestones = 0) {
+    // Old duplicate loot popup toasts disabled — loot is now exclusively recorded in the Loot Log HUD Widget
+    return;
+  }
+
+  private static lootBatchItems: Array<{ name: string; qty: number; rarity?: string }> = [];
+  private static lootBatchRunestones = 0;
+  private static lootBatchTimer: ReturnType<typeof setTimeout> | null = null;
+
+  static queueLootToast(itemName: string, qty: number, isRunestone = false) {
+    if (isRunestone) {
+      this.lootBatchRunestones += qty;
+    } else {
+      const existing = this.lootBatchItems.find(i => i.name === itemName);
+      if (existing) {
+        existing.qty += qty;
+      } else {
+        this.lootBatchItems.push({ name: itemName, qty });
+      }
+    }
+
+    // Non-resetting immediate 30ms batch window:
+    // Fires instantly within 30ms of first item pickup without delaying for subsequent pickups
+    if (!this.lootBatchTimer) {
+      this.lootBatchTimer = setTimeout(() => {
+        this.showLootToast([...this.lootBatchItems], this.lootBatchRunestones);
+        this.lootBatchItems = [];
+        this.lootBatchRunestones = 0;
+        this.lootBatchTimer = null;
+      }, 30);
+    }
+  }
+
+  static timerPing(entityName: string) {
+    const settingsStore = useSettingsStore.getState();
+    if (!settingsStore.notificationSettings.enabled || !settingsStore.notificationSettings.toasts) return;
+    
+    settingsStore.addNotification({
+      type: 'info',
+      title: 'Respawn Soon',
+      message: `${entityName} is respawning in 10 seconds!`,
+      duration: 10000,
+    });
+  }
+
+  static showDeathDropToast(runeCount: number, zone: string, pos: {x: number, y: number}) {
+    const settingsStore = useSettingsStore.getState();
+    if (!settingsStore.notificationSettings.enabled || !settingsStore.notificationSettings.toasts) return;
+    
+    settingsStore.addNotification({
+      type: 'death_drop',
+      title: 'You Died!',
+      message: `Dropped ${runeCount} Runes in ${zone}. Tracker active.`,
+      persistent: true,
+      data: { runeCount, zone, pos }
+    } as any);
+  }
 
   static checkDurability(toolName: string, current: number, max: number) {
     const settingsStore = useSettingsStore.getState();
@@ -55,21 +114,29 @@ export class NotificationManager {
     }
   }
 
-  private static lastToolWarningTime: number = 0;
-
   static showToolWarningToast(toolName: string) {
     const settingsStore = useSettingsStore.getState();
     if (!settingsStore.notificationSettings.enabled || !settingsStore.notificationSettings.toasts || !settingsStore.notificationSettings.toolWarning) return;
     
-    const now = Date.now();
-    if (now - this.lastToolWarningTime < 60000) return; // 1 minute cooldown
-    this.lastToolWarningTime = now;
+    // Check if warning already exists to avoid spam
+    const hasWarning = settingsStore.notifications.some(n => n.tag === 'tool_warning');
+    if (hasWarning) return;
 
     settingsStore.addNotification({
       type: 'combat', // Using combat type for red/warning style
       title: 'Tool Not Equipped!',
-      message: `You have a ${toolName} in your inventory but it is not equipped. Put it in your hotbar to use it!`
-    });
+      message: `You have a ${toolName} in your inventory but it is not equipped. Put it in your hotbar to use it!`,
+      tag: 'tool_warning',
+      persistent: true
+    } as any);
+  }
+
+  static dismissToolWarningToast() {
+    const settingsStore = useSettingsStore.getState();
+    const warning = settingsStore.notifications.find(n => n.tag === 'tool_warning');
+    if (warning) {
+      settingsStore.removeNotification(warning.id);
+    }
   }
 
   private static hasShownInitializing: boolean = false;
@@ -190,4 +257,35 @@ export class NotificationManager {
       message
     });
   }
+
+  static rareSpawn(itemName: string, _pos: { x: number; y: number }, distance: number) {
+    const settingsStore = useSettingsStore.getState();
+    if (!settingsStore.notificationSettings.enabled || !settingsStore.notificationSettings.toasts || !settingsStore.notificationSettings.rareSpawnAlerts) return;
+
+    const lang = settingsStore.language || 'en';
+    const t = (translations as any)[lang] || translations.en;
+    
+    const sanitizedName = ResourceTracker.sanitizeResourceName(itemName);
+    
+    let message = t.alerts?.rareSpawn || "⭐ [{item}] spawned {dist}m away!";
+    message = message.replace('{item}', sanitizedName).replace('{dist}', distance.toString());
+
+    settingsStore.addNotification({
+      type: 'rare',
+      title: 'Rare Resource Spawned!',
+      message: message
+    });
+  }
+
+  static marketSnipeAlert(itemName: string, discountPct: number, priceEth: number) {
+    const settingsStore = useSettingsStore.getState();
+    if (!settingsStore.notificationSettings.enabled || !settingsStore.notificationSettings.toasts) return;
+
+    settingsStore.addNotification({
+      type: 'market', 
+      title: '🎯 Snipe Alert!',
+      message: `${itemName} listed at ${priceEth.toFixed(5)} ETH (${Math.round(discountPct * 100)}% discount)!`
+    });
+  }
 }
+

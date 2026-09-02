@@ -1,5 +1,31 @@
 # ROEDEX Changelog
 
+## v0.0.6 - Engine Redesign & Core Bugfixes (2026-08-02)
+
+### 🚀 Performance & Map Engine Optimizations
+- **React Rendering Optimization:** Audited and wrapped all `useTrackerStore` selectors returning objects with `useShallow` (e.g. `EfficiencyHUD.tsx`), drastically reducing unnecessary component re-renders. Memoized top-level components (`OverlayContainer`, `TargetUI`) to prevent cascading re-renders.
+- **Offscreen Canvas Rendering:** Refactored `MapRenderEngine` to completely remove heavy DOM-based rendering. Trail coordinates are now baked incrementally to an offscreen `HTMLCanvasElement`, resulting in a massive boost to FPS and zero jank during long play sessions.
+
+### ✨ Features & Database
+- **Unified Game Database:** Deprecated all fragmented hardcoded static lists and completed full integration with `gameDatabase.ts`. All item icons, rarities, mob data, and NPC data now flow directly through the single source of truth (`DB_LOOKUP`).
+- **Minimap UX Polish:** Overhauled the Minimap interaction logic. Added a permanent zone identifier pill to the bottom of the map, animated smooth camera re-centering with `framer-motion`, and improved resize handle responsiveness by utilizing a unified delta `(dx + dy) / 2`. 
+
+### 🛠️ Fixes & Strict Types
+- **Hook Rules Violation Resolved:** Fixed a critical crash caused by calling `useTrackerStore.getState()` directly inside a component's render body in `Minimap.tsx`, ensuring proper React subscription rules are followed.
+- **TypeScript Strictness:** Resolved a series of strict TypeScript compilation errors across the overlay engine, fixing uninitialized tracking types, implicit `any` usage, and React state mismatches.
+
+
+## v0.0.5 - Performance Optimizations & Architecture Audit (2026-07-26)
+
+### 🚀 Performance & Bundling Optimizations
+- **Code-Splitting Architecture:** Implemented `React.lazy()` and `Suspense` lazy-loading across all major overlay views (Tracking, Session/Loot, NPC, Quests, and Settings) in `OverlayContainer.tsx` and `PoppedOutWindowComponent.tsx`.
+- **Bundle Bloat Resolution:** Resolved monolithic bundle bloat by replacing static array chunks with a functional `manualChunks` strategy in `vite.config.ts`, cleanly isolating heavy dependencies (`motion`, `react`, and `icons`) into dedicated vendor chunks while eliminating circular dependency warnings between Zustand and React. Reduced main initial JavaScript bundle size from **966 kB down to ~475 kB** (a 51% reduction!).
+- **Ghost Route Recording Prevention:** Silenced background "ghost" route recording in `routeRecorderSlice.ts` by adding strict guards that immediately halt coordinate recording when the Cartographer recording mode is disabled, preventing memory leaks during long gaming sessions.
+
+### ✨ Features & Localization
+- **100% Localization Completion:** Audited and resolved remaining hardcoded UI strings across `Header.tsx` (ROEpedia tab labels, Lock/Unlock UI tooltips) and `TutorialChatBubble.tsx` (mobs killed counter), mapping all strings to the master `translations.ts` dictionary across English, Spanish, and Korean.
+- **Project Architecture & Upgrade Audit:** Completed a comprehensive codebase audit and produced an extensive roadmap and upgrade report detailing baseline metrics, store selector optimization strategies, memory leak mitigation, and future engine enhancements.
+
 ## v0.0.4 - Localization Patch & HUD Fixes (2026-07-08)
 
 ### ✨ Features

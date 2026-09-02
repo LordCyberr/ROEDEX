@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { motion } from 'motion/react';
-import { Target, Sword, PawPrint, Axe, Pickaxe, Leaf, Box } from 'lucide-react';
+import { Target, Sword, PawPrint, Axe, Pickaxe, Leaf, Box, Heart, Skull, Timer } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useTrackerStore } from '../../../store/trackerStore';
 import { useSettingsStore } from '../../../store/settingsStore';
@@ -12,25 +12,30 @@ import { Tooltip } from '../Tooltip';
 import { DistanceDisplay } from './DistanceDisplay';
 import { TimerDisplay } from './TimerDisplay';
 import { TableRowData } from './types';
+import { getRarityColor } from '../../../utils/rarity';
 
-// ── Rarity Colors ──────────────────────────────────────────────
-export const getRarityColor = (name: string) => {
-  const info = getItemInfo(name);
-  if (!info) return 'text-[var(--text-primary)]'; // Common default
+const getEntityDetails = (rowName: string) => {
+  const info = getItemInfo(rowName);
+  if (!info) return null;
 
-  switch (info.rarity) {
-    case 'mythic': return ThemeColors.rarity.mythic.text;
-    case 'rare': return ThemeColors.rarity.rare.text;
-    case 'uncommon': return ThemeColors.rarity.uncommon.text;
-    case 'common': return ThemeColors.rarity.common.text;
-    default: return 'text-[var(--text-primary)]';
-  }
+  return {
+    type: info.category.toUpperCase(),
+    name: info.sanitizedName,
+    hp: info.hp,
+    maxHp: info.maxHp,
+    respawnTime: `${Math.round(info.cooldown / 60)}m`,
+    drops: info.drops.map(d => ({
+      item: d.sanitizedName,
+      rarity: d.rarity
+    }))
+  };
 };
 
-const getCategoryIcon = (categoryId: string | undefined, isCompact: boolean, isFav: boolean, toggleFav: () => void) => {
+const getCategoryIcon = (categoryId: string | undefined, isCompact: boolean, isFav: boolean, toggleFav: () => void, rarityColorClass: string) => {
   if (!categoryId) return null;
   const sz = isCompact ? 10 : 12;
-  const cls = `shrink-0 transition-all cursor-pointer ${isFav ? 'text-yellow-400 fill-yellow-400 scale-110 drop-shadow-md' : 'text-[var(--text-muted)] opacity-70 hover:text-white hover:opacity-100'}`;
+  const defaultCls = `opacity-70 hover:text-white hover:opacity-100 ${rarityColorClass}`;
+  const cls = `shrink-0 transition-all cursor-pointer ${isFav ? 'text-yellow-400 fill-yellow-400 scale-110 drop-shadow-md' : defaultCls}`;
   const fill = isFav ? "currentColor" : "none";
   const id = categoryId.toLowerCase();
 
@@ -97,29 +102,70 @@ export const DataRow = memo(({ row, categoryId }: { row: TableRowData, categoryI
   if (tableSettings.showCount) gridCols += ' 32px';
   if (tableSettings.showTimer) gridCols += ' 28px';
   
-  let rowClasses = 'group grid gap-1 items-center font-mono leading-[1.2] transition-all relative ';
+  let rowClasses = 'group grid gap-1 items-center font-mono leading-[1.2] transition-all relative overflow-hidden ';
   
-  if (flashType === 'alive') {
-    rowClasses += 'px-1.5 text-[9.5px] py-1 bg-emerald-500/20 shadow-[0_0_12px_rgba(74,222,128,0.3)] border-emerald-400/60 rounded-md z-10';
-  } else if (flashType === 'dead') {
-    rowClasses += 'px-1.5 text-[9.5px] py-1 bg-rose-500/20 shadow-[0_0_12px_rgba(244,63,94,0.3)] border-rose-400/60 rounded-md z-10';
-  } else if (isCompact) {
-    rowClasses += 'px-1.5 py-0 text-[9.5px] hover:bg-[var(--bg-hover)] border-b border-[var(--border-subtle)]';
-    if (rarity === 'mythic') rowClasses += ` ${tableSettings.itemGlow ? 'animate-rarity-mythic' : ''} ${ThemeColors.rarity.mythic.bg} ${ThemeColors.rarity.mythic.border}`;
-    else if (rarity === 'rare') rowClasses += ` ${tableSettings.itemGlow ? 'animate-rarity-rare' : ''} ${ThemeColors.rarity.rare.bg} ${ThemeColors.rarity.rare.border}`;
-    else if (rarity === 'uncommon') rowClasses += ` ${tableSettings.itemGlow ? 'animate-rarity-uncommon' : ''} ${ThemeColors.rarity.uncommon.bg} ${ThemeColors.rarity.uncommon.border}`;
+  if (isCompact) {
+    rowClasses += 'px-1.5 py-0 text-[9.5px] border-b border-[var(--border-subtle)] hover:bg-[var(--bg-hover)] ';
   } else {
-    rowClasses += 'px-1.5 py-1 mb-0.5 text-[10px] rounded-md bg-[var(--bg-panel)] border hover:shadow-sm hover:bg-[var(--bg-hover)]';
-    if (rarity === 'mythic') {
-      rowClasses += ` ${tableSettings.itemGlow ? 'animate-rarity-mythic' : ''} ${ThemeColors.rarity.mythic.bg} ${ThemeColors.rarity.mythic.border}`;
-    } else if (rarity === 'rare') {
-      rowClasses += ` ${tableSettings.itemGlow ? 'animate-rarity-rare' : ''} ${ThemeColors.rarity.rare.bg} ${ThemeColors.rarity.rare.border}`;
-    } else if (rarity === 'uncommon') {
-      rowClasses += ` ${tableSettings.itemGlow ? 'animate-rarity-uncommon' : ''} ${ThemeColors.rarity.uncommon.bg} ${ThemeColors.rarity.uncommon.border}`;
-    } else {
-      rowClasses += ' border-[var(--border-subtle)] hover:border-[var(--text-muted)]';
-    }
+    rowClasses += 'px-1.5 py-1 mb-0.5 text-[10px] rounded-lg bg-[var(--bg-panel)] border hover:shadow-sm hover:bg-[var(--bg-hover)] ';
   }
+
+  if (flashType === 'alive') {
+    rowClasses += 'shadow-[inset_0_0_20px_rgba(16,185,129,0.25)] border-emerald-400/60 z-10 ';
+  } else if (flashType === 'dead') {
+    rowClasses += 'shadow-[inset_0_0_20px_rgba(244,63,94,0.25)] border-rose-400/60 z-10 ';
+  } else if (isTracking) {
+    rowClasses += ' border-cyan-400/80 border-l-[3px] border-l-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.25)] bg-cyan-950/20 ';
+  } else if (rarity === 'mythic' || rarity === 'mystical') {
+    rowClasses += ` ${tableSettings.itemGlow ? 'animate-rarity-mythic' : ''} ${ThemeColors.rarity.mythic.bg} border-purple-500/20 border-l-[3px] border-l-purple-500 `;
+  } else if (rarity === 'rare') {
+    rowClasses += ` ${tableSettings.itemGlow ? 'animate-rarity-rare' : ''} ${ThemeColors.rarity.rare.bg} border-blue-500/20 border-l-[3px] border-l-blue-500 `;
+  } else if (rarity === 'uncommon') {
+    rowClasses += ` ${tableSettings.itemGlow ? 'animate-rarity-uncommon' : ''} ${ThemeColors.rarity.uncommon.bg} border-emerald-500/20 border-l-[3px] border-l-emerald-500 `;
+  } else {
+    rowClasses += ' border-[var(--border-subtle)] hover:border-[var(--text-muted)] border-l-[3px] border-l-transparent ';
+  }
+
+  const entityDetails = getEntityDetails(row.name);
+  
+  const richTooltipContent = (
+    <div className="flex flex-col gap-1.5 min-w-[160px] select-none text-left font-sans">
+      <div className="flex justify-between items-center border-b border-white/15 pb-1">
+        <span className="font-black text-[11px] uppercase tracking-widest text-white">{ResourceTracker.sanitizeResourceName(row.name)}</span>
+        {entityDetails && (
+          <span className="text-[7.5px] px-1.5 py-0.5 bg-white/10 rounded font-black text-slate-300 tracking-wider">{entityDetails.type}</span>
+        )}
+      </div>
+      {entityDetails ? (
+        <>
+          <div className="flex gap-2.5 text-[8.5px] font-mono leading-none">
+            <span className="text-red-400 font-bold flex items-center gap-1"><Heart size={9} className="fill-current" /> {entityDetails.hp} HP</span>
+            <span className="text-blue-400 font-bold flex items-center gap-1"><Timer size={9} className="text-blue-400" /> {entityDetails.respawnTime || '30m'}</span>
+          </div>
+          <div className="flex flex-col gap-1 border-t border-white/5 pt-1.5">
+            <span className="text-[7.5px] text-slate-500 uppercase tracking-widest font-black leading-none mb-0.5">Known Drops:</span>
+            <div className="flex flex-wrap gap-1">
+              {entityDetails.drops.map((d: any) => (
+                <span 
+                  key={d.item}
+                  className={`text-[7.5px] px-1.5 py-0.5 rounded-full border font-black capitalize tracking-wide whitespace-nowrap ${
+                    (d.rarity === 'mythic' || d.rarity === 'mystical') ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' :
+                    d.rarity === 'rare' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
+                    d.rarity === 'uncommon' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
+                    'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                  }`}
+                >
+                  {d.item}
+                </span>
+              ))}
+            </div>
+          </div>
+        </>
+      ) : (
+        <span className="text-[8px] text-slate-400 italic">No additional entity details available.</span>
+      )}
+    </div>
+  );
 
   return (
     <motion.div 
@@ -131,13 +177,16 @@ export const DataRow = memo(({ row, categoryId }: { row: TableRowData, categoryI
       className={rowClasses} 
       style={{ gridTemplateColumns: gridCols }}
     >
-      <div className="flex items-center gap-1.5 min-w-0">
+      <div className="flex items-center gap-1.5 min-w-0 relative">
+        {isTracking && (
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping absolute -left-1 shrink-0"></span>
+        )}
         {getCategoryIcon(categoryId, isCompact, isFav, () => {
           if (!isFav) {
             AICompanion.onAddFavorite(row.name);
           }
           toggleFavorite(row.name);
-        })}
+        }, getRarityColor(row.name))}
         
         {row.nearestPos && (
           <button 
@@ -156,8 +205,8 @@ export const DataRow = memo(({ row, categoryId }: { row: TableRowData, categoryI
           </button>
         )}
         
-        <Tooltip content={ResourceTracker.sanitizeResourceName(row.name)}>
-          <span className={`truncate flex-1 min-w-0 ${getRarityColor(row.name)} ${isCompact ? '' : 'font-semibold [text-shadow:0_1px_1px_rgba(0,0,0,0.8)]'}`}>
+        <Tooltip content={richTooltipContent}>
+          <span className={`truncate flex-1 min-w-0 ${getRarityColor(row.name)} ${isCompact ? '' : 'font-bold [text-shadow:0_1px_1px_rgba(0,0,0,0.8)]'}`}>
             {ResourceTracker.sanitizeResourceName(row.name)}
           </span>
         </Tooltip>
@@ -168,10 +217,20 @@ export const DataRow = memo(({ row, categoryId }: { row: TableRowData, categoryI
         </div>
       )}
       {tableSettings.showCount && (
-        <div className="text-right">
-          <span className={alive > 0 ? 'text-[#00ff55]' : 'text-[var(--text-muted)]'}>{alive}</span>
-          <span className="text-[var(--text-muted)] mx-px">/</span>
-          <span className={dead > 0 ? 'text-red-500' : 'text-[var(--text-muted)]'}>{dead}</span>
+        <div className="text-right flex items-center justify-end select-none">
+          {alive > 0 ? (
+            <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded text-[8px] font-black">
+              <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse"></span>
+              {alive}
+            </span>
+          ) : dead > 0 ? (
+            <span className="inline-flex items-center gap-0.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 px-1.5 py-0.5 rounded text-[8px] font-black">
+              <span className="opacity-75"><Skull size={8} /></span>
+              {dead}
+            </span>
+          ) : (
+            <span className="text-[var(--text-muted)] font-mono text-[9px] opacity-50">--</span>
+          )}
         </div>
       )}
       {tableSettings.showTimer && (
@@ -183,4 +242,22 @@ export const DataRow = memo(({ row, categoryId }: { row: TableRowData, categoryI
       )}
     </motion.div>
   );
+}, (prevProps, nextProps) => {
+  // Custom equality check since 'row' is recreated by TrackingView useMemo often
+  if (prevProps.categoryId !== nextProps.categoryId) return false;
+  
+  const pRow = prevProps.row;
+  const nRow = nextProps.row;
+  
+  if (pRow.id !== nRow.id) return false;
+  if (pRow.dist !== nRow.dist) return false;
+  if (pRow.counts?.alive !== nRow.counts?.alive) return false;
+  if (pRow.counts?.dead !== nRow.counts?.dead) return false;
+  
+  // Timer array length check (shallow is usually fine since we push/clear timers)
+  const pTimers = pRow.respawnTimesMs?.length || 0;
+  const nTimers = nRow.respawnTimesMs?.length || 0;
+  if (pTimers !== nTimers) return false;
+
+  return true;
 });

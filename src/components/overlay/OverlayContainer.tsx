@@ -1,78 +1,119 @@
-import React from 'react';
+import React, { Profiler, ProfilerOnRenderCallback, useEffect } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Header } from '../layout/Header';
 import { useTrackerStore } from '../../store/trackerStore';
 import { useSettingsStore } from '../../store/settingsStore';
-import { useShallow } from 'zustand/react/shallow';
+
 import { useOverlayResize } from '../../hooks/useOverlayResize';
 
-import { WeaponUI } from '../widgets/WeaponUI';
-import { ArmorUI } from '../widgets/ArmorUI';
-import { NotificationToaster } from '../widgets/NotificationToaster';
-import { CompanionOverlay } from '../widgets/CompanionOverlay';
-import { EfficiencyHUD } from '../widgets/EfficiencyHUD';
-import { DebugPanel } from '../widgets/DebugPanel';
+import { HUDLayer } from './HUDLayer';
+import { ModalLayer } from './ModalLayer';
+import { FloatingWidgetLayer } from './FloatingWidgetLayer';
 import { MinimizedOrb } from './MinimizedOrb';
-import { PoppedOutWindowComponent } from './PoppedOutWindowComponent';
+import { PoppedOutWindowManager } from './PoppedOutWindowManager';
 import { ErrorBoundary } from '../widgets/ErrorBoundary';
-// ChangelogModal lazy loaded
-import { motion, useMotionValue, useDragControls } from 'motion/react';
-import { MinimalChestHUD } from '../widgets/MinimalChestHUD';
-import { BlacksmithUI } from '../widgets/BlacksmithUI';
-import { PoppedOutWindow } from '../../store/storeTypes';
-import { CompanionGuideOverlay } from './CompanionGuideOverlay';
-import { FocusHighlight } from './FocusHighlight';
-// Windows lazy loaded
-import { NPCTranslationBubble } from './NPCTranslationBubble';
-import { DirectionalArrow } from './DirectionalArrow';
-import { RadarMinimap } from '../widgets/RadarMinimap';
-import { Profiler, ProfilerOnRenderCallback } from 'react';
+import { motion, useMotionValue, useDragControls, AnimatePresence } from 'motion/react';
+import { AlertTriangle, X } from 'lucide-react';
 
-import { ChangelogModal } from '../ui/ChangelogModal';
-import { LifetimeStatsWindow } from './LifetimeStatsWindow';
-import { RunHistoryWindow } from './RunHistoryWindow';
+import { useDeathDropRouter } from '../../hooks/useDeathDropRouter';
+import { useDynamicWaypointRouter } from '../../hooks/useDynamicWaypointRouter';
 
 import { TrackingView } from '../views/TrackingView';
-import { LootView } from '../views/LootView';
+import { ProfileView } from '../views/profile/ProfileView';
+import { SessionTab } from '../views/loot/SessionTab';
+import { ChestTab } from '../views/loot/ChestTab';
 import { NPCView } from '../views/NPCView';
+
+import { AAAMinimap } from '../map/AAAMinimap';
 import { QuestView } from '../views/QuestView';
-import { PlayersView } from '../views/PlayersView';
-import { SettingsView } from '../views/SettingsView';
+import { DebugPanel } from '../widgets/DebugPanel';
 import { RoepediaView } from '../views/RoepediaView';
+import { SettingsView } from '../views/SettingsView';
+import { usePlayerProfile, usePendingDeathDrop, useChestInventory, useWeapon, useCurrentZone } from '../../store/hooks/useTrackerSelector';
+import { useLayoutMode, useIsMinimized, useGlobalScale, useTheme, usePoppedOutWindows } from '../../store/hooks/useSettingsSelector';
 
-export const OverlayContainer: React.FC = () => {
-  const { currentZone, playerProfile } = useTrackerStore(useShallow((state: any) => ({
-    currentZone: state.currentZone,
-    playerProfile: state.playerProfile
-  })));
+export const OverlayContainer: React.FC = React.memo(() => {
+  const currentZone = useCurrentZone();
+  const playerProfile = usePlayerProfile();
+  const pendingDeathDrop = usePendingDeathDrop();
+  
+  // Note: loadStaticBarriers was removed
+  const chestInventory = useChestInventory();
 
-  const {
-    activeTab, isMinimized, layoutMode, poppedOutWindows,
-    mergeTab, overlayPosition, setOverlayPosition,
-    activeOpacity, idleOpacity, isUILocked, globalScale,
-    tabDimensions, theme, tutorialStep, tutorialCompleted,
-    devForceOverlay, visualQuality, developerMode
-  } = useSettingsStore(useShallow((state: any) => ({
-    activeTab: state.activeTab,
-    isMinimized: state.isMinimized,
-    layoutMode: state.layoutMode,
-    poppedOutWindows: state.poppedOutWindows,
-    mergeTab: state.mergeTab,
-    overlayPosition: state.overlayPosition,
-    setOverlayPosition: state.setOverlayPosition,
-    activeOpacity: state.activeOpacity,
-    idleOpacity: state.idleOpacity,
-    isUILocked: state.isUILocked,
-    tabDimensions: state.tabDimensions,
-    theme: state.theme,
-    globalScale: state.globalScale,
-    tutorialStep: state.notificationSettings?.tutorialStep || 0,
-    tutorialCompleted: state.notificationSettings?.tutorialCompleted || false,
-    devForceOverlay: state.devForceOverlay,
-    visualQuality: state.visualQuality,
-    developerMode: state.developerMode
-  })));
+  const weapon = useWeapon();
+  const quickBarInstances = useTrackerStore(s => s.quickBarInstances);
+  const inventoryInstances = useTrackerStore(s => s.inventoryInstances);
+  const mapSettingsEnabled = useTrackerStore(s => s.mapSettings.enabled);
+  
+  const [dismissedWarnings, setDismissedWarnings] = React.useState<string[]>([]);
+
+  const unequippedTools = React.useMemo(() => {
+    // If the player has a weapon equipped, assume they are managing their hotbar properly
+    // and suppress the warning to prevent false positives for other tools in the hotbar.
+    if (weapon?.name) return [];
+    
+    const hotkeyCounts: Record<string, number> = {};
+    quickBarInstances.forEach(inst => {
+      if (inst && inventoryInstances[inst]) {
+        const itemId = inventoryInstances[inst];
+        hotkeyCounts[itemId] = (hotkeyCounts[itemId] || 0) + 1;
+      }
+    });
+    
+    return Object.keys(chestInventory || {}).filter(k => {
+      let count = (chestInventory[k] || 0) - (hotkeyCounts[k] || 0);
+      if (count <= 0) return false;
+      if (dismissedWarnings.includes(k)) return false;
+      const lName = k.toLowerCase();
+      return lName.includes('sword') || 
+             lName.includes('pickaxe') || 
+             lName.includes('axe') || 
+             lName.includes('tool') || 
+             lName.includes('weapon') || 
+             lName.includes('bow') || 
+             lName.includes('staff') ||
+             lName.includes('wand') ||
+             lName.includes('dagger') ||
+             lName.includes('blade');
+    });
+  }, [chestInventory, weapon?.name, quickBarInstances, inventoryInstances, dismissedWarnings]);
+
+  useDeathDropRouter();
+  useDynamicWaypointRouter();
+
+  // Load static barrier walls once on mount
+  useEffect(() => {
+    // Removed loadStaticBarriers call
+  }, []);
+
+  const activeTab = useSettingsStore(s => s.activeTab);
+  const isMinimized = useIsMinimized();
+  const layoutMode = useLayoutMode();
+  const poppedOutWindows = usePoppedOutWindows();
+  const mergeTab = useSettingsStore(s => s.mergeTab);
+  const overlayPosition = useSettingsStore(s => s.overlayPosition);
+  const setOverlayPosition = useSettingsStore(s => s.setOverlayPosition);
+  const isUILocked = useSettingsStore(s => s.isUILocked);
+  const tabDimensions = useSettingsStore(s => s.tabDimensions);
+  const theme = useTheme();
+  const globalScale = useGlobalScale();
+  const devForceOverlay = useSettingsStore(s => s.devForceOverlay);
+  const visualQuality = useSettingsStore(s => s.visualQuality);
+  const developerMode = useSettingsStore(s => s.developerMode);
+
+  // P4: Separated frequently changing or visual fields to prevent full container re-renders
+  const activeOpacity = useSettingsStore(s => s.activeOpacity);
+  const idleOpacity = useSettingsStore(s => s.idleOpacity);
+  const tutorialStep = useSettingsStore(s => s.notificationSettings?.tutorialStep ?? 0);
   const { t } = useTranslation();
+
+  // Fix theme hydration
+  useEffect(() => {
+    if (typeof document !== 'undefined' && theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.body.setAttribute('data-theme', theme);
+    }
+  }, [theme]);
 
   const hasGameData = devForceOverlay || developerMode || (!!currentZone && currentZone !== 'Unknown' && !!playerProfile?.name);
   const [isCanvasReady, setIsCanvasReady] = React.useState(devForceOverlay || developerMode);
@@ -140,29 +181,34 @@ export const OverlayContainer: React.FC = () => {
     if (containerRef.current && !isRefReady) {
       setIsRefReady(true);
     }
-  }, [isRefReady]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // ← intentionally empty: runs once on mount to mark containerRef as ready
 
   const dragControls = useDragControls();
   
-  const x = useMotionValue(overlayPosition?.x ?? 103);
-  const y = useMotionValue(overlayPosition?.y ?? 116);
+  const safeOverlayX = typeof overlayPosition?.x === 'number' && !isNaN(overlayPosition.x) ? overlayPosition.x : 103;
+  const safeOverlayY = typeof overlayPosition?.y === 'number' && !isNaN(overlayPosition.y) ? overlayPosition.y : 116;
+  const x = useMotionValue(safeOverlayX);
+  const y = useMotionValue(safeOverlayY);
 
   // Sync initial position and handle hydration bounding
   React.useEffect(() => {
-    // Clamp to safe screen boundaries to prevent it from getting lost off-screen
-    // Especially important since we changed the anchor from top-right to top-left!
-    let safeX = overlayPosition.x;
-    let safeY = overlayPosition.y;
+    // Clamp to safe screen boundaries to prevent it from getting lost off-screen.
+    // CRITICAL: Must guard against NaN first — NaN comparisons always return false,
+    // so NaN < 0 and NaN > screenW are BOTH false, letting NaN pass through to x.set(NaN)
+    // which triggers Framer Motion's infinite physics loop and crashes the app.
+    let safeX = (typeof overlayPosition?.x === 'number' && !isNaN(overlayPosition.x)) ? overlayPosition.x : 103;
+    let safeY = (typeof overlayPosition?.y === 'number' && !isNaN(overlayPosition.y)) ? overlayPosition.y : 116;
 
     const screenW = window.innerWidth;
     const screenH = window.innerHeight;
 
-    // Give it a safe 100px buffer so it's always grabbable
+    // Clamp to screen bounds with a grabbable buffer
     if (safeX < 0) safeX = 0;
-    if (safeX > screenW - 100) safeX = screenW - 260; // 260 is typical width
-    
+    if (safeX > screenW - 100) safeX = Math.max(0, screenW - 260);
+
     if (safeY < 0) safeY = 0;
-    if (safeY > screenH - 100) safeY = screenH - 200;
+    if (safeY > screenH - 100) safeY = Math.max(0, screenH - 200);
 
     x.set(safeX);
     y.set(safeY);
@@ -170,7 +216,17 @@ export const OverlayContainer: React.FC = () => {
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const keyTarget = e.target as Element | null;
+      const activeEl = document.activeElement;
+      const isTypingInInput =
+        keyTarget instanceof HTMLInputElement ||
+        keyTarget instanceof HTMLTextAreaElement ||
+        activeEl instanceof HTMLInputElement ||
+        activeEl instanceof HTMLTextAreaElement ||
+        (activeEl as HTMLElement)?.isContentEditable ||
+        !!(keyTarget?.closest?.('input, textarea, [contenteditable="true"]'));
+      if (isTypingInInput) return;
+
       if (e.altKey && !e.ctrlKey && !e.shiftKey) {
         let tabId = '';
         if (e.key === '1') tabId = 'global';
@@ -189,8 +245,11 @@ export const OverlayContainer: React.FC = () => {
   }, []);
 
   React.useEffect(() => {
+    let resizeTimer: ReturnType<typeof setTimeout> | null = null;
+
     const handleResize = () => {
-      setTimeout(() => {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
         let currX = x.get();
         let currY = y.get();
         
@@ -214,18 +273,30 @@ export const OverlayContainer: React.FC = () => {
       }, 100);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    } else {
+      resizeObserver.observe(document.body);
+    }
+
+    return () => {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeObserver.disconnect();
+    };
   }, [x, y, setOverlayPosition]);
 
   const renderContent = () => {
     if (poppedOutWindows[activeTab]) {
       return (
-        <div className="flex flex-col items-center justify-center h-full w-full opacity-50 p-4 text-center">
+        <div className="flex flex-col items-center justify-center h-full w-full opacity-50 p-4 text-center pointer-events-auto">
           <div className="text-[var(--text-primary)] font-bold mb-2">{t('overlayContainer.poppedOut')}</div>
           <button 
-            onClick={() => mergeTab(activeTab)}
-            className="px-3 py-1.5 bg-[var(--accent-primary)]/20 hover:bg-[var(--accent-primary)]/40 text-[var(--accent-primary)] rounded transition-colors text-xs font-bold uppercase tracking-wider border border-[var(--accent-primary)]/30"
+            onPointerDown={(e) => { e.stopPropagation(); mergeTab(activeTab); }}
+            className="px-3 py-1.5 bg-[var(--accent-primary)]/20 hover:bg-[var(--accent-primary)]/40 text-[var(--accent-primary)] rounded transition-colors text-xs font-bold uppercase tracking-wider border border-[var(--accent-primary)]/30 cursor-pointer"
           >
             Merge Back
           </button>
@@ -238,11 +309,11 @@ export const OverlayContainer: React.FC = () => {
         case 'global':
         case 'favorites':
           return <TrackingView forcedTab={activeTab} />;
-        case 'session': return <LootView />;
-        case 'npcs':
-          return <NPCView />;
+        case 'profile': return <ProfileView />;
+        case 'session': return <SessionTab isHorizontal={isHorizontal} compactHeightClass="" />;
+        case 'chest': return <ChestTab isHorizontal={isHorizontal} compactHeightClass="" />;
+        case 'npcs': return <NPCView />;
         case 'quests': return <QuestView />;
-        case 'players': return <PlayersView />;
         case 'roepedia': return <RoepediaView />;
         case 'settings': return <SettingsView />;
         default: return null;
@@ -265,19 +336,6 @@ export const OverlayContainer: React.FC = () => {
   const currentWidth = activeDim.width ? `${activeDim.width}px` : undefined;
   const currentHeight = activeDim.height ? `${activeDim.height}px` : undefined;
 
-  React.useEffect(() => {
-    if (overlayRef.current) {
-      if (!currentWidth) {
-        overlayRef.current.style.width = '';
-        overlayRef.current.style.minWidth = '';
-      }
-      if (!currentHeight) {
-        overlayRef.current.style.height = '';
-        overlayRef.current.style.minHeight = '';
-      }
-    }
-  }, [currentWidth, currentHeight]);
-
   const { handleResizeDown } = useOverlayResize({
     overlayRef,
     isHorizontal,
@@ -286,17 +344,49 @@ export const OverlayContainer: React.FC = () => {
     y
   });
 
+  const renderStatsRef = React.useRef({ count: 0, total: 0, lastUpdate: 0 });
+
   const onRender: ProfilerOnRenderCallback = (_id, _phase, actualDuration) => {
-    const state = useSettingsStore.getState();
-    const currentAvg = state.profilerMetrics.renderTime.average;
-    const newAvg = currentAvg === 0 ? actualDuration : (currentAvg * 0.9) + (actualDuration * 0.1);
+    renderStatsRef.current.count++;
+    renderStatsRef.current.total += actualDuration;
     
-    state.profilerMetrics.renderTime.average = Number(newAvg.toFixed(3));
-    state.profilerMetrics.renderTime.lastRender = Number(actualDuration.toFixed(3));
+    const now = performance.now();
+    if (now - renderStatsRef.current.lastUpdate > 1000) {
+      const avg = renderStatsRef.current.total / renderStatsRef.current.count;
+      const state = useSettingsStore.getState();
+      const currentAvg = state.profilerMetrics.renderTime.average;
+      const newAvg = currentAvg === 0 ? avg : (currentAvg * 0.9) + (avg * 0.1);
+      
+      state.updateProfilerMetrics({
+        renderTime: {
+          average: Number(newAvg.toFixed(3)),
+          lastRender: Number(actualDuration.toFixed(3)),
+        }
+      });
+      
+      renderStatsRef.current.count = 0;
+      renderStatsRef.current.total = 0;
+      renderStatsRef.current.lastUpdate = now;
+    }
   };
 
-  return (
-    <Profiler id="OverlayContainer" onRender={onRender}>
+  const DEFAULT_TAB_HEIGHTS: Record<string, string> = {
+    global: '380px',
+    favorites: '380px',
+    session: '400px',
+    npcs: '400px',
+    quests: '400px',
+    roepedia: '440px',
+    settings: '400px',
+  };
+
+  const defaultTabHeight = DEFAULT_TAB_HEIGHTS[activeTab] || '400px';
+
+  const calculatedHeight = isHorizontal 
+    ? (currentHeight || defaultTabHeight)
+    : (currentHeight || 'auto');
+
+  const content = (
       <div ref={containerRef} className={`fixed inset-0 pointer-events-none z-50 overflow-hidden text-[var(--text-primary)] font-[var(--font-body)] ${visualQuality === 'performance' ? 'perf-mode' : ''}`} data-theme={theme}>
       {isRefReady && (
         <div 
@@ -313,14 +403,9 @@ export const OverlayContainer: React.FC = () => {
                 style={{ 
                   x, y, 
                   opacity: tutorialStep > 0 ? 1.0 : (isHovered ? activeOpacity : idleOpacity),
-                  width: isHorizontal ? "" : (currentWidth || ""),
-                  height: isHorizontal ? (currentHeight || "") : "",
-                  // To satisfy the paradox of "user can resize from any direction" AND "auto-expand always works", 
-                  // we apply the fixed dimension to the dominant axis, but we apply it as a MINIMUM to the auto-expand axis!
-                  // In Vertical mode: width is fixed, height is minHeight (so it can still grow!)
-                  // In Horizontal mode: height is fixed, width is minWidth (so it can still grow!)
-                  minHeight: !isHorizontal ? (currentHeight || "") : undefined,
-                  minWidth: isHorizontal ? (currentWidth || "") : undefined,
+                  width: isHorizontal ? (currentWidth || "720px") : (currentWidth || ""),
+                  height: calculatedHeight,
+                  maxHeight: '85vh',
                   zoom: globalScale || 1
                 }}
                 onMouseEnter={() => setIsHovered(true)}
@@ -332,20 +417,21 @@ export const OverlayContainer: React.FC = () => {
                 dragElastic={0}
                 dragMomentum={false}
                 onDragEnd={() => {
-                  setOverlayPosition({ x: x.get(), y: y.get() });
+                  const snapX = Math.round(x.get());
+                  const snapY = Math.round(y.get());
+                  x.set(snapX);
+                  y.set(snapY);
+                  setOverlayPosition({ x: snapX, y: snapY });
                 }}
-                className={`
-                  absolute top-0 left-0 ${isUILocked ? 'pointer-events-none' : 'pointer-events-auto'} shadow-[0_8px_30px_rgba(0,0,0,0.8)] border-[var(--border-accent)] flex transition-opacity duration-300 overflow-hidden rounded-xl border
-                  bg-[var(--bg-base)]
+                className={`flex flex-col bg-[var(--bg-base)] overflow-hidden flex-1 pointer-events-auto shadow-2xl relative rounded-xl border border-[var(--border-accent)] shadow-[0_8px_30px_rgba(0,0,0,0.8)]
                   ${isHorizontal 
-                    ? 'h-fit min-h-fit max-h-[85vh] w-fit min-w-[400px] max-w-[calc(100vw-1rem)] flex-col' 
-                    : `h-fit min-h-fit max-h-[85vh] ${(activeTab === 'global' || activeTab === 'favorites') ? 'w-fit' : 'w-[220px]'} max-w-[360px] min-w-[180px] flex-col`
-                  }
-                `}
+                    ? `h-full min-w-[300px] w-full ${activeTab === 'chest' ? 'max-w-[700px]' : 'max-w-[380px]'}` 
+                    : `max-h-[85vh] ${(activeTab === 'roepedia') ? 'w-[290px]' : 'w-[260px]'} max-w-[700px] min-w-[200px] flex-col`
+                  }`}
               >
                 <Header onPointerDown={(e) => dragControls.start(e)} />
                 
-                <div className={`flex-1 overflow-hidden ${isHorizontal ? 'overflow-x-auto custom-scrollbar flex p-2 gap-1.5' : 'overflow-y-auto custom-scrollbar p-1'}`}>
+                <div className={`flex-1 flex flex-col min-h-0 overflow-hidden ${isHorizontal ? 'overflow-x-auto custom-scrollbar flex p-2 gap-1.5' : 'overflow-y-auto overflow-x-hidden custom-scrollbar p-1'}`}>
                   {renderContent()}
                 </div>
 
@@ -361,38 +447,99 @@ export const OverlayContainer: React.FC = () => {
               </motion.div>
             )}
             
-            {(Object.values(poppedOutWindows) as PoppedOutWindow[]).map(win => (
-              <ErrorBoundary key={win.id}>
-                <PoppedOutWindowComponent window={win} constraintsRef={containerRef} />
-              </ErrorBoundary>
-            ))}
+            <AnimatePresence>
+              {pendingDeathDrop && !isMinimized && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20, x: '-50%' }}
+                  animate={{ opacity: 1, y: 0, x: '-50%' }}
+                  exit={{ opacity: 0, y: -20, x: '-50%' }}
+                  className="fixed top-6 left-1/2 z-[1000] pointer-events-none"
+                >
+                  <div className="px-3.5 py-2 rounded-xl bg-black/85 border border-red-500/40 backdrop-blur-xl flex items-center gap-3 shadow-[0_0_20px_rgba(239,68,68,0.3)]">
+                    <div className="w-8 h-8 rounded-lg bg-red-500/15 border border-red-500/30 flex items-center justify-center text-red-400 shrink-0 shadow-inner">
+                      <AlertTriangle size={18} className="animate-pulse" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[10px] font-black text-red-400 tracking-widest uppercase leading-none mb-0.5">
+                        Death Drop Tracker Active
+                      </span>
+                      <span className="text-[11px] font-bold text-slate-200 leading-tight">
+                        Recover {pendingDeathDrop.quantity.toLocaleString()} Runes in {pendingDeathDrop.zone}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+              {unequippedTools.length > 0 && !isMinimized && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20, x: '-50%' }}
+                  animate={{ opacity: 1, y: 0, x: '-50%' }}
+                  exit={{ opacity: 0, y: -20, x: '-50%' }}
+                  className={`fixed ${pendingDeathDrop ? 'top-[75px]' : 'top-6'} left-1/2 z-[1000] pointer-events-none`}
+                >
+                  <div className="px-3.5 py-2 rounded-xl bg-black/85 border border-amber-500/40 backdrop-blur-xl flex items-center gap-3 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 shadow-inner">
+                      <AlertTriangle size={18} className="animate-pulse" />
+                    </div>
+                    <div className="flex flex-col text-left max-w-[250px] pr-6">
+                      <span className="text-[10px] font-black text-amber-400 tracking-widest uppercase leading-none mb-0.5 truncate">
+                        Tool in Inventory
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-300 leading-tight">
+                        Equip your {unequippedTools[0]} to prevent losing it on death!
+                      </span>
+                    </div>
+                    <button 
+                      onClick={() => setDismissedWarnings(prev => [...prev, unequippedTools[0]])}
+                      className="absolute top-1.5 right-1.5 p-1 text-amber-500/50 hover:text-amber-400 hover:bg-amber-500/10 rounded transition-colors"
+                      title="Dismiss Warning"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
             
-            <ErrorBoundary><WeaponUI /></ErrorBoundary>
-            <ErrorBoundary><ArmorUI /></ErrorBoundary>
-            <ErrorBoundary><EfficiencyHUD /></ErrorBoundary>
-            <ErrorBoundary><BlacksmithUI /></ErrorBoundary>
+            <ErrorBoundary>
+              <PoppedOutWindowManager constraintsRef={containerRef} />
+            </ErrorBoundary>
+
+            <ErrorBoundary><HUDLayer /></ErrorBoundary>
             <ErrorBoundary><DebugPanel /></ErrorBoundary>
-            <ErrorBoundary><MinimalChestHUD /></ErrorBoundary>
-            <ErrorBoundary><FocusHighlight /></ErrorBoundary>
-            {(tutorialCompleted || tutorialStep > 0) && (
-              <ErrorBoundary><CompanionOverlay constraintsRef={containerRef} /></ErrorBoundary>
-            )}
           </>
         )}
-        
-        <NPCTranslationBubble />
 
-        <ErrorBoundary><DirectionalArrow /></ErrorBoundary>
-        <ErrorBoundary><RadarMinimap /></ErrorBoundary>
+        <FloatingWidgetLayer containerRef={containerRef} />
       </div>
       )}
-      
-      <ErrorBoundary><NotificationToaster /></ErrorBoundary>
-      <ErrorBoundary><CompanionGuideOverlay /></ErrorBoundary>
-      <ErrorBoundary><ChangelogModal /></ErrorBoundary>
-      <ErrorBoundary><LifetimeStatsWindow /></ErrorBoundary>
-      <ErrorBoundary><RunHistoryWindow /></ErrorBoundary>
+
+      <ModalLayer />
+
+      {/* ── Minimap Layer — MUST be outside overflow-hidden container ──────────
+          AAAMinimap is a floating, independently-positioned widget. Placing it
+          inside any overflow:hidden ancestor clips it when the main overlay
+          expands. This sibling layer uses overflow:visible and z-60 so the
+          minimap is always visible and stays on top of the main overlay (z-50). */}
+      {isGameLoaded && mapSettingsEnabled && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 60,
+            pointerEvents: 'none',
+            overflow: 'visible',
+          }}
+        >
+          <ErrorBoundary><AAAMinimap /></ErrorBoundary>
+        </div>
+      )}
     </div>
-    </Profiler>
   );
-};
+
+  return developerMode ? (
+    <Profiler id="OverlayContainer" onRender={onRender}>
+      {content}
+    </Profiler>
+  ) : content;
+});

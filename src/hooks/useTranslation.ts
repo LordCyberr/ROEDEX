@@ -24,7 +24,7 @@ export const useTranslation = () => {
       return current;
     }
     
-    // Fallback to English
+    // Fallback to EN if key is missing in active language
     let fallback: any = translations.en;
     for (const k of keys) {
       if (fallback && fallback[k] !== undefined) {
@@ -34,12 +34,11 @@ export const useTranslation = () => {
         break;
       }
     }
-    
-    if (fallback !== undefined && typeof fallback === 'string') {
+    if (typeof fallback === 'string') {
       return fallback;
     }
     
-    return key; // Fallback to key if not found
+    return key as string;
   };
   
   return { t, language };

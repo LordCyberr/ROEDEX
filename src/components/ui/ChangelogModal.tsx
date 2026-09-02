@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Sparkles, X, ChevronRight } from 'lucide-react';
 import { CHANGELOG_DATA } from '../../data/changelog';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -8,6 +9,18 @@ export const ChangelogModal: React.FC = () => {
   const { t } = useTranslation();
   const isChangelogOpen = useSettingsStore(state => state.isChangelogOpen);
   const setIsChangelogOpen = useSettingsStore(state => state.setIsChangelogOpen);
+
+  // Close on Escape
+  React.useEffect(() => {
+    if (!isChangelogOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsChangelogOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isChangelogOpen, setIsChangelogOpen]);
 
   return (
     <AnimatePresence>
@@ -20,24 +33,27 @@ export const ChangelogModal: React.FC = () => {
           onClick={() => setIsChangelogOpen(false)}
         >
           <motion.div
+            role="dialog"
+            aria-label={`ROEDEX ${t('settings.whatIsNew') || 'Changelog'}`}
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ type: "spring", bounce: 0, duration: 0.3 }}
+            className="w-full max-w-lg bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl shadow-2xl flex flex-col overflow-hidden max-h-[85vh]"
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg max-h-[80vh] flex flex-col bg-[var(--bg-panel)]/95 backdrop-blur-xl border border-[var(--border-accent)] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-subtle)] bg-[var(--bg-card)]/50">
-              <h2 className="text-[16px] font-bold text-[var(--text-primary)] flex items-center gap-2">
-                <span className="text-[var(--accent-primary)]">✨</span> {t('ui.whatsNew')}
-              </h2>
+            <div className="flex items-center justify-between p-4 border-b border-[var(--border-subtle)] bg-[var(--bg-card)]">
+              <div className="flex items-center gap-2">
+                <Sparkles size={16} className="text-[var(--accent-primary)]" />
+                <h2 className="text-[14px] font-bold text-[var(--text-primary)] tracking-wide uppercase">{t('settings.whatIsNew')}</h2>
+              </div>
               <button 
-                id="tutorial-close-changelog"
                 onClick={() => setIsChangelogOpen(false)}
-                className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors p-1"
+                title="Close (ESC)"
+                aria-label="Close Changelog (ESC)"
+                className="w-6 h-6 rounded flex items-center justify-center text-[var(--text-muted)] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               >
-                ✕
+                <X size={16} />
               </button>
             </div>
 
@@ -68,7 +84,7 @@ export const ChangelogModal: React.FC = () => {
                         <ul className="mt-2 flex flex-col gap-2">
                           {entry.features.map((feature, i) => (
                             <li key={i} className="text-[11px] text-[var(--text-secondary)] leading-relaxed flex items-start gap-2">
-                              <span className="text-[var(--accent-primary)] mt-0.5 opacity-80">✦</span>
+                              <ChevronRight size={12} className="text-[var(--accent-primary)] mt-0.5 opacity-80" />
                               {feature}
                             </li>
                           ))}

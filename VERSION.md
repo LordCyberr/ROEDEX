@@ -1,6 +1,6 @@
 ROEDEX
 
-Version: 0.0.1
+Version: 0.0.6
 
 Release Type:
 Stable

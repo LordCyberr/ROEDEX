@@ -1,12 +1,21 @@
-// Web Worker for offloading heavy JSON parsing
-self.onmessage = (e) => {
-  const { rawMessage } = e.data;
-  
+const IGNORED_EVENTS = new Set([
+  'ping',
+  'pong',
+  'heartbeat',
+  'player_ping'
+]);
+
+function processRawMessage(rawMessage: any) {
   let jsonString = rawMessage;
-  if (jsonString.startsWith('42["')) {
-    jsonString = jsonString.slice(2);
-  } else if (jsonString.startsWith('42/game,[')) {
-    jsonString = jsonString.slice(8);
+  
+  if (typeof rawMessage === 'string' && rawMessage.includes('Hit rejected: Enemy is already dead')) {
+    self.postMessage({ success: true, eventName: '__CHEAT_DETECTED__', payload: null, parsed: [] });
+    // Still continue parsing just in case it's part of a valid packet
+  }
+
+  const bracketIndex = jsonString.indexOf('[');
+  if (jsonString.startsWith('42') && bracketIndex !== -1) {
+    jsonString = jsonString.slice(bracketIndex);
   } else {
     self.postMessage({ success: false, error: 'skip' });
     return;
@@ -19,7 +28,8 @@ self.onmessage = (e) => {
        return;
     }
     
-    if (parsed[0] === 'town:move') {
+    const eventName = parsed[0];
+    if (IGNORED_EVENTS.has(eventName)) {
        self.postMessage({ success: false, error: 'skip' });
        return;
     }
@@ -28,10 +38,24 @@ self.onmessage = (e) => {
     self.postMessage({ 
        success: true, 
        parsed, 
-       eventName: parsed[0], 
+       eventName, 
        payload: parsed[1] 
     });
   } catch (err) {
     self.postMessage({ success: false, error: 'parse_error' });
+  }
+}
+
+self.onmessage = (e) => {
+  if (e.data.type === 'INIT_PORT') {
+    const port = e.ports[0];
+    port.onmessage = (event) => {
+      processRawMessage(event.data.rawMessage);
+    };
+    return;
+  }
+
+  if (e.data.rawMessage) {
+    processRawMessage(e.data.rawMessage);
   }
 };

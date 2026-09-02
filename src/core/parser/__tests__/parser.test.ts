@@ -61,7 +61,8 @@ vi.mock('../../companion/AICompanion', () => ({
     onMobKill: vi.fn(),
     greetUser: vi.fn(),
     zoneChange: vi.fn(),
-    onParry: vi.fn()
+    onParry: vi.fn(),
+    onActivity: vi.fn(),
   }
 }));
 

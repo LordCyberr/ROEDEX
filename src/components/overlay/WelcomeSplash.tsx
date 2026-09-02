@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Sword, Clock, Target } from 'lucide-react';
 import { useSettingsStore } from '../../store/settingsStore';
 
 import { COMPANIONS } from '../../data/companions';
@@ -56,7 +57,7 @@ export const WelcomeSplash: React.FC<WelcomeSplashProps> = ({ onStart, onSkip })
             <div className="flex flex-col gap-5 w-full text-left mb-8 px-4">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border" style={{ borderColor: `${companionColor}40`, backgroundColor: `${companionColor}20` }}>
-                  <span className="text-xl" style={{ color: companionColor }}>⚔️</span>
+                  <Sword size={20} style={{ color: companionColor }} />
                 </div>
                 <div>
                   <h3 className="font-bold text-[15px] mb-1">{t('welcome.feature1Title')}</h3>
@@ -66,7 +67,7 @@ export const WelcomeSplash: React.FC<WelcomeSplashProps> = ({ onStart, onSkip })
 
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border" style={{ borderColor: `${companionColor}40`, backgroundColor: `${companionColor}20` }}>
-                  <span className="text-xl" style={{ color: companionColor }}>⏱️</span>
+                  <Clock size={20} style={{ color: companionColor }} />
                 </div>
                 <div>
                   <h3 className="font-bold text-[15px] mb-1">{t('welcome.feature2Title')}</h3>
@@ -76,7 +77,7 @@ export const WelcomeSplash: React.FC<WelcomeSplashProps> = ({ onStart, onSkip })
 
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border" style={{ borderColor: `${companionColor}40`, backgroundColor: `${companionColor}20` }}>
-                  <span className="text-xl" style={{ color: companionColor }}>🎯</span>
+                  <Target size={20} style={{ color: companionColor }} />
                 </div>
                 <div>
                   <h3 className="font-bold text-[15px] mb-1">{t('welcome.feature3Title')}</h3>

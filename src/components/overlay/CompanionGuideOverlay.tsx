@@ -4,11 +4,14 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useTrackerStore } from '../../store/trackerStore';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
+import { UISlice } from '../../store/storeTypes';
 import { BootSequence } from './BootSequence';
 import { COMPANIONS } from '../../data/companions';
 import { WelcomeSplash } from './WelcomeSplash';
 import { AICompanion } from '../../core/companion/AICompanion';
 import { NotificationManager } from '../../core/notifications/NotificationManager';
+import { TutorialDimmer } from '../widgets/tutorial/TutorialDimmer';
+import { TutorialChatBubble } from '../widgets/tutorial/TutorialChatBubble';
 
 type TutorialStep = {
   id: string;
@@ -166,7 +169,7 @@ export const CompanionGuideOverlay: React.FC = () => {
     notificationSettings,
     devForceOverlay
   } = useSettingsStore(
-    useShallow((state: any) => ({
+    useShallow((state: UISlice) => ({
       tutorialStep: state.notificationSettings?.tutorialStep || 0,
       tutorialCompleted: state.notificationSettings?.tutorialCompleted || false,
       setTutorialStep: state.setTutorialStep,
@@ -176,11 +179,11 @@ export const CompanionGuideOverlay: React.FC = () => {
     }))
   );
 
-  const { companionPosition } = useSettingsStore(useShallow((state: any) => ({
+  const { companionPosition } = useSettingsStore(useShallow((state: UISlice) => ({
     companionPosition: state.companionPosition
   })));
   
-  const activeCompanion = useSettingsStore((state: any) => state.activeCompanion);
+  const activeCompanion = useSettingsStore((state: UISlice) => state.activeCompanion);
   const companionColor = COMPANIONS[activeCompanion as keyof typeof COMPANIONS]?.color || '#22d3ee';
   
   const playerName = useTrackerStore(state => state.playerProfile?.name);
@@ -219,7 +222,6 @@ export const CompanionGuideOverlay: React.FC = () => {
       const trackerState = useTrackerStore.getState() as any;
       const settingsState = useSettingsStore.getState() as any;
       const currentState = { ...trackerState, ...settingsState } as any;
-      console.log('tutorial tracker', currentState.tutorialStep);
       if (stepData.checkCompletion(currentState)) {
         setActionCompleted(true);
         if (stepData.autoAdvance) {
@@ -234,39 +236,46 @@ export const CompanionGuideOverlay: React.FC = () => {
         }
       }
 
-      // We set up a quick interval to check the store state directly
+      // isMounted guard: prevents orphan interval callbacks after effect cleanup
+      const isMounted = { current: true };
+
+      // Poll at 1000ms — user won't notice the extra 500ms latency
       const checker = setInterval(() => {
-        const trackerState = useTrackerStore.getState() as any;
-      const settingsState = useSettingsStore.getState() as any;
-      const currentState = { ...trackerState, ...settingsState } as any;
-      console.log('tutorial tracker', currentState.tutorialStep);
+        if (!isMounted.current) return; // ← Guard: ignore if unmounted/re-ran
+        const ts = useTrackerStore.getState() as any;
+        const ss = useSettingsStore.getState() as any;
+        const cs = { ...ts, ...ss } as any;
         if (stepData.id === 'tutorial-quest') {
-          setKills(currentState.sessionMobsKilled);
+          setKills(cs.sessionMobsKilled);
         }
-        if (stepData.checkCompletion!(currentState)) {
+        if (stepData.checkCompletion!(cs)) {
+          if (!isMounted.current) return;
           setActionCompleted(true);
           if (stepData.autoAdvance) {
             clearInterval(checker);
-            const currentStep = settingsState.notificationSettings.tutorialStep;
+            const currentStep = ss.notificationSettings.tutorialStep;
             if (currentStep >= steps.length) {
-              settingsState.setTutorialStep(0);
-              settingsState.updateNotificationSettings({ tutorialCompleted: true });
+              ss.setTutorialStep(0);
+              ss.updateNotificationSettings({ tutorialCompleted: true });
             } else {
-              settingsState.setTutorialStep(currentStep + 1);
+              ss.setTutorialStep(currentStep + 1);
             }
           }
         } else {
-          setActionCompleted(false);
+          if (isMounted.current) setActionCompleted(false);
         }
-      }, 500);
-      return () => clearInterval(checker);
+      }, 1000);
+      return () => {
+        isMounted.current = false;
+        clearInterval(checker);
+      };
     }
   }, [tutorialStep]);
 
   // Bring UI to intro position when tutorial starts
   useEffect(() => {
     if (tutorialStep === 1) {
-      const store = useSettingsStore.getState() as any;
+      const store = useSettingsStore.getState();
       store.setIsMinimized(false);
       store.setActiveTab('global');
       // Position it beautifully on the left side below the health bar
@@ -286,7 +295,7 @@ export const CompanionGuideOverlay: React.FC = () => {
     }, 3000);
 
     const updateRect = () => {
-      const isMin = (useSettingsStore.getState() as any).isMinimized;
+      const isMin = useSettingsStore.getState().isMinimized;
       let targetId = isMin && currentStepData!.id === 'tutorial-lock-btn' ? 'tutorial-minimized-orb' : currentStepData!.id;
       let el = document.getElementById(targetId);
 
@@ -372,27 +381,21 @@ export const CompanionGuideOverlay: React.FC = () => {
   }
 
   const handleNext = () => {
-    const trackerState = useTrackerStore.getState() as any;
-      const settingsState = useSettingsStore.getState() as any;
-      const currentState = { ...trackerState, ...settingsState } as any;
-      console.log('tutorial tracker', currentState.tutorialStep);
+    const settingsState = useSettingsStore.getState();
+    const trackerState = useTrackerStore.getState();
     const currentStep = settingsState.notificationSettings.tutorialStep;
     if (currentStep >= steps.length) {
       settingsState.setTutorialStep(0);
       settingsState.updateNotificationSettings({ tutorialCompleted: true });
-      // Trigger the greeting sequence now that the tutorial is finished
-      AICompanion.greetUser(currentState.sessionPlayerName || currentState.playerProfile?.name || undefined);
-      NotificationManager.greetUser(currentState.sessionPlayerName || currentState.playerProfile?.name || undefined);
+      AICompanion.greetUser(trackerState.sessionPlayerName || trackerState.playerProfile?.name || undefined);
+      NotificationManager.greetUser(trackerState.sessionPlayerName || trackerState.playerProfile?.name || undefined);
     } else {
       settingsState.setTutorialStep(currentStep + 1);
     }
   };
 
   const handlePrevious = () => {
-    const trackerState = useTrackerStore.getState() as any;
-      const settingsState = useSettingsStore.getState() as any;
-      const currentState = { ...trackerState, ...settingsState } as any;
-      console.log('tutorial tracker', currentState.tutorialStep);
+    const settingsState = useSettingsStore.getState();
     const currentStep = settingsState.notificationSettings.tutorialStep;
     if (currentStep > 1) {
       settingsState.setTutorialStep(currentStep - 1);
@@ -400,15 +403,12 @@ export const CompanionGuideOverlay: React.FC = () => {
   };
 
   const handleSkip = () => {
-    const trackerState = useTrackerStore.getState() as any;
-      const settingsState = useSettingsStore.getState() as any;
-      const currentState = { ...trackerState, ...settingsState } as any;
-      console.log('tutorial tracker', currentState.tutorialStep);
+    const settingsState = useSettingsStore.getState();
+    const trackerState = useTrackerStore.getState();
     settingsState.setTutorialStep(0);
     settingsState.updateNotificationSettings({ tutorialCompleted: true });
-    // Trigger the greeting sequence now that the tutorial is skipped
-    AICompanion.greetUser(currentState.sessionPlayerName || currentState.playerProfile?.name || undefined);
-    NotificationManager.greetUser(currentState.sessionPlayerName || currentState.playerProfile?.name || undefined);
+    AICompanion.greetUser(trackerState.sessionPlayerName || trackerState.playerProfile?.name || undefined);
+    NotificationManager.greetUser(trackerState.sessionPlayerName || trackerState.playerProfile?.name || undefined);
   };
 
   const renderContent = () => {
@@ -462,14 +462,14 @@ export const CompanionGuideOverlay: React.FC = () => {
         className="fixed inset-0 z-[9999998] pointer-events-none"
       >
       {/* Dimmer built with 4 divs to leave a completely click-through hole in the center */}
-      {targetRect && (
-        <>
-          <div className={`absolute top-0 left-0 right-0 ${currentStepData?.allowGameInteraction ? 'pointer-events-none bg-black/20' : 'pointer-events-auto bg-black/75'} transition-all duration-500`} style={{ height: sTop }} />
-          <div className={`absolute bottom-0 left-0 right-0 ${currentStepData?.allowGameInteraction ? 'pointer-events-none bg-black/20' : 'pointer-events-auto bg-black/75'} transition-all duration-500`} style={{ top: sTop + sHeight }} />
-          <div className={`absolute ${currentStepData?.allowGameInteraction ? 'pointer-events-none bg-black/20' : 'pointer-events-auto bg-black/75'} transition-all duration-500`} style={{ top: sTop, height: sHeight, left: 0, width: sLeft }} />
-          <div className={`absolute ${currentStepData?.allowGameInteraction ? 'pointer-events-none bg-black/20' : 'pointer-events-auto bg-black/75'} transition-all duration-500`} style={{ top: sTop, height: sHeight, left: sLeft + sWidth, right: 0 }} />
-        </>
-      )}
+      <TutorialDimmer 
+        targetRect={targetRect}
+        sTop={sTop}
+        sHeight={sHeight}
+        sLeft={sLeft}
+        sWidth={sWidth}
+        allowGameInteraction={currentStepData?.allowGameInteraction}
+      />
 
       {/* Tutorial Controls */}
       <div className="absolute top-4 right-4 flex flex-col gap-2 z-50">
@@ -524,82 +524,20 @@ export const CompanionGuideOverlay: React.FC = () => {
 
 
       {/* Tutorial Chat Bubble */}
-      <div className="absolute w-16 h-16 pointer-events-none z-[9999999]" style={{ left: bobX, top: bobY }}>
-      <AnimatePresence>
-        <motion.div
-          key="bob-tutorial-bubble"
-          initial={{ opacity: 0, scale: 0.8, x: bubblePosition === 'right' ? -20 : bubblePosition === 'left' ? 20 : 0, y: bubblePosition === 'top' ? 20 : bubblePosition === 'bottom' ? -20 : 0 }}
-          animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
-          exit={{ opacity: 0, scale: 0.8, x: bubblePosition === 'right' ? -20 : bubblePosition === 'left' ? 20 : 0, y: bubblePosition === 'top' ? 20 : bubblePosition === 'bottom' ? -20 : 0 }}
-          className={`absolute flex flex-col items-start gap-4 transition-all duration-500 pointer-events-auto`}
-          style={{
-            left: bubblePosition === 'right' ? '100%' : bubblePosition === 'left' ? 'auto' : '50%',
-            right: bubblePosition === 'left' ? '100%' : 'auto',
-            top: bubblePosition === 'bottom' ? '100%' : bubblePosition === 'top' ? 'auto' : '50%',
-            bottom: bubblePosition === 'top' ? '100%' : 'auto',
-            transform: bubblePosition === 'left' ? `translate(calc(50px + ${-(notificationSettings?.companionBubbleDistance ?? 16)}px), calc(-50% + ${notificationSettings?.companionBubbleOffsetY ?? 0}px))` 
-                     : bubblePosition === 'right' ? `translate(calc(-50px + ${notificationSettings?.companionBubbleDistance ?? 16}px), calc(-50% + ${notificationSettings?.companionBubbleOffsetY ?? 0}px))`
-                     : bubblePosition === 'top' ? `translate(calc(-50%), calc(50px + ${-(notificationSettings?.companionBubbleDistance ?? 16)}px))`
-                     : `translate(calc(-50%), calc(-50px + ${notificationSettings?.companionBubbleDistance ?? 16}px))`
-          }}
-        >
-          <div 
-            className="relative bg-[rgba(10,15,25,0.85)] backdrop-blur-xl border-[1px] p-5 rounded-3xl max-w-[350px] w-max"
-            style={{
-              borderColor: companionColor,
-              boxShadow: `0 0 20px ${companionColor}40, inset 0 0 10px ${companionColor}20`,
-            }}
-          >
-            {/* Scanline effect */}
-            <div className="absolute inset-0 pointer-events-none opacity-20 rounded-3xl overflow-hidden" style={{ background: 'linear-gradient(to bottom, transparent 50%, rgba(255, 255, 255, 0.1) 51%)', backgroundSize: '100% 4px' }} />
-            
-            <div className="relative z-10 text-[13px] font-bold tracking-wide leading-relaxed drop-shadow-md mb-4 text-center" style={{ color: 'var(--text-primary)' }}>
-              {currentStepData ? (t(`tutorial.s${tutorialStep}` as any) || currentStepData.text) : ''}
-              {currentStepData?.id === 'tutorial-quest' && (
-                <div className="mt-3 p-2 bg-black/40 rounded border border-white/10 text-center font-mono tracking-widest text-[10px]" style={{ color: companionColor }}>
-                  MOBS KILLED: {kills} / 3
-                </div>
-              )}
-            </div>
-            
-            <div className="relative z-10 flex justify-between items-center mt-2 pt-3 border-t" style={{ borderColor: `${companionColor}40` }}>
-              <span className="text-[10px] uppercase font-mono tracking-widest" style={{ color: `${companionColor}aa` }}>{t('tutorial.step' as any)} {tutorialStep} / {steps.length}</span>
-              <div className="flex gap-2 items-center">
-                {tutorialStep > 1 && (
-                  <button
-                    onClick={handlePrevious}
-                    className="px-3 py-1 rounded-lg text-[10px] font-bold tracking-widest uppercase transition-colors hover:text-white"
-                    style={{ color: 'var(--text-muted)' }}
-                  >{t('tutorial.previous' as any)}</button>
-                )}
-                <button
-                  onClick={handleNext}
-                  className="px-3 py-1 rounded-lg text-[10px] font-bold tracking-widest uppercase transition-colors hover:text-white"
-                  style={{ color: 'var(--text-muted)' }}
-                >{t('tutorial.skip' as any)}</button>
-                {(!currentStepData?.actionRequired || actionCompleted) ? (
-                  <div className="relative">
-                    <div className="absolute inset-[-6px] pointer-events-none rounded-xl animate-ring-zoom-in" style={{ borderColor: companionColor }} />
-                    <button
-                      onClick={handleNext}
-                      className="relative px-5 py-1.5 rounded-lg text-[11px] font-black tracking-widest uppercase transition-colors shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:brightness-125 animate-pulse z-10"
-                      style={{
-                        backgroundColor: `${companionColor}40`,
-                        color: companionColor,
-                        border: `1px solid ${companionColor}`,
-                        boxShadow: `0 0 15px ${companionColor}80`
-                      }}
-                    >{t('tutorial.next' as any)}</button>
-                  </div>
-                ) : (
-                  <span className="text-[10px] font-mono tracking-widest animate-pulse" style={{ color: companionColor }}>{t('tutorial.awaitingInput' as any)}</span>
-                )}
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </AnimatePresence>
-      </div>
+      <TutorialChatBubble 
+        bobX={bobX}
+        bobY={bobY}
+        bubblePosition={bubblePosition}
+        notificationSettings={notificationSettings}
+        companionColor={companionColor}
+        tutorialStep={tutorialStep}
+        stepsLength={steps.length}
+        currentStepData={currentStepData}
+        actionCompleted={actionCompleted}
+        kills={kills}
+        handleNext={handleNext}
+        handlePrevious={handlePrevious}
+      />
       </motion.div>
     );
   };

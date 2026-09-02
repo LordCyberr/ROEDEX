@@ -1,6 +1,7 @@
 export interface Vector2 {
   x: number;
   y: number;
+  z?: number;
 }
 
 export interface EnemyEntity {
@@ -35,6 +36,7 @@ export interface LootDrop {
   quantity: number;
   pos: Vector2;
   spawnTime: number;
+  zone?: string;
 }
 
 export interface SpawnStateEvent {
@@ -85,6 +87,7 @@ export interface DropSpawnEvent {
   itemName: string;
   quantity: number;
   pos: Vector2;
+  zone?: string;
 }
 
 export interface RespawnTimer {
@@ -107,9 +110,13 @@ export interface OverlayNotification {
   id: string;
   title?: string;
   message: string;
-  type?: 'info' | 'success' | 'warning' | 'error' | 'rare' | 'mythic' | 'combat' | 'chat' | 'boot-sequence' | 'system-online' | string;
+  type?: 'info' | 'success' | 'warning' | 'error' | 'rare' | 'mythic' | 'uncommon' | 'combat' | 'chat' | 'boot-sequence' | 'system-online' | string;
   emotion?: 'happy' | 'alert' | 'mining' | 'combat' | 'idle' | 'talking';
   timestamp: number;
+  persistent?: boolean;
+  duration?: number;
+  tag?: string;
+  qty?: number;
 }
 
 export interface RunStats {
@@ -126,4 +133,6 @@ export interface RunStats {
   oresMined: number;
   plantsHarvested: number;
   zonesVisited: string[];
+  zone?: string;
+  topLoot?: Array<{ name: string; qty: number; value: number }>;
 }

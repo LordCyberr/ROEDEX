@@ -13,6 +13,25 @@ const SELECT_LANGUAGE_TEXTS = [
   "언어 선택"
 ];
 
+const DIAGNOSTIC_LOGS = [
+  { pct: 0, text: "ROEDEX KERNEL BOOT LOADER v0.0.5..." },
+  { pct: 8, text: "DETECTING CHROMIUM EXTENSION CONTEXT..." },
+  { pct: 15, text: "ESTABLISHING WEBSOCKET PACKET INTERCEPTOR..." },
+  { pct: 22, text: "ZOD SCHEMAS VALIDATED & INITIALIZED..." },
+  { pct: 30, text: "ALLOCATING LOCAL MEMORY BUFFER (0x7FFF0A91)..." },
+  { pct: 38, text: "RESOLVING HOST ENDPOINTS..." },
+  { pct: 45, text: "DECODING SPATIAL FOG-OF-WAR CELL DATA..." },
+  { pct: 52, text: "INDEXEDDB LOCAL METRICS DB ATTACHED..." },
+  { pct: 60, text: "MERGING EMERGENCY LOCALSTORAGE BACKUPS..." },
+  { pct: 68, text: "LOADING AI EMOTION SYNAPSE WEIGHTS..." },
+  { pct: 75, text: "CALIBRATING A* OCTILE HEURISTICS..." },
+  { pct: 82, text: "POP-OUT WINDOW BOUNDARY CONSTRAINTS SNAPPED..." },
+  { pct: 90, text: "POLISHING NEON THEMES & GLASSMORPHISM UTILITIES..." },
+  { pct: 97, text: "SYSTEM STATUS: SECURE AND OPERATIONAL." }
+];
+
+const COMPANION_COLORS = ['#ff6b00', '#ef4444', '#06b6d4', '#84cc16'];
+
 interface BootSequenceProps {
   onComplete: (companionId: CompanionId) => void;
   playerName?: string;
@@ -21,6 +40,8 @@ interface BootSequenceProps {
 
 export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerName = 'UNKNOWN_USER', currentZone = 'UNKNOWN_SECTOR' }) => {
   const { t } = useTranslation();
+  const [cycleColorIndex, setCycleColorIndex] = useState(0);
+  const [visibleLogs, setVisibleLogs] = useState<{ time: string; text: string }[]>([]);
   const displayPlayerName = (playerName && playerName !== 'UNKNOWN_USER') ? playerName.toUpperCase() : 'SLAYER';
   const displayZone = (currentZone && currentZone !== 'Unknown') ? currentZone.toUpperCase() : 'UNKNOWN_SECTOR';
 
@@ -46,7 +67,7 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
   const [progress, setProgress] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
   const [isReady, setIsReady] = useState(false);
-  const [displayText, setDisplayText] = useState('');
+
   const [hoveredId, setHoveredId] = useState<CompanionId | null>(null);
   const [selectedCompanion, setSelectedCompanion] = useState<CompanionId | null>(null);
   const [isFlashing, setIsFlashing] = useState(false);
@@ -60,6 +81,14 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
     return () => clearInterval(interval);
   }, [hasSelectedLanguage]);
 
+  useEffect(() => {
+    if (hasSelectedLanguage) return;
+    const colorInterval = setInterval(() => {
+      setCycleColorIndex(prev => (prev + 1) % COMPANION_COLORS.length);
+    }, 1500);
+    return () => clearInterval(colorInterval);
+  }, [hasSelectedLanguage]);
+
   const handleSelectLanguage = (lang: string) => {
     useSettingsStore.getState().setLanguage(lang as any);
     setHasSelectedLanguage(true);
@@ -70,7 +99,7 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
     setIsReady(false);
     setProgress(0);
     setMessageIndex(0);
-    setDisplayText('');
+
     setSelectedCompanion(null);
     setHoveredId(null);
   };
@@ -87,31 +116,6 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [hasSelectedLanguage]);
 
-  // Typewriter effect for messages
-  useEffect(() => {
-    if (!hasSelectedLanguage) return;
-    
-    let currentChar = 0;
-    
-    const typeInterval = setInterval(() => {
-      const msgs = bootMessagesRef.current;
-      if (messageIndex >= msgs.length) {
-        clearInterval(typeInterval);
-        return;
-      }
-      
-      const targetText = msgs[messageIndex];
-      setDisplayText(targetText.substring(0, currentChar + 1));
-      
-      if (currentChar < targetText.length) {
-        currentChar++;
-      } else {
-        clearInterval(typeInterval);
-      }
-    }, 30);
-
-    return () => clearInterval(typeInterval);
-  }, [messageIndex, hasSelectedLanguage]);
 
   // Loading progress and message swapping
   useEffect(() => {
@@ -137,6 +141,13 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
         setMessageIndex(msgIdx);
       }
 
+      // Add log dynamically
+      const triggeredLogs = DIAGNOSTIC_LOGS.filter(l => p >= l.pct).map(l => {
+        const timeOffset = (l.pct * 0.08).toFixed(2);
+        return { time: `+${timeOffset}s`, text: l.text };
+      });
+      setVisibleLogs(triggeredLogs);
+
       if (p >= 100) {
         setIsReady(true);
         setMessageIndex(msgs.length - 1);
@@ -153,8 +164,19 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, scale: 1.1, filter: 'blur(10px)' }}
       transition={{ duration: 0.8, ease: 'easeInOut' }}
-      className="fixed inset-0 z-[9999999] bg-[#050505] flex flex-col items-center justify-center overflow-hidden pointer-events-auto"
+      className="fixed inset-0 z-[9999999] flex flex-col items-center justify-center overflow-hidden pointer-events-auto bg-[#050505]"
     >
+      {/* Dynamic Hover Glow Layer (Opaque #050505 base prevents game screen bleed-through) */}
+      {Object.values(COMPANIONS).map(comp => (
+        <div
+          key={`bg-glow-${comp.id}`}
+          className="absolute inset-0 pointer-events-none transition-opacity duration-700"
+          style={{
+            background: `radial-gradient(circle at center, ${comp.color}20 0%, transparent 75%)`,
+            opacity: hoveredId === comp.id ? 1 : 0
+          }}
+        />
+      ))}
       {/* Subtle background scanlines */}
       <div 
         className="absolute inset-0 opacity-10 pointer-events-none" 
@@ -197,13 +219,23 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
               </button>
             </div>
 
-            <div className="flex flex-col items-center gap-2 mb-8">
+            <div className="flex flex-col items-center gap-2 mb-4">
               <h1 className="font-black text-6xl sm:text-8xl tracking-[0.4em] ml-[0.4em] text-[#22d3ee] drop-shadow-[0_0_30px_rgba(34,211,238,0.8)] opacity-90">
                 ROEDEX
               </h1>
             </div>
 
-            <div className="h-10 mt-4 overflow-hidden flex items-center justify-center relative w-full mb-2">
+            {/* Cycling color orb on select language screen */}
+            <div className="w-24 h-24 relative flex items-center justify-center pointer-events-none mb-2">
+              <motion.div 
+                className="absolute inset-[-15px] rounded-full border border-dashed border-[#22d3ee]/20"
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 15, ease: "linear" }}
+              />
+              <ParticleGlobe color={COMPANION_COLORS[cycleColorIndex]} isTalking={false} mood={'idle'} forceHighFPS={true} />
+            </div>
+
+            <div className="h-10 mt-2 overflow-hidden flex items-center justify-center relative w-full mb-2">
               <AnimatePresence mode="wait">
                 <motion.h2 
                   key={langTextIndex}
@@ -408,13 +440,23 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
       {/* Boot Logs */}
       {hasSelectedLanguage && !isReady && (
         <div className="flex flex-col items-center justify-center z-10 w-full max-w-lg px-8">
+          {/* Scrollable diagnostic console logs */}
+          <div className="w-full h-24 bg-black/60 rounded-xl border border-[#22d3ee]/20 p-3 mb-4 font-mono text-[9px] text-[#22d3ee]/80 overflow-hidden flex flex-col justify-end gap-1.5 select-none shadow-[0_0_20px_rgba(34,211,238,0.06)_inset]">
+            {visibleLogs.slice(-4).map((log, idx) => (
+              <div key={idx} className="flex gap-2 truncate items-center">
+                <span className="text-[#22d3ee]/40">[{log.time}]</span>
+                <span className="text-white/80">{log.text}</span>
+              </div>
+            ))}
+          </div>
+
           <div className="w-full flex justify-between items-end mb-2 font-mono text-[10px] tracking-widest text-[#22d3ee]">
             <span className="uppercase opacity-70">{t('bootSequence.systemBoot')}</span>
             <span className="font-bold">{progress}%</span>
           </div>
         
           {/* Progress Bar */}
-          <div className="w-full h-1 bg-white/10 overflow-hidden mb-8 rounded-full">
+          <div className="w-full h-1 bg-white/10 overflow-hidden mb-6 rounded-full">
             <motion.div 
               className="h-full bg-[#22d3ee]"
               style={{ width: `${progress}%` }}
@@ -422,22 +464,6 @@ export const BootSequence: React.FC<BootSequenceProps> = ({ onComplete, playerNa
               animate={{ width: `${progress}%` }}
               transition={{ ease: 'linear' }}
             />
-          </div>
-
-          {/* Typing Text */}
-          <div className="h-8 flex items-center justify-center text-center">
-            <AnimatePresence mode="wait">
-              <motion.p 
-                key="loading-text"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="font-mono text-xs uppercase tracking-widest text-white/60"
-              >
-                {displayText}
-                <span className="animate-pulse">_</span>
-              </motion.p>
-            </AnimatePresence>
           </div>
         </div>
       )}

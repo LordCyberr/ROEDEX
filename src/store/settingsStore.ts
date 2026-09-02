@@ -2,83 +2,13 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { UISlice } from './storeTypes';
 import { createUISlice } from './slices/uiSlice';
+import { createIndexedDBStorage } from './indexedDBStorage';
 
-const openDB = (): Promise<IDBDatabase> => {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open('roedex-settings-db', 1);
-    request.onupgradeneeded = () => {
-      request.result.createObjectStore('keyval');
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-};
+const SETTINGS_KEY = 'roedex-settings-storage';
 
-const originalSetItem = async (name: string, value: string): Promise<void> => {
-  try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction('keyval', 'readwrite');
-      const store = transaction.objectStore('keyval');
-      const request = store.put(value, name);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
-  } catch (e) {
-    console.warn('[ROEDEX] Settings IndexedDB set failed, falling back to localStorage', e);
-    localStorage.setItem(name, value);
-  }
-};
+const indexedDBStorage = createIndexedDBStorage('roedex-settings-db', 1000, SETTINGS_KEY);
 
-let writeTimeout: ReturnType<typeof setTimeout> | null = null;
-let pendingValue: string | null = null;
 
-const debouncedSetItem = async (name: string, value: string): Promise<void> => {
-  pendingValue = value;
-  if (writeTimeout) return;
-  writeTimeout = setTimeout(async () => {
-    writeTimeout = null;
-    if (pendingValue) {
-      await originalSetItem(name, pendingValue);
-      pendingValue = null;
-    }
-  }, 1000);
-};
-
-const indexedDBStorage = {
-  getItem: async (name: string): Promise<string | null> => {
-    try {
-      const db = await openDB();
-      return new Promise((resolve, reject) => {
-        const transaction = db.transaction('keyval', 'readonly');
-        const store = transaction.objectStore('keyval');
-        const request = store.get(name);
-        request.onsuccess = () => {
-          const result = (request.result as string) || null;
-          resolve(result);
-        };
-        request.onerror = () => reject(request.error);
-      });
-    } catch (e) {
-      return localStorage.getItem(name);
-    }
-  },
-  setItem: debouncedSetItem,
-  removeItem: async (name: string): Promise<void> => {
-    try {
-      const db = await openDB();
-      return new Promise((resolve, reject) => {
-        const transaction = db.transaction('keyval', 'readwrite');
-        const store = transaction.objectStore('keyval');
-        const request = store.delete(name);
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
-      });
-    } catch (e) {
-      localStorage.removeItem(name);
-    }
-  },
-};
 
 export const useSettingsStore = create<UISlice>()(
   persist(
@@ -96,11 +26,13 @@ export const useSettingsStore = create<UISlice>()(
           if (dims['npcs_horizontal']?.height === 450) delete dims['npcs_horizontal'].height;
           if (dims['quests_horizontal']?.height === 400) delete dims['quests_horizontal'].height;
 
-          // Clear old vertical default widths so users get the new 220px default
-          if (dims['session_vertical']?.width === 300) delete dims['session_vertical'].width;
-          if (dims['settings_vertical']?.width === 340) delete dims['settings_vertical'].width;
-          if (dims['npcs_vertical']?.width === 300) delete dims['npcs_vertical'].width;
-          if (dims['quests_vertical']?.width === 300) delete dims['quests_vertical'].width;
+          // Clear fixed vertical heights so container auto-expands & auto-collapses naturally
+          Object.keys(dims).forEach(key => {
+            if (key.endsWith('_vertical')) {
+              if (dims[key]?.width && dims[key].width >= 300) delete dims[key].width;
+              if (dims[key]?.height) delete dims[key].height;
+            }
+          });
         }
 
         const notifSettings = {
@@ -122,29 +54,10 @@ export const useSettingsStore = create<UISlice>()(
           ...(persistedState?.armorUISettings || {})
         };
 
-
-
-        const mergedChestWidgetPositions = {
-          ...currentState.chestWidgetPositions,
-          ...(persistedState?.chestWidgetPositions || {})
+        const targetSettings = {
+          ...currentState.targetUISettings,
+          ...(persistedState?.targetUISettings || {})
         };
-        
-        if (persistedState?.chestWidgetPositions) {
-          mergedChestWidgetPositions.inventory = {
-            ...currentState.chestWidgetPositions.inventory,
-            ...(persistedState.chestWidgetPositions.inventory || {})
-          };
-          mergedChestWidgetPositions.chest = {
-            ...currentState.chestWidgetPositions.chest,
-            ...(persistedState.chestWidgetPositions.chest || {})
-          };
-          mergedChestWidgetPositions.closeZone = {
-            ...currentState.chestWidgetPositions.closeZone,
-            ...(persistedState.chestWidgetPositions.closeZone || {})
-          };
-        }
-
-        const mergedMinimalChestHudOpacity = persistedState?.minimalChestHudOpacity ?? currentState.minimalChestHudOpacity;
 
         const mergedOverlayPosition = {
           ...currentState.overlayPosition,
@@ -160,15 +73,16 @@ export const useSettingsStore = create<UISlice>()(
           ...currentState.companionPosition,
           ...(persistedState?.companionPosition || {})
         };
-        
-        const mergedRadarMinimapPosition = {
-          ...currentState.radarMinimapPosition,
-          ...(persistedState?.radarMinimapPosition || {})
+
+        const mergedMapSettings = {
+          ...currentState.mapSettings,
+          ...(persistedState?.mapSettings || {})
         };
 
-        const mergedShowRadarMinimap = persistedState?.showRadarMinimap ?? currentState.showRadarMinimap;
-
-
+        const mergedRecordingSettings = {
+          ...currentState.recordingSettings,
+          ...(persistedState?.recordingSettings || {})
+        };
 
         return {
           ...currentState,
@@ -176,16 +90,33 @@ export const useSettingsStore = create<UISlice>()(
           notificationSettings: notifSettings,
           weaponUISettings: weaponSettings,
           armorUISettings: armorSettings,
-
-          minimalChestHudOpacity: mergedMinimalChestHudOpacity,
-          chestWidgetPositions: mergedChestWidgetPositions,
+          targetUISettings: targetSettings,
           overlayPosition: mergedOverlayPosition,
           orbPosition: mergedOrbPosition,
           companionPosition: mergedCompanionPosition,
-          radarMinimapPosition: mergedRadarMinimapPosition,
-          showRadarMinimap: mergedShowRadarMinimap,
+          mapSettings: mergedMapSettings,
+          recordingSettings: mergedRecordingSettings,
         };
       }
     }
   )
 );
+
+// Sync companion theme to DOM whenever activeCompanion changes (or on initial hydration).
+// This replaces the DOM side-effect that was previously inside setActiveCompanion's set() call.
+if (typeof document !== 'undefined') {
+  const applyTheme = (companion: string) => {
+    document.documentElement.setAttribute('data-theme', `${companion}-theme`);
+  };
+  // Apply persisted theme immediately after hydration
+  applyTheme(useSettingsStore.getState().activeCompanion);
+
+  // Subscribe to changes — compare only the activeCompanion field to avoid extra work
+  let _prevCompanion = useSettingsStore.getState().activeCompanion;
+  useSettingsStore.subscribe((state) => {
+    if (state.activeCompanion !== _prevCompanion) {
+      _prevCompanion = state.activeCompanion;
+      applyTheme(state.activeCompanion);
+    }
+  });
+}

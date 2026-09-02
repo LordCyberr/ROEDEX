@@ -6,6 +6,21 @@ import { updateWeaponDurabilityState } from '../index';
 
 export function handleEntityEvent(eventName: string, payload: any, store: any) {
   switch (eventName) {
+    // Dedicated death events — force isDead:true through the same MobTracker path
+    // so kill counter, timers, and UI all update correctly.
+    case 'enemy_death':
+    case 'mob_die':
+    case 'entity_dead': {
+      const data = payload?.data || payload;
+      if (data?.entityIndex !== undefined || data?.id !== undefined) {
+        MobTracker.handleDamage(
+          { ...payload, data: { ...(payload?.data || payload), isDead: true, enemyHp: 0 } },
+          store.currentZone
+        );
+      }
+      break;
+    }
+
     case 'enemy_respawn':
     case 'enemy_spawn': {
       if (TrackerValidator.validateEnemySpawn(payload as EnemyRespawnEvent)) {
@@ -21,6 +36,19 @@ export function handleEntityEvent(eventName: string, payload: any, store: any) {
       }
       if (TrackerValidator.validateCombatHit(payload)) {
         MobTracker.handleDamage(payload, store.currentZone);
+      }
+      if (Array.isArray(d?.drops)) {
+        d.drops.forEach((drop: any) => {
+          if (drop.itemName || drop.itemId) {
+            store.addLoot({
+              dropId: drop.dropId || Math.random().toString(36).substring(7),
+              itemName: drop.itemName || drop.itemId,
+              quantity: drop.quantity || 1,
+              pos: payload?.enemyPosition || store.playerPosition || { x: 0, y: 0 },
+              spawnTime: Date.now()
+            });
+          }
+        });
       }
       break;
     }

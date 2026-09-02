@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from 'react';
+import { rafScheduler } from '../../core/RafScheduler';
+import { useSettingsStore } from '../../store/settingsStore';
 
 interface MatrixRainProps {
   color?: string;
@@ -13,7 +15,12 @@ export const MatrixRain: React.FC<MatrixRainProps> = ({
   density = 20,
   speed = 1
 }) => {
+  const performanceMode = useSettingsStore((state) => state.performanceMode);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  if (performanceMode) {
+    return null;
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -47,10 +54,11 @@ export const MatrixRain: React.FC<MatrixRainProps> = ({
       drops[i] = Math.random() * -100; // Start at random negative y positions
     }
 
-    let animationFrameId: number;
     let lastDrawTime = 0;
 
-    const draw = (timestamp: number) => {
+    // Registered with the shared RafScheduler — no self-managed RAF loop.
+    // Internal throttle (33ms / speed) is preserved via the timestamp check.
+    const draw = (_dt: number, timestamp: number) => {
       // Throttle frame rate slightly to make it look like retro terminal (approx 30fps)
       if (timestamp - lastDrawTime > 33 / speed) {
         // Black bg with opacity to create trail effect
@@ -79,14 +87,13 @@ export const MatrixRain: React.FC<MatrixRainProps> = ({
         }
         lastDrawTime = timestamp;
       }
-      animationFrameId = requestAnimationFrame(draw);
     };
 
-    animationFrameId = requestAnimationFrame(draw);
+    const unsubscribe = rafScheduler.register(draw);
 
     return () => {
       window.removeEventListener('resize', resize);
-      cancelAnimationFrame(animationFrameId);
+      unsubscribe();
     };
   }, [color, density, speed]);
 

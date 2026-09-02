@@ -8,7 +8,28 @@ export const translations = {
       "players": "Online Players",
       "npcTracker": "NPC Tracker",
       "quests": "Quests",
-      "settings": "Settings"
+      "settings": "Settings",
+      "profile": "Profile",
+      "chest": "Chest & Inventory",
+      "roepedia": "ROEpedia"
+    },
+    "bazaar": {
+      "title": "ROEDEX BAZAAR",
+      "subtitle": "Real-time Global Market Intelligence",
+      "tabBazaar": "Bazaar",
+      "tabGlobalTrades": "Global Trades",
+      "tabAnalytics": "Analytics",
+      "searchPlaceholder": "Search items...",
+      "noItemsFound": "No market items found.",
+      "totalListed": "Total Listed",
+      "resellValue": "Resell Value",
+      "totalMarketWorth": "Total Market Worth",
+      "activeOrders": "Active Listed Orders",
+      "unitPrice": "Unit Price",
+      "lastSale": "Last Sale",
+      "topVolume": "Top Volume Items (24h)",
+      "globalTradesFeed": "Global Trades Feed",
+      "noActiveListings": "No active listings."
     },
     "settings": {
       "enableDevMode": "Enable Developer Mode",
@@ -40,6 +61,13 @@ export const translations = {
       "minimizedOrbSize": "Minimized Orb Size",
       "minimizedIcon": "Minimized Icon",
       "trackingData": "Tracking & Data",
+      "mapTitle": "Map & Trail Recording",
+      "targetHealthBar": "Target Health Bar",
+      "alertSettings": "Alert Settings",
+      "whatToAnnounce": "What to Announce",
+      "minimizedOrb": "Minimized Orb",
+      "performance": "Performance",
+      "controlsHotkeys": "Controls & Hotkeys",
       "displayMode": "Display Mode",
       "sessionViewDesc": "Session view retains all discovered data continuously until manually reset.",
       "trackerColumns": "TRACKER COLUMNS",
@@ -135,7 +163,15 @@ export const translations = {
       "toggleLayoutHotkey": "Toggle Layout Hotkey",
       "toolWarnings": "Tool Warnings",
       "uiDesign": "Ui Design",
-      "zoneChanges": "Zone Changes"
+      "zoneChanges": "Zone Changes",
+      "notifyItems": "Item Notifications",
+      "notifyResources": "Resource Node Notifications",
+      "notifyLoot": "Loot Drop Notifications",
+      "rareItemToggles": "Rare Item Toggles",
+      "notifyRareMobDrops": "Rare Mob Drops",
+      "notifyRareOres": "Rare Ores",
+      "notifyRarePlants": "Rare Plants",
+      "mutedSpawnsItems": "Muted Spawns & Items"
     },
     "columns": {
       "name": "NAME",
@@ -153,7 +189,8 @@ export const translations = {
       "chests": "CHESTS",
       "bosses": "BOSSES",
       "respawns": "Respawns",
-      "blacksmith": "BLACKSMITH"
+      "blacksmith": "BLACKSMITH",
+      "mobDrops": "MOB DROPS"
     },
     "misc": {
       "noNpcsFound": "No NPCs found",
@@ -292,7 +329,7 @@ export const translations = {
       "runesToLevel": "Runes To Level",
       "total": "Total",
       "viewHistory": "View History",
-      "chestValueTooltip": "Chest Value Tooltip"
+      "chestValueTooltip": "Estimated value of all loot items currently in your inventory"
     },
     "overlay": {
       "storageWealth": "Storage Wealth",
@@ -348,6 +385,11 @@ export const translations = {
       "noRecords": "No records found."
     },
     "stats": {
+      "drawerTitle": "Quick Performance Stats",
+      "quickStats": "Quick Performance Stats",
+      "activeSession": "active session",
+      "topLoot": "Top Session Drops",
+      "noLootYet": "No items collected in this session yet.",
       "openStatsWindow": "Open Stats Window",
       "clearHistory": "Clear History",
       "runes": "Runes",
@@ -364,7 +406,24 @@ export const translations = {
       "startNewRun": "Start New Run",
       "totalWorth": "Total Worth",
       "resetLoot": "Reset Loot",
-      "viewPastRuns": "View Past Runs"
+      "viewPastRuns": "View Past Runs",
+      "sessionTime": "Session Time",
+      "recentLoot": "Recent Loot",
+      "lootWorth": "Loot Worth",
+      "runesFound": "Runes Found",
+      "totalValue": "Total Value",
+      "profitPerHour": "Profit / Hour",
+      "profile": "Profile",
+      "xpAndLevel": "XP & Level",
+      "run": "Run",
+      "dashboard": "Dashboard",
+      "chest": "Chest",
+      "globalBank": "Global Bank"
+    },
+    "filters": {
+      "all": "All",
+      "rare": "Rare",
+      "nearby": "Nearby"
     },
     "tutorial": {
       "step": "Step",
@@ -421,7 +480,13 @@ export const translations = {
     "chestTab": {
       "includeRunesDesc": "Include Runes in Value",
       "totalValue": "Total Value",
-      "totalValueDesc": "Estimated total worth"
+      "totalValueDesc": "Estimated total worth",
+      "combined": "Combined",
+      "backpack": "Backpack",
+      "chest": "Chest",
+      "sortValue": "Value",
+      "sortCount": "Count",
+      "sortRarity": "Rarity"
     },
     "settingsGroup": {
       "appearance": "Appearance",
@@ -469,6 +534,79 @@ export const translations = {
     },
     "quests": {
       "upcomingFeature": "Upcoming Feature"
+    },
+    "search": {
+      "placeholder": "Search items, market listings, tabs... (Ctrl+K)",
+      "empty": "Type to search across items, tabs, and market...",
+      "noResults": "No results found",
+      "categories": {
+        "chest": "Chest Inventory",
+        "market": "Market Listing",
+        "tab": "Navigation Tab"
+      }
+    },
+    "market": {
+      "analytics": {
+        "title": "Marketplace Analytics & Trends",
+        "item": "Item",
+        "floorPrice": "Floor Price",
+        "avg7d": "7d Avg",
+        "change7d": "7d % Change",
+        "change30d": "30d % Change",
+        "volume": "Volume"
+      }
+    },
+    "chest": {
+      "settings": {
+        "itemsPerPage": "Items Per Page",
+        "all": "All"
+      }
+    },
+    "itemCard": {
+      "resellValue": "Floor / Resell",
+      "unpriced": "N/A",
+      "trend7d": "7d Trend",
+      "dropSources": "Drop Sources"
+    },
+    "minimap": {
+      "title": "Map Settings",
+      "trailColor": "Trail Color",
+      "mapSize": "Map Size",
+      "opacity": "Opacity",
+      "shape": "Shape",
+      "shapes": {
+        "circle": "Circle",
+        "square": "Square",
+        "rectangle": "Rectangle"
+      },
+      "toggles": {
+        "fogOfWar": "Fog of War",
+        "showZonePill": "Zone Pill",
+        "showDiscoveryBar": "Discovery Bar",
+        "discoveryBeam": "Torch Rays",
+        "showOffScreenRadar": "Radar",
+        "showGrid": "Grid",
+        "showCompass": "Compass",
+        "showMobs": "Enemies",
+        "showPortals": "Portals",
+        "showDrops": "Drops",
+        "showCommon": "Common",
+        "showRare": "Rare",
+        "showMythical": "Mythical"
+      },
+      "discovered": "Discovered",
+      "tools": "Map Tools",
+      "dragToMove": "Drag to move",
+      "exitFullscreen": "Exit Fullscreen",
+      "fullscreen": "Fullscreen",
+      "stopRecording": "Stop Recording",
+      "recordTrail": "Record Trail",
+      "dragMove": "Drag & Move Minimap",
+      "zoomIn": "Zoom In",
+      "zoomOut": "Zoom Out",
+      "cameraLocked": "Camera Locked to Player",
+      "cameraFree": "Camera Free",
+      "reCenter": "Re-center Camera"
     }
   },
   "es": {
@@ -480,7 +618,28 @@ export const translations = {
       "players": "Jugadores en Línea",
       "npcTracker": "Rastreador de NPCs",
       "quests": "Misiones",
-      "settings": "Ajustes"
+      "settings": "Ajustes",
+      "profile": "Perfil",
+      "chest": "Cofre e Inventario",
+      "roepedia": "ROEpedia"
+    },
+    "bazaar": {
+      "title": "ROEDEX BAZAR",
+      "subtitle": "Inteligencia de Mercado Global en Tiempo Real",
+      "tabBazaar": "Bazar",
+      "tabGlobalTrades": "Comercio Global",
+      "tabAnalytics": "Analítica",
+      "searchPlaceholder": "Buscar objetos...",
+      "noItemsFound": "No se encontraron objetos.",
+      "totalListed": "Total Listado",
+      "resellValue": "Valor de Reventa",
+      "totalMarketWorth": "Valor Total del Mercado",
+      "activeOrders": "Órdenes Activas",
+      "unitPrice": "Precio Unitario",
+      "lastSale": "Última Venta",
+      "topVolume": "Mayor Volumen (24h)",
+      "globalTradesFeed": "Feed de Transacciones",
+      "noActiveListings": "Sin publicaciones activas."
     },
     "settings": {
       "enableDevMode": "Habilitar Modo Desarrollador",
@@ -512,6 +671,13 @@ export const translations = {
       "minimizedOrbSize": "Tamaño del Orbe",
       "minimizedIcon": "Icono Minimizado",
       "trackingData": "Rastreo y Datos",
+      "mapTitle": "Mapa y Registro de Senderos",
+      "targetHealthBar": "Barra de Vida del Objetivo",
+      "alertSettings": "Ajustes de Alertas",
+      "whatToAnnounce": "Qué Anunciar",
+      "minimizedOrb": "Orbe Minimizado",
+      "performance": "Rendimiento",
+      "controlsHotkeys": "Controles y Teclas Rápidas",
       "displayMode": "Modo de Visualización",
       "sessionViewDesc": "La vista de sesión retiene todos los datos descubiertos continuamente hasta que se reinicia manualmente.",
       "trackerColumns": "COLUMNAS DEL RASTREADOR",
@@ -606,7 +772,16 @@ export const translations = {
       "toggleLayoutHotkey": "Alternar tecla de acceso rápido de diseño",
       "toolWarnings": "Advertencias de herramientas",
       "uiDesign": "Diseño de interfaz de usuario",
-      "zoneChanges": "Cambios de zona"
+      "zoneChanges": "Cambios de zona",
+      "notifyItems": "Notificaciones de Objetos",
+      "notifyResources": "Notificaciones de Nodos de Recursos",
+      "notifyLoot": "Notificaciones de Botín Caído",
+      "rareItemToggles": "Interruptores de Objetos Raros",
+      "notifyRareMobDrops": "Botines Raros de Monstruos",
+      "notifyRareOres": "Minerales Raros",
+      "notifyRarePlants": "Plantas Raras",
+      "mutedSpawnsItems": "Generaciones y Objetos Silenciados",
+      "cryptoWallets": "Direcciones de Cripto"
     },
     "columns": {
       "name": "NOMBRE",
@@ -624,7 +799,8 @@ export const translations = {
       "chests": "COFRES",
       "bosses": "JEFES",
       "respawns": "Reapariciones",
-      "blacksmith": "HERRERO"
+      "blacksmith": "HERRERO",
+      "mobDrops": "BOTINES"
     },
     "misc": {
       "noNpcsFound": "No se encontraron NPCs",
@@ -763,7 +939,7 @@ export const translations = {
       "runesToLevel": "Runas para nivelar",
       "total": "Total",
       "viewHistory": "Ver historial",
-      "chestValueTooltip": "Sugerencia Valor Cofre"
+      "chestValueTooltip": "Valor estimado de todos los objetos en tu inventario"
     },
     "overlay": {
       "storageWealth": "Riqueza de almacenamiento",
@@ -825,17 +1001,39 @@ export const translations = {
       "lootWorth": "Valor de Botín",
       "searchEntries": "Buscar...",
       "inventoryEmpty": "Inventario Vacío",
-      "noLoot": "Sin Botín"
+      "noLoot": "Sin Botín",
+      "drawerTitle": "Estadísticas Rápidas de Rendimiento",
+      "quickStats": "Estadísticas Rápidas de Rendimiento",
+      "activeSession": "sesión activa",
+      "topLoot": "Mejores Caídas de la Sesión",
+      "noLootYet": "Aún no se han recolectado objetos en esta sesión."
     },
     "overlayContainer": {
       "poppedOut": "Esta pestaña ha aparecido"
     },
     "sessionTab": {
-      "finishRun": "Finalizar ejecución",
-      "startNewRun": "Iniciar nueva ejecución",
-      "totalWorth": "Valor total",
-      "resetLoot": "Restablecer Botín",
-      "viewPastRuns": "Ver Ejecuciones Anteriores"
+      "finishRun": "Terminar Carrera",
+      "startNewRun": "Empezar Nueva Carrera",
+      "totalWorth": "Valor Total",
+      "resetLoot": "Reiniciar Botín",
+      "viewPastRuns": "Ver Carreras Pasadas",
+      "sessionTime": "Tiempo de Sesión",
+      "recentLoot": "Botín Reciente",
+      "lootWorth": "Valor del Botín",
+      "runesFound": "Runas Encontradas",
+      "totalValue": "Valor Total",
+      "profitPerHour": "Ganancia / Hora",
+      "profile": "Perfil",
+      "xpAndLevel": "XP y Nivel",
+      "run": "Carrera",
+      "dashboard": "Panel",
+      "chest": "Cofre",
+      "globalBank": "Banco Global"
+    },
+    "filters": {
+      "all": "Todos",
+      "rare": "Raro",
+      "nearby": "Cercano"
     },
     "tutorial": {
       "step": "Paso",
@@ -892,7 +1090,13 @@ export const translations = {
     "chestTab": {
       "includeRunesDesc": "Incluir Runas en el Valor",
       "totalValue": "Valor Total",
-      "totalValueDesc": "Valor total estimado"
+      "totalValueDesc": "Valor total estimado",
+      "combined": "Combinado",
+      "backpack": "Mochila",
+      "chest": "Cofre",
+      "sortValue": "Valor",
+      "sortCount": "Cantidad",
+      "sortRarity": "Rareza"
     },
     "settingsGroup": {
       "appearance": "Apariencia",
@@ -940,6 +1144,79 @@ export const translations = {
     },
     "quests": {
       "upcomingFeature": "Próxima Función"
+    },
+    "search": {
+      "placeholder": "Buscar objetos, listados del mercado, pestañas... (Ctrl+K)",
+      "empty": "Escribe para buscar objetos, pestañas y mercado...",
+      "noResults": "No se encontraron resultados",
+      "categories": {
+        "chest": "Inventario del Cofre",
+        "market": "Listado del Mercado",
+        "tab": "Pestana de Navegacion"
+      }
+    },
+    "market": {
+      "analytics": {
+        "title": "Análisis y Tendencias del Mercado",
+        "item": "Objeto",
+        "floorPrice": "Precio Base",
+        "avg7d": "Prom. 7d",
+        "change7d": "Cambio % 7d",
+        "change30d": "Cambio % 30d",
+        "volume": "Volumen"
+      }
+    },
+    "chest": {
+      "settings": {
+        "itemsPerPage": "Objetos por Página",
+        "all": "Todos"
+      }
+    },
+    "itemCard": {
+      "resellValue": "Precio Base / Reventa",
+      "unpriced": "N/A",
+      "trend7d": "Tendencia 7d",
+      "dropSources": "Fuentes de Caída"
+    },
+    "minimap": {
+      "title": "Ajustes de Mapa",
+      "trailColor": "Color de Rastro",
+      "mapSize": "Tamaño del Mapa",
+      "opacity": "Opacidad",
+      "shape": "Forma",
+      "shapes": {
+        "circle": "Círculo",
+        "square": "Cuadrado",
+        "rectangle": "Rectángulo"
+      },
+      "toggles": {
+        "fogOfWar": "Niebla de Guerra",
+        "showZonePill": "Píldora de Zona",
+        "showDiscoveryBar": "Barra de Descubrimiento",
+        "discoveryBeam": "Rayos de Antorcha",
+        "showOffScreenRadar": "Radar",
+        "showGrid": "Cuadrícula",
+        "showCompass": "Brújula",
+        "showMobs": "Enemigos",
+        "showPortals": "Portales",
+        "showDrops": "Botines",
+        "showCommon": "Común",
+        "showRare": "Raro",
+        "showMythical": "Mítico"
+      },
+      "discovered": "Descubierto",
+      "tools": "Herramientas de Mapa",
+      "dragToMove": "Arrastrar para mover",
+      "exitFullscreen": "Salir de Pantalla Completa",
+      "fullscreen": "Pantalla Completa",
+      "stopRecording": "Detener Grabación",
+      "recordTrail": "Grabar Rastro",
+      "dragMove": "Arrastrar y Mover Mapa",
+      "zoomIn": "Acercar",
+      "zoomOut": "Alejar",
+      "cameraLocked": "Cámara Fijada al Jugador",
+      "cameraFree": "Cámara Libre",
+      "reCenter": "Centrar Cámara"
     }
   },
   "ko": {
@@ -950,7 +1227,11 @@ export const translations = {
       "npcs": "NPC 및 플레이어",
       "npcTracker": "NPC 추적기",
       "quests": "퀘스트",
-      "settings": "설정"
+      "settings": "설정",
+      "players": "온라인 플레이어",
+      "profile": "프로필",
+      "chest": "상자 및 인벤토리",
+      "roepedia": "ROEpedia"
     },
     "settings": {
       "enableDevMode": "개발자 모드 활성화",
@@ -982,6 +1263,13 @@ export const translations = {
       "minimizedOrbSize": "최소화 오브 크기",
       "minimizedIcon": "최소화 아이콘",
       "trackingData": "추적 및 데이터",
+      "mapTitle": "지도 및 경로 기록",
+      "targetHealthBar": "대상 체력 바",
+      "alertSettings": "알림 설정",
+      "whatToAnnounce": "알림 대상 설정",
+      "minimizedOrb": "최소화 오브",
+      "performance": "성능",
+      "controlsHotkeys": "컨트롤 및 단축키",
       "displayMode": "표시 모드",
       "sessionViewDesc": "세션 보기는 수동으로 재설정할 때까지 발견된 모든 데이터를 지속적으로 유지합니다.",
       "trackerColumns": "추적기 열",
@@ -1076,7 +1364,16 @@ export const translations = {
       "toggleLayoutHotkey": "레이아웃 단축키 전환",
       "toolWarnings": "도구 경고",
       "uiDesign": "UI 디자인",
-      "zoneChanges": "구역 변경"
+      "zoneChanges": "구역 변경",
+      "notifyItems": "아이템 알림",
+      "notifyResources": "자원 노드 알림",
+      "notifyLoot": "드롭 아이템 알림",
+      "rareItemToggles": "희귀 아이템 토글",
+      "notifyRareMobDrops": "희귀 몬스터 드롭",
+      "notifyRareOres": "희귀 광석",
+      "notifyRarePlants": "희귀 식물",
+      "mutedSpawnsItems": "음소거된 스폰 및 아이템",
+      "cryptoWallets": "암호화폐 주소"
     },
     "columns": {
       "name": "이름",
@@ -1093,7 +1390,9 @@ export const translations = {
       "ores": "광석",
       "chests": "상자",
       "bosses": "보스",
-      "respawns": "리스폰"
+      "respawns": "리스폰",
+      "blacksmith": "대장장이",
+      "mobDrops": "전리품"
     },
     "misc": {
       "noNpcsFound": "NPC를 찾을 수 없습니다",
@@ -1222,7 +1521,7 @@ export const translations = {
       "fixesImprovements": "개선 사항 수정"
     },
     "loot": {
-      "chestWorth": "가슴 가치",
+      "chestWorth": "상자 보관함 총 가치",
       "count": "세다",
       "inventoryLootValue": "인벤토리 전리품 가치",
       "item": "목",
@@ -1232,14 +1531,14 @@ export const translations = {
       "runesToLevel": "레벨에 맞는 룬",
       "total": "총",
       "viewHistory": "기록 보기",
-      "chestValueTooltip": "상자 가치 툴팁"
+      "chestValueTooltip": "현재 인벤토리에 있는 모든 획득 아이템의 추정 가치"
     },
     "overlay": {
       "storageWealth": "저장소 재산",
       "backpack": "배낭",
       "chest": "상자",
       "backpackValue": "배낭 가치",
-      "chestValue": "가슴 가치",
+      "chestValue": "상자 보관함 가치",
       "finishToSave": "저장하려면 완료하세요",
       "noPastRuns": "과거 실행 없음",
       "pastRuns": "과거 실행"
@@ -1291,11 +1590,25 @@ export const translations = {
       "poppedOut": "This tab is popped out"
     },
     "sessionTab": {
-      "finishRun": "달리기 완료",
-      "startNewRun": "새로운 실행 시작",
+      "profile": "프로필",
+      "xpAndLevel": "경험치 및 레벨",
+      "run": "실행",
+      "dashboard": "대시보드",
+      "chest": "상자",
+      "globalBank": "글로벌 은행",
+      "finishRun": "실행 종료",
+      "startNewRun": "새 실행 시작",
       "totalWorth": "총 가치",
       "resetLoot": "전리품 초기화",
-      "viewPastRuns": "이전 실행 보기"
+      "viewPastRuns": "과거 실행 보기",
+      "itemsCollected": "수집한 아이템",
+      "recentRunes": "최근 룬",
+      "lootWorth": "전리품 가치",
+      "runesFound": "발견된 룬",
+      "sessionTime": "세션 시간",
+      "totalValue": "총 가치",
+      "profitPerHour": "시간당 수익",
+      "recentLoot": "최근 전리품"
     },
     "tutorial": {
       "step": "단계",
@@ -1352,7 +1665,13 @@ export const translations = {
     "chestTab": {
       "includeRunesDesc": "가치에 룬 포함",
       "totalValue": "총 가치",
-      "totalValueDesc": "예상 총 가치"
+      "totalValueDesc": "예상 총 가치",
+      "combined": "통합",
+      "backpack": "배낭",
+      "chest": "상자",
+      "sortValue": "가치",
+      "sortCount": "수량",
+      "sortRarity": "희귀도"
     },
     "settingsGroup": {
       "appearance": "외관",
@@ -1369,7 +1688,12 @@ export const translations = {
       "lootWorth": "전리품 가치",
       "openStatsWindow": "통계 창 열기",
       "runes": "룬",
-      "searchEntries": "항목 검색..."
+      "searchEntries": "항목 검색...",
+      "drawerTitle": "빠른 성능 통계",
+      "quickStats": "빠른 성능 통계",
+      "activeSession": "활성 세션",
+      "topLoot": "세션 최고 전리품",
+      "noLootYet": "이 세션에서 수집된 아이템이 아직 없습니다."
     },
     "ui": {
       "chest": "상자",
@@ -1383,7 +1707,20 @@ export const translations = {
       "settings": "설정",
       "toggle": "토글",
       "toggleLayout": "레이아웃 토글",
-      "whatsNew": "새로운 소식"
+      "whatsNew": "새로운 소식",
+      "required": "필요 항목",
+      "reward": "보상",
+      "recipe": "제작법",
+      "craftingRecipe": "제작 레시피",
+      "selectAQuestToViewDetails": "퀘스트를 선택하여 상세 정보 보기",
+      "noAvailableQuests": "수락 가능한 퀘스트 없음",
+      "noActiveQuests": "진행 중인 퀘스트 없음",
+      "noPlayersNearby": "주변에 플레이어 없음",
+      "interceptorDrops": "인터셉터 드롭",
+      "export": "내보내기",
+      "copyLogs": "로그 복사",
+      "factoryReset": "공장 초기화",
+      "dragMode": "드래그 모드"
     },
     "tabHover": {
       "global": "글로벌 데이터",
@@ -1394,8 +1731,99 @@ export const translations = {
       "loot": "상자 전리품",
       "settings": "설정"
     },
+    "bazaar": {
+      "title": "ROEDEX 바자르",
+      "subtitle": "실시간 글로벌 시장 정보",
+      "tabBazaar": "바자르",
+      "tabGlobalTrades": "글로벌 거래",
+      "tabAnalytics": "분석",
+      "searchPlaceholder": "아이템 검색...",
+      "noItemsFound": "아이템을 찾을 수 없습니다.",
+      "totalListed": "총 등록 수",
+      "resellValue": "재판매 가치",
+      "totalMarketWorth": "총 시장 가치",
+      "activeOrders": "활성 등록 주문",
+      "unitPrice": "단가",
+      "lastSale": "최근 판매",
+      "topVolume": "최고 거래량 (24시간)",
+      "globalTradesFeed": "글로벌 거래 피드",
+      "noActiveListings": "활성화된 등록이 없습니다."
+    },
     "quests": {
       "upcomingFeature": "예정된 기능"
+    },
+    "search": {
+      "placeholder": "아이템, 거래소 목록, 탭 검색... (Ctrl+K)",
+      "empty": "아이템, 탭, 거래소 검색어를 입력하세요...",
+      "noResults": "검색 결과가 없습니다",
+      "categories": {
+        "chest": "상자 인벤토리",
+        "market": "거래소 목록",
+        "tab": "탐색 탭"
+      }
+    },
+    "market": {
+      "analytics": {
+        "title": "거래소 분석 및 동향",
+        "item": "아이템",
+        "floorPrice": "최저가",
+        "avg7d": "7일 평균",
+        "change7d": "7일 변동률(%)",
+        "change30d": "30일 변동률(%)",
+        "volume": "거래량"
+      }
+    },
+    "chest": {
+      "settings": {
+        "itemsPerPage": "페이지당 아이템 수",
+        "all": "전체"
+      }
+    },
+    "itemCard": {
+      "resellValue": "최저가 / 재판매가",
+      "unpriced": "N/A",
+      "trend7d": "7일 동향",
+      "dropSources": "드롭 출처"
+    },
+    "minimap": {
+      "title": "미니맵 설정",
+      "trailColor": "이동 경로 색상",
+      "mapSize": "미니맵 크기",
+      "opacity": "불투명도",
+      "shape": "모양",
+      "shapes": {
+        "circle": "원형",
+        "square": "사각형",
+        "rectangle": "직사각형"
+      },
+      "toggles": {
+        "fogOfWar": "전쟁의 안개",
+        "showZonePill": "지역 표시기",
+        "showDiscoveryBar": "탐색 진행도",
+        "discoveryBeam": "손전등 불빛",
+        "showOffScreenRadar": "레이더",
+        "showGrid": "격자선",
+        "showCompass": "나침반",
+        "showMobs": "적 몬스터",
+        "showPortals": "포탈",
+        "showDrops": "드롭 전리품",
+        "showCommon": "일반 등급",
+        "showRare": "희귀 등급",
+        "showMythical": "신화 등급"
+      },
+      "discovered": "탐색됨",
+      "tools": "지도 도구",
+      "dragToMove": "드래그하여 이동",
+      "exitFullscreen": "전체화면 종료",
+      "fullscreen": "전체화면",
+      "stopRecording": "녹화 중지",
+      "recordTrail": "경로 녹화",
+      "dragMove": "미니맵 드래그 이동",
+      "zoomIn": "확대",
+      "zoomOut": "축소",
+      "cameraLocked": "카메라 고정",
+      "cameraFree": "카메라 자유 이동",
+      "reCenter": "카메라 중앙 정렬"
     }
   }
 } as const;
@@ -1413,4 +1841,5 @@ export type TranslationKey =
   | `tutorial.${keyof typeof translations.en.tutorial}`
   | `companions.${keyof typeof translations.en.companions}`
   | `quests.${keyof typeof translations.en.quests}`
+  | `minimap.${keyof typeof translations.en.minimap}`
   | string;

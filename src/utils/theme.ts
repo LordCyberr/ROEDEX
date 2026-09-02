@@ -7,19 +7,19 @@ export const ThemeColors = {
       border: 'border-purple-500/20'
     },
     rare: {
-      text: 'text-[#4ade80]', // Green
-      glow: 'shadow-[0_0_20px_rgba(74,222,128,0.4)] border-emerald-500/60',
-      bg: 'bg-emerald-950/10',
-      border: 'border-emerald-500/20'
-    },
-    uncommon: {
       text: 'text-[#60a5fa]', // Blue
       glow: 'shadow-[0_0_20px_rgba(96,165,250,0.4)] border-blue-500/60',
       bg: 'bg-blue-950/10',
       border: 'border-blue-500/20'
     },
+    uncommon: {
+      text: 'text-[#4ade80]', // Green
+      glow: 'shadow-[0_0_20px_rgba(74,222,128,0.4)] border-emerald-500/60',
+      bg: 'bg-emerald-950/10',
+      border: 'border-emerald-500/20'
+    },
     common: {
-      text: 'text-[var(--text-muted)]', // Gray
+      text: 'text-slate-200', // Crisp, high-contrast light slate text across all themes
       glow: 'shadow-lg border-white/10',
       bg: 'bg-[var(--bg-panel)]',
       border: 'border-white/10'

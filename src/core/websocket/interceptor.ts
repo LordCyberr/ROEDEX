@@ -4,6 +4,16 @@ const OriginalWebSocket = window.WebSocket;
 
 let droppedCount = 0;
 let lastDropUpdate = performance.now();
+let workerPort: MessagePort | null = null;
+
+window.addEventListener('message', (event) => {
+  if (event.data?.type === 'ROEDEX_INIT_PORT' && event.ports && event.ports.length > 0) {
+    workerPort = event.ports[0];
+    if (Boolean((import.meta as any).env?.DEV)) {
+      console.log('[ROEDEX] Interceptor received MessagePort for zero-latency pipeline');
+    }
+  }
+});
 
 class HookedWebSocket extends OriginalWebSocket {
   constructor(url: string | URL, protocols?: string | string[]) {
@@ -40,18 +50,22 @@ class HookedWebSocket extends OriginalWebSocket {
         let safeData = event.data;
         if (safeData.includes('0x') || safeData.includes('Bearer') || safeData.includes('token') || safeData.includes('secret') || safeData.includes('key')) {
           safeData = safeData
-            .replace(/0x[a-fA-F0-9]{40}/gi, '""')
-            .replace(/Bearer\s+[A-Za-z0-9\-\._~\+\/]+/gi, '""')
-            .replace(/("token"\s*:\s*")[^"]+(")/gi, '$1""$2')
-            .replace(/("secret"\s*:\s*")[^"]+(")/gi, '$1""$2')
-            .replace(/("key"\s*:\s*")[^"]+(")/gi, '$1""$2');
+            .replace(/0x[a-fA-F0-9]{40}/gi, '[REDACTED]')
+            .replace(/Bearer\s+[A-Za-z0-9\-\._~\+\/]+/gi, '[REDACTED]')
+            .replace(/("token"\s*:\s*")[^"]+(")/gi, '$1[REDACTED]$2')
+            .replace(/("secret"\s*:\s*")[^"]+(")/gi, '$1[REDACTED]$2')
+            .replace(/("key"\s*:\s*")[^"]+(")/gi, '$1[REDACTED]$2');
         }
 
-        window.postMessage({
-          source: 'ROEDEX_INTERCEPTOR',
-          type: 'WS_MESSAGE',
-          data: safeData
-        }, '*');
+        if (workerPort) {
+          workerPort.postMessage({ rawMessage: safeData });
+        } else {
+          window.postMessage({
+            source: 'ROEDEX_INTERCEPTOR',
+            type: 'WS_MESSAGE',
+            data: safeData
+          }, '*');
+        }
       }
     });
 
@@ -89,6 +103,7 @@ class HookedWebSocket extends OriginalWebSocket {
 // Intercept console messages for game events not broadcasted via WebSocket
 const methods: ('log' | 'info' | 'debug')[] = ['log', 'info', 'debug'];
 let isBlacksmithOpen = false;
+let isChestOpen = false;
 
 methods.forEach(method => {
   const original = console[method];
@@ -127,29 +142,46 @@ methods.forEach(method => {
       }
       
       if (stringArgs.includes('OnMMEvent ContentChanged (ChestInventory)')) {
-        window.postMessage({
-          source: 'ROEDEX_INTERCEPTOR',
-          type: 'WS_MESSAGE',
-          data: '42' + JSON.stringify(["chest_opened", {}])
-        }, '*');
+        if (!isChestOpen) {
+          isChestOpen = true;
+          window.postMessage({
+            source: 'ROEDEX_INTERCEPTOR',
+            type: 'WS_MESSAGE',
+            data: '42' + JSON.stringify(["chest_opened", {}])
+          }, '*');
+        }
       } else if (stringArgs.includes('Close Invoked')) {
+        let fired = false;
         if (isBlacksmithOpen) {
           isBlacksmithOpen = false;
+          fired = true;
           window.postMessage({
             source: 'ROEDEX_INTERCEPTOR',
             type: 'WS_MESSAGE',
             data: '42' + JSON.stringify(["blacksmith_closed", {}])
           }, '*');
         }
-        window.postMessage({
-          source: 'ROEDEX_INTERCEPTOR',
-          type: 'WS_MESSAGE',
-          data: '42' + JSON.stringify(["chest_closed", {}])
-        }, '*');
+        if (isChestOpen) {
+          isChestOpen = false;
+          fired = true;
+          window.postMessage({
+            source: 'ROEDEX_INTERCEPTOR',
+            type: 'WS_MESSAGE',
+            data: '42' + JSON.stringify(["chest_closed", {}])
+          }, '*');
+        }
+        
+        if (!fired) {
+          // Safety timeout reset just in case
+          setTimeout(() => {
+            isBlacksmithOpen = false;
+            isChestOpen = false;
+          }, 100);
+        }
       }
     }
     original.apply(console, args);
   };
 });
 
-console.log('[ROEDEX] WebSocket Interceptor Injected Successfully');
+
