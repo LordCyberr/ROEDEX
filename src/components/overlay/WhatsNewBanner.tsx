@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, X, ArrowRight, Zap } from 'lucide-react';
 import { useSettingsStore } from '../../store/settingsStore';
@@ -64,11 +64,13 @@ export const WhatsNewBanner: React.FC = React.memo(() => {
                 </p>
                 <div className="flex items-center gap-2 mt-2.5">
                   <button onClick={handleViewChangelog}
+                    aria-label="View changelog for this update"
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all duration-200 cursor-pointer"
                     style={{ background: 'linear-gradient(135deg,rgba(139,92,246,0.25),rgba(59,130,246,0.15))', border: '1px solid rgba(139,92,246,0.4)', color: '#c4b5fd', boxShadow: '0 2px 12px rgba(139,92,246,0.15)' }}>
                     See What&apos;s New <ArrowRight size={10} />
                   </button>
                   <button onClick={dismissWhatsNew}
+                    aria-label="Dismiss this update notification"
                     className="text-[10px] font-medium transition-colors cursor-pointer px-2 py-1.5 rounded-lg"
                     style={{ color: 'rgba(100,116,139,0.8)' }}>
                     Dismiss

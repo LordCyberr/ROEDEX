@@ -128,7 +128,7 @@ export class MobTracker {
           useAnalyticsStore.getState().recordMobKill(dbEntry.sanitizedName);
         } else {
           // Unknown mob — still count the kill but log so we can add it to the DB later
-          console.warn(`[MobTracker] Killed unknown mob type: "${enemy.type}" (normalized: "${normalizedType}"). Add to gameDatabase.ts to enable respawn timers.`);
+          if ((import.meta as any).env?.DEV) console.warn(`[MobTracker] Killed unknown mob type: "${enemy.type}" (normalized: "${normalizedType}"). Add to gameDatabase.ts to enable respawn timers.`);
         }
       }
 

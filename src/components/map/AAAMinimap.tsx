@@ -62,7 +62,7 @@ function getCommunityTrail(zone: string): Point[] {
 }
 
 // ── Main Component ─────────────────────────────────────────────────────────────
-export const AAAMinimap: React.FC = () => {
+export const AAAMinimap: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const canvasRef         = useRef<HTMLCanvasElement>(null);
   const engineRef         = useRef<AAAMapEngine | null>(null);
@@ -1166,4 +1166,4 @@ export const AAAMinimap: React.FC = () => {
       </motion.div>
     </>
   );
-};
+});

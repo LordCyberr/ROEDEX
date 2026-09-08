@@ -13,7 +13,7 @@ import { ThemeColors } from '../../utils/theme';
 import { useTrackerStore } from '../../store/trackerStore';
 import { NotificationManager } from '../../core/notifications/NotificationManager';
 
-export const NotificationToaster: React.FC = () => {
+export const NotificationToaster: React.FC = React.memo(() => {
   const currentTarget = useTrackerStore(useShallow((state: any) => state.currentTarget));
 
   // Single useShallow call — was 4 separate subscriptions
@@ -332,4 +332,4 @@ export const NotificationToaster: React.FC = () => {
       </AnimatePresence>
     </motion.div>
   );
-};
+});

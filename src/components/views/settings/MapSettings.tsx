@@ -137,7 +137,7 @@ const Section: React.FC<{
   );
 };
 
-export const MapSettings: React.FC = () => {
+export const MapSettings: React.FC = React.memo(() => {
   const { mapSettings, updateMapSettings, trails, clearTrail, appendTrailPoints } = useTrackerStore(
     useShallow(state => ({
       mapSettings: state.mapSettings,
@@ -489,4 +489,4 @@ export const MapSettings: React.FC = () => {
       )}
     </div>
   );
-};
+});

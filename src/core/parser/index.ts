@@ -91,7 +91,7 @@ parserWorker.onmessage = (e: MessageEvent) => {
       }
     }
   } else if (e.data.error === 'invalid_shape') {
-    console.warn(`[ROEDEX Worker] Dropped malformed WebSocket event. Game data structure may have changed.`);
+    if ((import.meta as any).env?.DEV) console.warn(`[ROEDEX Worker] Dropped malformed WebSocket event. Game data structure may have changed.`);
   }
 };
 

@@ -295,6 +295,7 @@ export const OverlayContainer: React.FC = React.memo(() => {
         <div className="flex flex-col items-center justify-center h-full w-full opacity-50 p-4 text-center pointer-events-auto">
           <div className="text-[var(--text-primary)] font-bold mb-2">{t('overlayContainer.poppedOut')}</div>
           <button 
+            aria-label="Merge tab back into main overlay"
             onPointerDown={(e) => { e.stopPropagation(); mergeTab(activeTab); }}
             className="px-3 py-1.5 bg-[var(--accent-primary)]/20 hover:bg-[var(--accent-primary)]/40 text-[var(--accent-primary)] rounded transition-colors text-xs font-bold uppercase tracking-wider border border-[var(--accent-primary)]/30 cursor-pointer"
           >

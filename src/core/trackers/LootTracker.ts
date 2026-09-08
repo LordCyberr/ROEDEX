@@ -37,7 +37,7 @@ export class LootTracker {
         const hasResellValue = getResellValue(itemId, 1) > 0;
         if (!hasResellValue) {
           // Genuine unknown — log warning and generate last-resort fallback
-          console.warn(`[LootTracker] Unknown loot item detected: ${itemId}, generating fallback.`);
+          if ((import.meta as any).env?.DEV) console.warn(`[LootTracker] Unknown loot item detected: ${itemId}, generating fallback.`);
         }
         dropInfo = {
           itemId: itemId,
@@ -135,7 +135,7 @@ export class LootTracker {
         } else {
           const hasResellValue = getResellValue(drop.itemName, 1) > 0;
           if (!hasResellValue) {
-            console.warn(`[LootTracker] Unknown loot item detected: ${drop.itemName}, generating fallback.`);
+            if ((import.meta as any).env?.DEV) console.warn(`[LootTracker] Unknown loot item detected: ${drop.itemName}, generating fallback.`);
           }
           dropInfo = {
             itemId: drop.itemName,

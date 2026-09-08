@@ -43,7 +43,7 @@ export class ResourceTracker {
       if (strippedKey !== dbKey) dbEntry = DB_LOOKUP[strippedKey];
     }
     if (!dbEntry && rawResource !== 'Unknown') {
-      console.warn(`[ResourceTracker] Unknown resource entity detected: ${rawResource}`);
+      if ((import.meta as any).env?.DEV) console.warn(`[ResourceTracker] Unknown resource entity detected: ${rawResource}`);
     }
 
     return {

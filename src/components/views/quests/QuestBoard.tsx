@@ -227,7 +227,7 @@ const FullQuestDetails = ({ quest, inventory }: { quest: Quest, inventory: Recor
   );
 };
 
-export const QuestBoardComponent: React.FC = () => {
+export const QuestBoardComponent: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const layoutMode = useSettingsStore(state => state.layoutMode);
   const isHorizontal = layoutMode === 'horizontal';
@@ -424,4 +424,4 @@ export const QuestBoardComponent: React.FC = () => {
       )}
     </div>
   );
-};
+});

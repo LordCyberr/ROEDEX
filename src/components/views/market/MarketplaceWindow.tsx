@@ -10,7 +10,7 @@ import { RESELL_VALUES } from '../../../data/prices';
 import { getRarityClass } from '../../../utils/rarity';
 import { useTranslation } from '../../../hooks/useTranslation';
 
-export const MarketplaceWindow: React.FC = () => {
+export const MarketplaceWindow: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const isMarketplaceOpen = useSettingsStore(s => s.isMarketplaceOpen);
   const setIsMarketplaceOpen = useSettingsStore(s => s.setIsMarketplaceOpen);
@@ -536,4 +536,4 @@ export const MarketplaceWindow: React.FC = () => {
       </div>
     </AnimatePresence>
   );
-};
+});
