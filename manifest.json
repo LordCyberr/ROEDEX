@@ -18,8 +18,7 @@
         "src/main.tsx"
       ],
       "matches": [
-        "*://embervault.ruyui.com/*",
-        "*://vq-roe-test.vercel.app/*"
+        "*://embervault.ruyui.com/*"
       ]
     },
     {
@@ -27,8 +26,7 @@
         "src/core/websocket/interceptor.ts"
       ],
       "matches": [
-        "*://embervault.ruyui.com/*",
-        "*://vq-roe-test.vercel.app/*"
+        "*://embervault.ruyui.com/*"
       ],
       "run_at": "document_start",
       "world": "MAIN"
@@ -44,8 +42,7 @@
         "staticSpawns.json"
       ],
       "matches": [
-        "*://embervault.ruyui.com/*",
-        "*://vq-roe-test.vercel.app/*"
+        "*://embervault.ruyui.com/*"
       ]
     }
   ]
