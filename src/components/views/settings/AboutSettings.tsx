@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSettingsStore } from '../../../store/settingsStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '../../../hooks/useTranslation';
+import { CHANGELOG_DATA } from '../../../data/changelog';
 import { Heart, Copy, CheckCircle2, Youtube, Github, Sparkles, Trophy, ArrowRight } from 'lucide-react';
 
 export const AboutSettings: React.FC = () => {
@@ -48,7 +49,7 @@ export const AboutSettings: React.FC = () => {
                 {t('settings.aboutMe')}
               </h4>
               <p className="text-[10px] text-[var(--accent-primary)] font-mono tracking-widest uppercase opacity-80">
-                v0.0.6 • Open Source
+                v{CHANGELOG_DATA[0]?.version || '0.0.5'} • Open Source
               </p>
             </div>
           </div>

@@ -1,30 +1,37 @@
 # ROEDEX Changelog
 
-## v0.0.6 - Engine Redesign & Core Bugfixes (2026-08-02)
+## v0.0.5 - Performance Overhaul, UI Redesigns & Critical Bug Fixes (2026-09-02)
 
-### 🚀 Performance & Map Engine Optimizations
-- **React Rendering Optimization:** Audited and wrapped all `useTrackerStore` selectors returning objects with `useShallow` (e.g. `EfficiencyHUD.tsx`), drastically reducing unnecessary component re-renders. Memoized top-level components (`OverlayContainer`, `TargetUI`) to prevent cascading re-renders.
-- **Offscreen Canvas Rendering:** Refactored `MapRenderEngine` to completely remove heavy DOM-based rendering. Trail coordinates are now baked incrementally to an offscreen `HTMLCanvasElement`, resulting in a massive boost to FPS and zero jank during long play sessions.
+### ✨ New Features & UI Enhancements
+- **What's New Banner:** A polished glassmorphic notification now slides in smoothly after every extension update. Displays release title, version, item count, and a direct "See What's New" trigger that opens the Changelog modal, persisting dismissal in IndexedDB.
+- **Marketplace & Economy Hub:** Comprehensive marketplace window with live item listings, price sparklines, bazaar grid view, item detail modal, and dedicated analytics tab for market trends.
+- **Profile & Analytics Dashboard:** Dedicated profile view featuring daily dashboards, combat logs, session analytics charts, and lifetime stat breakdowns.
+- **Global Search Modal:** Instant hotkey lookup across all NPCs, resources, quests, and drop tables from anywhere in the overlay.
+- **Quick Stats Drawer:** Collapsible side drawer for instant at-a-glance session stats without navigating away from your active tab.
+- **Target & Player HP Bars:** Dedicated HUD widgets for focused target tracking and real-time player health, with custom styling, threshold alerts, and low-health pulse animations.
+- **Efficiency HUD:** Real-time XP/hour and Gold/hour tracker displayed directly on the gaming overlay.
+- **Recent Loot View & Animated Toasts:** Dedicated loot history tab sorted by rarity, paired with premium animated toasts on rare/mystical loot drops.
+- **Dynamic Waypoint & Death Drop Router:** Multi-zone pathfinding powered by background Web Workers, with automatic waypoint routing to your last death location.
+- **Granular HUD & Notification Settings:** Dedicated settings panels for map zoom/opacity/trails, orb customization, controls, render throttling, HUD widget toggles, and notification filters.
 
-### ✨ Features & Database
-- **Unified Game Database:** Deprecated all fragmented hardcoded static lists and completed full integration with `gameDatabase.ts`. All item icons, rarities, mob data, and NPC data now flow directly through the single source of truth (`DB_LOOKUP`).
-- **Minimap UX Polish:** Overhauled the Minimap interaction logic. Added a permanent zone identifier pill to the bottom of the map, animated smooth camera re-centering with `framer-motion`, and improved resize handle responsiveness by utilizing a unified delta `(dx + dy) / 2`. 
+### 🚀 Architecture & Performance Overhaul
+- **Minimap Modular Split:** Split the 1,487-line `AAAMinimap.tsx` monolith into clean, specialized components (`MinimapOverlays.tsx`, `MinimapHoverTooltip.tsx`, `MinimapSettingsPanel.tsx`).
+- **Pathfinder Web Worker:** Offloaded A* pathfinding calculations entirely off the main UI thread via `pathfinder.worker.ts` and `PathfinderService`.
+- **Zustand Domain Split:** Partitioned the monolithic `storeTypes.ts` into 6 isolated domain type definitions (`UISlice`, `SessionSlice`, `PlayerSlice`, `EntitySlice`, `MapSlice`, `RouteAndErrorSlice`).
+- **Parser Handler Decoupling:** Replaced monolithic `playerHandler.ts` with dedicated modular sub-handlers (`zoneHandler.ts`, `statsHandler.ts`, `rosterHandler.ts`) coordinated by `eventRouter.ts` and `registry.ts`.
+- **Shared IndexedDB Storage:** Unified `trackerStore`, `settingsStore`, and `analyticsStore` under a hardened IndexedDB storage layer with 5-second debounced writes and emergency `beforeunload` flush.
+- **60 FPS RAF Scheduler:** Introduced `RafScheduler.ts` to batch all per-frame overlay state updates into a single synchronized requestAnimationFrame loop.
+- **Unified Game Database:** Consolidated scattered cooldowns and lookup files into `gameDatabase.ts` with `DB_LOOKUP` single source of truth, drop tables, and suffix-normalized lookup keys.
+- **Bundle Optimization:** Reduced main bundle by over 50% through manual vendor chunking (`vendor_charts`, `vendor_motion`, `vendor_db`, `views-heavy`), keeping every bundle chunk strictly below 500 kB.
 
-### 🛠️ Fixes & Strict Types
-- **Hook Rules Violation Resolved:** Fixed a critical crash caused by calling `useTrackerStore.getState()` directly inside a component's render body in `Minimap.tsx`, ensuring proper React subscription rules are followed.
-- **TypeScript Strictness:** Resolved a series of strict TypeScript compilation errors across the overlay engine, fixing uninitialized tracking types, implicit `any` usage, and React state mismatches.
-
-
-## v0.0.5 - Performance Optimizations & Architecture Audit (2026-07-26)
-
-### 🚀 Performance & Bundling Optimizations
-- **Code-Splitting Architecture:** Implemented `React.lazy()` and `Suspense` lazy-loading across all major overlay views (Tracking, Session/Loot, NPC, Quests, and Settings) in `OverlayContainer.tsx` and `PoppedOutWindowComponent.tsx`.
-- **Bundle Bloat Resolution:** Resolved monolithic bundle bloat by replacing static array chunks with a functional `manualChunks` strategy in `vite.config.ts`, cleanly isolating heavy dependencies (`motion`, `react`, and `icons`) into dedicated vendor chunks while eliminating circular dependency warnings between Zustand and React. Reduced main initial JavaScript bundle size from **966 kB down to ~475 kB** (a 51% reduction!).
-- **Ghost Route Recording Prevention:** Silenced background "ghost" route recording in `routeRecorderSlice.ts` by adding strict guards that immediately halt coordinate recording when the Cartographer recording mode is disabled, preventing memory leaks during long gaming sessions.
-
-### ✨ Features & Localization
-- **100% Localization Completion:** Audited and resolved remaining hardcoded UI strings across `Header.tsx` (ROEpedia tab labels, Lock/Unlock UI tooltips) and `TutorialChatBubble.tsx` (mobs killed counter), mapping all strings to the master `translations.ts` dictionary across English, Spanish, and Korean.
-- **Project Architecture & Upgrade Audit:** Completed a comprehensive codebase audit and produced an extensive roadmap and upgrade report detailing baseline metrics, store selector optimization strategies, memory leak mitigation, and future engine enhancements.
+### 🛠️ Critical Bug Fixes & System Patches
+- **Community Trail Loading:** Fixed `defaultTrails.json` URL resolution from bare relative paths to `chrome.runtime.getURL()`, fixing silent failures in extension context.
+- **ResourceTracker False Warnings:** Fixed false-positive console errors for plants with "flower" suffixes (`witchbaneflower`, `moonpetalflower`, etc.) via suffix-strip fallback.
+- **DebugPanel Guard:** Added null guards and optional chaining for `state.quests` and `state.loot` access prior to store hydration.
+- **Weapon HUD Default Geometry:** Restored correct horizontal bar layout (174px × 24px) for initial configurations and fixed text overflow in vertical mode.
+- **Z-Index & Tooltip Clipping:** Refactored overlay layer stacking so HUD widgets stay above the game canvas while modals and tooltips render cleanly with viewport boundary detection.
+- **Analytics Auto-Pruning:** Added automatic startup pruning for analytics logs older than 30 days to prevent unbounded local database growth.
+- **Ghost Orb Elimination:** Removed duplicate minimised orb artifact caused by dual conditional rendering between FloatingWidgetLayer and OverlayContainer.
 
 ## v0.0.4 - Localization Patch & HUD Fixes (2026-07-08)
 
