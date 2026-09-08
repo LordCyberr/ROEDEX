@@ -21,7 +21,7 @@
   </p>
 
   <p align="center">
-    <img src="https://img.shields.io/badge/Version-v0.0.4-blue.svg?style=flat-square&color=3b82f6" alt="Version" />
+    <img src="https://img.shields.io/badge/Version-v0.0.5-blue.svg?style=flat-square&color=3b82f6" alt="Version" />
     <img src="https://img.shields.io/badge/React-19.0.0-blue.svg?style=flat-square&color=61dafb&logo=react" alt="React" />
     <img src="https://img.shields.io/badge/TypeScript-5.7-blue.svg?style=flat-square&color=3178c6&logo=typescript" alt="TypeScript" />
     <img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square&color=10b981" alt="License" />
@@ -38,7 +38,7 @@
 ## 📖 Table of Contents
 1. [🌟 Overview](#-overview)
 2. [✨ Key Features](#-key-features)
-3. [📢 What's New in v0.0.4](#-whats-new-in-v004)
+3. [📢 What's New in v0.0.5](#-whats-new-in-v005)
 4. [🎮 Keyboard Shortcuts](#-keyboard-shortcuts)
 5. [🔒 Security & Privacy](#-security--privacy)
 6. [🛠️ Installation Guide](#️-installation-guide)
@@ -70,12 +70,16 @@ Built using **Manifest V3**, **React**, and **Tailwind CSS**, it features a gorg
 
 ---
 
-## 📢 What's New in v0.0.4
+## 📢 What's New in v0.0.5
 
-*   🌍 **Complete Localization:** Migrated all remaining UI screens (Quest Board, Blacksmith, Players View) into our localization engine.
-*   🐛 **Chest HUD Sticky Bug:** Fixed an issue where closing chests while moving items kept the minimal chest value stuck on the screen.
-*   ⌨️ **Hotkey Persistence:** Custom keybindings (lock UI, layout toggle, reset size) now successfully persist across extension reloads.
-*   ⏱️ **Delayed Boot Sequence:** The overlay now waits for your first active game packet (with a 5-second cinematic fade-in) for a clean entry.
+*   🔔 **What's New Banner:** An animated, glassmorphic notification alerts you when ROEDEX updates, with direct access to the Changelog.
+*   🏪 **Marketplace & Economy Hub:** Live item listings, price sparklines, bazaar view, and market analytics tab.
+*   📊 **Profile & Daily Dashboard:** View daily gameplay breakdowns, session combat logs, and lifetime statistics.
+*   🔍 **Global Search Modal:** Instant hotkey lookup across all NPCs, resources, quests, and drop tables.
+*   ⚡ **Performance & 60 FPS Engine:** 50%+ bundle reduction, offscreen minimap rendering, and synchronized RAF frame scheduler.
+*   🗺️ **Dynamic Waypoint Router:** Multi-zone pathfinding with Web Workers and automatic death drop routing.
+*   ❤️ **Target & Player HP Bars:** Dedicated, highly customizable health overlay bars with low-health alerts.
+*   🛡️ **Hardened Storage:** Shared IndexedDB storage with debounced batching and emergency save.
 
 ---
 

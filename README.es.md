@@ -21,7 +21,7 @@
   </p>
 
   <p align="center">
-    <img src="https://img.shields.io/badge/Versi%C3%B3n-v0.0.4-blue.svg?style=flat-square&color=3b82f6" alt="Versión" />
+    <img src="https://img.shields.io/badge/Versi%C3%B3n-v0.0.5-blue.svg?style=flat-square&color=3b82f6" alt="Versión" />
     <img src="https://img.shields.io/badge/React-19.0.0-blue.svg?style=flat-square&color=61dafb&logo=react" alt="React" />
     <img src="https://img.shields.io/badge/TypeScript-5.7-blue.svg?style=flat-square&color=3178c6&logo=typescript" alt="TypeScript" />
     <img src="https://img.shields.io/badge/Licencia-MIT-green.svg?style=flat-square&color=10b981" alt="Licencia" />
@@ -38,7 +38,7 @@
 ## 📖 Tabla de Contenidos
 1. [🌟 Resumen](#-resumen)
 2. [✨ Características Clave](#-características-clave)
-3. [📢 Novedades en v0.0.4](#-novedades-en-v004)
+3. [📢 Novedades en v0.0.5](#-novedades-en-v005)
 4. [🎮 Atajos de Teclado](#-atajos-de-teclado)
 5. [🔒 Seguridad y Privacidad](#-seguridad-y-privacidad)
 6. [🛠️ Guía de Instalación](#️-guía-de-instalación)
@@ -70,12 +70,16 @@ Construido utilizando **Manifest V3**, **React**, y **Tailwind CSS**, cuenta con
 
 ---
 
-## 📢 Novedades en v0.0.4
+## 📢 Novedades en v0.0.5
 
-*   🌍 **Localización Completa:** Se migraron todas las pantallas restantes de la interfaz de usuario (Tablón de Misiones, Herrero, Vista de Jugadores) a nuestro motor de traducción.
-*   🐛 **Solución de HUD de Cofre Pegajoso:** Se solucionó un problema por el cual cerrar los cofres mientras se movían objetos dejaba el valor del cofre mínimo pegado en la pantalla.
-*   ⌨️ **Persistencia de Atajos:** Las asociaciones de teclas personalizadas (bloqueo de UI, cambio de diseño, restablecimiento de tamaño) ahora persisten correctamente tras reiniciar la extensión.
-*   ⏱️ **Secuencia de Inicio Retardada:** La superposición ahora espera al primer paquete de juego activo (con una transición de entrada cinematográfica de 5 segundos) para una entrada más limpia.
+*   🔔 **Banner de Novedades:** Notificación animada con estilo Glassmorphic que avisa de las actualizaciones con acceso directo al registro de cambios.
+*   🏪 **Centro de Mercado y Economía:** Listados en vivo, gráficos de tendencias de precios y pestaña de análisis de mercado.
+*   📊 **Panel de Perfil y Estadísticas:** Resumen diario de juego, registros de combate y estadísticas históricas completas.
+*   🔍 **Buscador Global:** Atajo de teclado para buscar instantáneamente entre NPCs, recursos, misiones y tablas de botín.
+*   ⚡ **Rendimiento y Motor a 60 FPS:** Reducción del paquete en más del 50%, renderizado fuera de pantalla y sincronización RAF.
+*   🗺️ **Enrutador Dinámico de Puntos de Ruta:** Navegación multizona con Web Workers y ruta automática a tu punto de muerte.
+*   ❤️ **Barras de Salud de Objetivo y Jugador:** Barras de vida independientes con alertas visuales de salud baja.
+*   🛡️ **Almacenamiento Reforzado:** Base de datos IndexedDB unificada con guardado por lotes y respaldo de emergencia.
 
 ---
 
