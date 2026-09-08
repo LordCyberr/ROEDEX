@@ -1,0 +1,104 @@
+ROEDEX: The Ultimate Real-Time Companion & Tactical Overlay for Roots of Embervault
+
+ROEDEX is an advanced, high-performance, non-intrusive companion overlay engineered exclusively for Roots of Embervault. Designed for both competitive grinders and adventurous explorers, ROEDEX seamlessly integrates directly into your game window to deliver live telemetry, market intelligence, geospatial pathfinding, and efficiency analytics without ever breaking your immersion.
+
+══════════════════════════════════════════════════════════════════════
+⚡ WHAT'S NEW IN VERSION 0.0.5 — PERFORMANCE & FEATURE OVERHAUL
+══════════════════════════════════════════════════════════════════════
+
+▶ "WHAT'S NEW" GLASSMORPHIC BANNER
+Never miss an update. A sleek floating notification now slides in upon every version update, highlighting new features and bug fixes with a one-click button to view the full Changelog, then dismisses permanently until the next release.
+
+▶ LIVE MARKETPLACE & ECONOMY HUB
+Gain complete economic superiority. Access live Bazaar listings, inspect 7-day price sparkline trends, calculate instantaneous resell values, and explore a dedicated Market Analytics dashboard.
+
+▶ PROFILE & LIFETIME COMBAT ANALYTICS
+Deep-dive into your playstyle with comprehensive daily dashboards, combat telemetry logs, session time breakdowns, and lifetime stat tracking.
+
+▶ GLOBAL INSTANT SEARCH (Ctrl + Shift + F)
+Search across all NPCs, resource nodes, quest targets, and drop tables instantaneously from anywhere in the game overlay.
+
+▶ DYNAMIC WAYPOINT ROUTER & DEATH DROPS
+Intelligent multi-zone pathfinding powered by an off-thread A* Web Worker. Automatically creates a beacon and route to your last death location for effortless corpse retrieval.
+
+▶ STANDALONE PLAYER HP & TARGET HUD WIDGETS
+Customizable real-time health trackers with dynamic low-health pulse animations, adjustable opacity, scale, and custom alert thresholds.
+
+▶ 60 FPS FRAME-SYNC ENGINE & SPLIT ARCHITECTURE
+Full architectural refactoring with a batch RequestAnimationFrame (RAF) scheduler and modular state slices. Enjoy butter-smooth performance with sub-millisecond overlay latency.
+
+▶ CRITICAL STABILITY FIXES & ERGONOMICS
+• Fixed community trail network loading in Chrome content scripts.
+• Eliminated false-positive plant warnings for all suffix-variant flora.
+• Perfected out-of-the-box horizontal layout for Weapon & Armor HUDs.
+
+══════════════════════════════════════════════════════════════════════
+✦ CORE FEATURE MATRIX
+══════════════════════════════════════════════════════════════════════
+
+⚔️ REAL-TIME EFFICIENCY & COMBAT HUD
+• Live XP/Hour & Runestones/Hour efficiency meters.
+• Standalone Weapon Durability & Armor Condition indicators.
+• Focused Target Health Bar with configurable execution alerts.
+• Quick Stats drawer for at-a-glance session summaries.
+
+🗺️ GEOSPATIAL MINIMAP & FOG-OF-WAR
+• High-resolution interactive zone maps with real-time player GPS.
+• Fog-of-War tracking with dynamic discovery beams.
+• Custom trail recording and community path import.
+• Granular entity toggles: Mobs, Portals, Ores, Flora, and Bosses.
+
+⏱️ INTELLIGENT RESOURCE & SPAWN TIMERS
+• Interactive background cooldown timers for 5m, 10m, and custom spawns.
+• Audio and visual toast alerts when rare ores, trees, or chests respawn.
+• O(1) spatial index for instant nearest-spawn calculation.
+
+📦 DYNAMIC LOOT HISTORY & GLOBAL CHEST
+• Real-time loot drop interceptor with instant rarity badges.
+• Animated celebratory toasts for Rare, Mystical, and Legendary drops.
+• Global Chest inventory tracker with total net-worth valuation.
+
+🤖 BOB — YOUR INTERACTIVE AI COMPANION
+• An animated desktop companion with dynamic personalities.
+• Reacts contextually to level-ups, slayer milestones, and lucky loot drops.
+• Provides helpful game tips, navigation assistance, and witty banter.
+
+🎨 ADAPTIVE CYBERPUNK GLASSMORPHISM UI
+• Drag, snap, resize, or pop out any tab into its own independent window.
+• Single-click click-through Lock Mode (prevents accidental misclicks in combat).
+• Multiple themes: Cyberpunk Amber, AMOLED Pitch Black, and Frosted Glass.
+• Minimized floating orb mode for zero screen clutter during intense boss fights.
+
+══════════════════════════════════════════════════════════════════════
+🔒 PRIVACY-FIRST, ANTI-CHEAT SAFE & COMPLIANT
+══════════════════════════════════════════════════════════════════════
+
+✓ 100% Client-Side: ROEDEX operates entirely within your local browser sandbox.
+✓ Zero External Telemetry: No keystrokes, personal credentials, or external tracking servers.
+✓ Non-Intrusive & Passive: Reads local client packet streams strictly for tactical display. Does NOT automate gameplay, bot, or modify game memory.
+✓ Performance Certified: Tested strictly under 45 MB RAM usage and <1ms frame render time.
+
+══════════════════════════════════════════════════════════════════════
+⌨️ DEFAULT KEYBOARD SHORTCUTS
+══════════════════════════════════════════════════════════════════════
+
+• Ctrl + Shift + F  ➔  Global Instant Search
+• Ctrl + Shift + M  ➔  Toggle Interactive Minimap
+• Ctrl + Shift + L  ➔  Lock / Unlock Overlay Click-Through
+• Ctrl + Shift + X  ➔  Reset HUD Widget Positions & Layout
+• Double-Click Orb  ➔  Restore Minimized Windows
+
+══════════════════════════════════════════════════════════════════════
+🌐 MULTI-LANGUAGE SUPPORT
+══════════════════════════════════════════════════════════════════════
+
+ROEDEX natively supports real-time language switching:
+• English (English)
+• Español (Spanish)
+• Русский (Russian)
+• 한국어 (Korean)
+
+Switch instantly via Settings ➔ Appearance ➔ Language.
+
+══════════════════════════════════════════════════════════════════════
+Ready to dominate the Embervault? Equip ROEDEX and elevate your gameplay today!
