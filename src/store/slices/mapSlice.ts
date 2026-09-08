@@ -2,7 +2,8 @@ import { StateCreator } from 'zustand';
 import { TrackerState } from '../storeTypes';
 import { MapSlice } from '../types';
 import { MapCompressor } from '../../core/map/MapCompressor';
-import { defaultTrails } from '../../data/defaultTrails';
+// Note: defaultTrails.ts removed — trails are lazy-loaded from public/defaultTrails.json
+// via chrome.runtime.getURL() in trackerStore.ts (~97KB bundle saving).
 
 export const createMapSlice: StateCreator<TrackerState, [], [], MapSlice> = (set) => ({
   mapSettings: {
@@ -34,7 +35,7 @@ export const createMapSlice: StateCreator<TrackerState, [], [], MapSlice> = (set
     customColors: {},
   },
 
-  trails: defaultTrails,
+  trails: {} as Record<string, string>,
   customZones: [],
   deathSpot: null,
   isRecordingTrail: false,
