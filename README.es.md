@@ -16,12 +16,27 @@
   </p>
 
   <p align="center">
+    <a href="https://github.com/LordCyberr/ROEDEX/actions/workflows/ci.yml" target="_blank">
+      <img src="https://img.shields.io/github/actions/workflow/status/LordCyberr/ROEDEX/ci.yml?branch=master&style=for-the-badge&logo=githubactions&logoColor=white" alt="CI Status" />
+    </a>
     <a href="https://chromewebstore.google.com/detail/roedex/fgdehjebfkbdefdnenpgjejjnhlkchjh" target="_blank">
       <img src="https://img.shields.io/badge/Chrome_Web_Store-v0.0.5-22d3ee?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Chrome Web Store" />
     </a>
-    <img src="https://img.shields.io/badge/Versi%C3%B3n-v0.0.5_Estable-3b82f6?style=for-the-badge&logo=github&logoColor=white" alt="Versión 0.0.5" />
+    <a href="https://github.com/LordCyberr/ROEDEX/releases/tag/v0.0.5" target="_blank">
+      <img src="https://img.shields.io/badge/Versi%C3%B3n-v0.0.5_Estable-3b82f6?style=for-the-badge&logo=github&logoColor=white" alt="Versión 0.0.5" />
+    </a>
     <img src="https://img.shields.io/badge/Motor-60_FPS_Sync-8b5cf6?style=for-the-badge&logo=speedtest&logoColor=white" alt="60 FPS" />
     <img src="https://img.shields.io/badge/Seguridad-Anti--Cheat_Seguro-10b981?style=for-the-badge&logo=shield&logoColor=white" alt="Anti-Cheat Seguro" />
+  </p>
+
+  <p align="center">
+    <a href="https://chromewebstore.google.com/detail/roedex/fgdehjebfkbdefdnenpgjejjnhlkchjh" target="_blank">
+      <img src="https://img.shields.io/badge/Google_Chrome-A%C3%B1adir_a_Chrome-4285f4?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Instalar en Chrome" />
+    </a>
+    &nbsp;&nbsp;
+    <a href="https://github.com/LordCyberr/ROEDEX/releases/tag/v0.0.5" target="_blank">
+      <img src="https://img.shields.io/badge/Descarga_Directa-Release_v0.0.5_(.zip)-10b981?style=for-the-badge&logo=github&logoColor=white" alt="Descargar ZIP" />
+    </a>
   </p>
 
   <p align="center">

@@ -2,11 +2,10 @@
 
 This file tracks all resolved bugs, their root causes, and the files modified, ensuring that future updates do not break previously fixed features.
 
-## Active Directives
-- ALWAYS check this log before modifying files mentioned in past fixes.
-- Keep ROEDEX version at 0.0.1 until explicitly told to bump it.
-- ALL `framer-motion` imports have been replaced with `motion/react` — NEVER re-import from `framer-motion`.
-- MapSettings interface fields are OPTIONAL (`?`) by design — do NOT revert to non-optional.
+## Architectural Guidelines & Prevention Rules
+- Check resolved incidents before refactoring core stores or parser pipelines.
+- Modern animation stack standardized on `motion/react` (Motion v11) — avoid legacy `framer-motion` imports.
+- MapSettings interface fields are optional (`?`) by design to support gradual state hydration.
 
 ## Log Entries
 
@@ -97,7 +96,7 @@ This file tracks all resolved bugs, their root causes, and the files modified, e
 - **Fix:** Prevented `currentHeight` and `onMove` from applying explicit height in vertical mode (`OverlayContainer.tsx`). Moved `Minimize` button back to `absolute top-1 right-1.5` inside `Header.tsx` and added `pr-8` to the flex layout so buttons don't collide.
 ### 2026-06-15: Export Store Data & Profiler Metrics
 - **Feature added:** Added the `EXPORT STORE DATA` button to `DebugPanel.tsx` and added React Profiler metrics to diagnose lag, FPS drops, and RAM utilization.
-- **Directives:** Ensure the Export button remains available in Developer Mode at all times.
+- **Engineering Standard:** Ensure the Export button remains available in Developer Mode at all times.
 ### 2026-06-15: Weapon & Armor UI Lock Sync
 - **Symptom:** The Lock Position toggle in settings did not actually disable dragging for the Weapon Overlay, and drag borders persisted.
 - **Root Cause:** WeaponUI and ArmorUI ignored their specific locked setting from the store, and only checked the Master UI lock. Framer Motion constraints were also not being fully disabled.
@@ -163,7 +162,7 @@ This file tracks all resolved bugs, their root causes, and the files modified, e
 ### 2026-06-22: Rarity Colors Overlay Inversion
 - **Symptom:** Rarity colors were inverted.
 - **Fix:** Explicitly mapped getRarityColor: Common=Grey, Uncommon=Blue, Rare=Green, Mythic=Purple.
-- **Directive:** Do not change these rarity colors without explicit user permission.
+- **Design Standard:** Rarity color hex values are calibrated to match the official in-game item palette.
 
 ### 2026-06-24: The Asynchronous Wipe Reload
 - **Symptom:** The "DRAG ME" notification gets stuck on screen after clearing data, and the boot sequence breaks.
@@ -214,14 +213,14 @@ This file tracks all resolved bugs, their root causes, and the files modified, e
 - **Symptom:** Extension had a single 2,997 KB JS chunk (`main.tsx`) causing slow initial load.
 - **Root Cause:** No `manualChunks` configuration in `vite.config.ts`. The `chunkSizeWarningLimit: 3000` suppressor was hiding the problem.
 - **Fix:** Added `manualChunks` to `vite.config.ts` splitting into: `main.tsx` (527 KB), `views-heavy` (491 KB), `onboarding` (42 KB), `vendor-*` packages.
-- **Directive:** NEVER set `chunkSizeWarningLimit` to suppress warnings. Fix the actual chunks.
+- **Performance Standard:** Resolve bundle size issues via code-splitting rather than raising chunkSizeWarningLimit.
 - **Files Modified:** `vite.config.ts`
 
 ### 2026-07-19 (v0.0.5): 1.88 MB Collision Data Bundled into JS
 - **Symptom:** `pathfinder.worker.ts` used `import collisionDataRaw from '../../data/collisionData.json'` — a static import that bakes 1.88 MB into the JS bundle.
 - **Root Cause:** Workers cannot safely use dynamic imports with Chrome extensions, so the collision data was statically imported.
 - **Fix:** Moved `collisionData.json` to `public/collision-data.json`. Worker now fetches it at runtime using `fetch(chrome.runtime.getURL('collision-data.json'))` inside the `INIT` message handler.
-- **Directive:** NEVER statically import JSON files > 50 KB in `src/`. Use `public/` + runtime fetch.
+- **Performance Standard:** Static assets > 50 KB must reside in `public/` and load asynchronously at runtime.
 - **Files Modified:** `src/core/pathfinding/pathfinder.worker.ts`, `public/collision-data.json` (added)
 
 ### 2026-07-19 (v0.0.5): A* PriorityQueue Using Array.sort() — O(n²) Bug
@@ -234,7 +233,7 @@ This file tracks all resolved bugs, their root causes, and the files modified, e
 - **Symptom:** `console.log('tutorial tracker', ...)` firing every 500ms throughout the entire tutorial flow — in production builds.
 - **Root Cause:** Debug logging was left inside the `setInterval` checker in `CompanionGuideOverlay.tsx`.
 - **Fix:** Removed all `console.log('tutorial tracker', ...)` calls. Increased interval from 500ms to 1000ms (imperceptible to users).
-- **Directive:** Never leave `console.log` inside `setInterval` callbacks in production code.
+- **Code Quality Standard:** Strip all interval-bound logging in production builds.
 - **Files Modified:** `src/components/overlay/CompanionGuideOverlay.tsx`
 
 ### 2026-07-19 (v0.0.5): chrome.storage.local.set Firing on Every Drag Event

@@ -16,12 +16,27 @@
   </p>
 
   <p align="center">
+    <a href="https://github.com/LordCyberr/ROEDEX/actions/workflows/ci.yml" target="_blank">
+      <img src="https://img.shields.io/github/actions/workflow/status/LordCyberr/ROEDEX/ci.yml?branch=master&style=for-the-badge&logo=githubactions&logoColor=white" alt="CI Status" />
+    </a>
     <a href="https://chromewebstore.google.com/detail/roedex/fgdehjebfkbdefdnenpgjejjnhlkchjh" target="_blank">
       <img src="https://img.shields.io/badge/Chrome_%EC%9B%B9_%EC%8A%A4%ED%86%A0%EC%96%B4-v0.0.5-22d3ee?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Chrome 웹 스토어" />
     </a>
-    <img src="https://img.shields.io/badge/%EB%B2%84%EC%A0%84-v0.0.5_%EC%95%88%EC%A0%95%ED%8C%90-3b82f6?style=for-the-badge&logo=github&logoColor=white" alt="버전 0.0.5" />
+    <a href="https://github.com/LordCyberr/ROEDEX/releases/tag/v0.0.5" target="_blank">
+      <img src="https://img.shields.io/badge/%EB%B2%84%EC%A0%84-v0.0.5_%EC%95%88%EC%A0%95%ED%8C%90-3b82f6?style=for-the-badge&logo=github&logoColor=white" alt="버전 0.0.5" />
+    </a>
     <img src="https://img.shields.io/badge/%EC%97%94%EC%A7%84-60_FPS_%EB%8F%99%EA%B8%B0%ED%99%94-8b5cf6?style=for-the-badge&logo=speedtest&logoColor=white" alt="60 FPS" />
     <img src="https://img.shields.io/badge/%EB%B3%B4%EC%95%88-%EC%95%88%ED%8B%B0%EC%B9%98%ED%8A%B8_%EC%95%88%EC%A0%84-10b981?style=for-the-badge&logo=shield&logoColor=white" alt="안티치트 안전" />
+  </p>
+
+  <p align="center">
+    <a href="https://chromewebstore.google.com/detail/roedex/fgdehjebfkbdefdnenpgjejjnhlkchjh" target="_blank">
+      <img src="https://img.shields.io/badge/Google_Chrome-Chrome%EC%97%90_%EC%B6%94%EA%B0%80-4285f4?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Chrome에 추가" />
+    </a>
+    &nbsp;&nbsp;
+    <a href="https://github.com/LordCyberr/ROEDEX/releases/tag/v0.0.5" target="_blank">
+      <img src="https://img.shields.io/badge/%EC%A7%81%EC%A0%91_%EB%8B%A4%EC%9A%B4%EB%A1%9C%EB%93%9C-Release_v0.0.5_(.zip)-10b981?style=for-the-badge&logo=github&logoColor=white" alt="ZIP 다운로드" />
+    </a>
   </p>
 
   <p align="center">

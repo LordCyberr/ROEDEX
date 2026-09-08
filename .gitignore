@@ -28,9 +28,5 @@ diff.txt
 previous_NotificationToaster.tsx
 final_extension/
 
-# Market Sniper (Secret/Local)
+# Local Experimental Settings
 src/components/views/settings/MarketSniperSettings.tsx
-src/store/slices/marketSlice.ts
-src/store/types/MarketSlice.types.ts
-src/core/parser/handlers/marketHandler.ts
-src/utils/crypto.ts

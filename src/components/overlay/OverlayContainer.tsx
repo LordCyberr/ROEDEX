@@ -53,7 +53,7 @@ export const OverlayContainer: React.FC = React.memo(() => {
     if (weapon?.name) return [];
     
     const hotkeyCounts: Record<string, number> = {};
-    quickBarInstances.forEach(inst => {
+    quickBarInstances.forEach((inst: string | null) => {
       if (inst && inventoryInstances[inst]) {
         const itemId = inventoryInstances[inst];
         hotkeyCounts[itemId] = (hotkeyCounts[itemId] || 0) + 1;

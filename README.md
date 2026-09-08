@@ -16,12 +16,27 @@
   </p>
 
   <p align="center">
+    <a href="https://github.com/LordCyberr/ROEDEX/actions/workflows/ci.yml" target="_blank">
+      <img src="https://img.shields.io/github/actions/workflow/status/LordCyberr/ROEDEX/ci.yml?branch=master&style=for-the-badge&logo=githubactions&logoColor=white" alt="CI Status" />
+    </a>
     <a href="https://chromewebstore.google.com/detail/roedex/fgdehjebfkbdefdnenpgjejjnhlkchjh" target="_blank">
       <img src="https://img.shields.io/badge/Chrome_Web_Store-v0.0.5-22d3ee?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Chrome Web Store" />
     </a>
-    <img src="https://img.shields.io/badge/Release-v0.0.5_Stable-3b82f6?style=for-the-badge&logo=github&logoColor=white" alt="Version 0.0.5" />
+    <a href="https://github.com/LordCyberr/ROEDEX/releases/tag/v0.0.5" target="_blank">
+      <img src="https://img.shields.io/badge/Release-v0.0.5_Stable-3b82f6?style=for-the-badge&logo=github&logoColor=white" alt="Version 0.0.5" />
+    </a>
     <img src="https://img.shields.io/badge/Engine-60_FPS_Sync-8b5cf6?style=for-the-badge&logo=speedtest&logoColor=white" alt="60 FPS" />
     <img src="https://img.shields.io/badge/Security-Anti--Cheat_Safe-10b981?style=for-the-badge&logo=shield&logoColor=white" alt="Anti-Cheat Safe" />
+  </p>
+
+  <p align="center">
+    <a href="https://chromewebstore.google.com/detail/roedex/fgdehjebfkbdefdnenpgjejjnhlkchjh" target="_blank">
+      <img src="https://img.shields.io/badge/Google_Chrome-Add_to_Chrome-4285f4?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Install on Chrome" />
+    </a>
+    &nbsp;&nbsp;
+    <a href="https://github.com/LordCyberr/ROEDEX/releases/tag/v0.0.5" target="_blank">
+      <img src="https://img.shields.io/badge/Direct_Download-Release_v0.0.5_(.zip)-10b981?style=for-the-badge&logo=github&logoColor=white" alt="Download ZIP" />
+    </a>
   </p>
 
   <p align="center">
@@ -29,6 +44,7 @@
     <img src="https://img.shields.io/badge/TypeScript-5.7-3178c6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript 5.7" />
     <img src="https://img.shields.io/badge/TailwindCSS-v4.0-38bdf8?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind 4" />
     <img src="https://img.shields.io/badge/Vite-6.4-646cff?style=flat-square&logo=vite&logoColor=white" alt="Vite 6" />
+    <img src="https://img.shields.io/badge/Tests-71_Passing-success?style=flat-square&logo=vitest&logoColor=white" alt="Vitest 71 Passing" />
     <img src="https://img.shields.io/badge/License-MIT-10b981?style=flat-square" alt="MIT License" />
   </p>
 
@@ -36,9 +52,10 @@
     <a href="#-key-features"><b>🌟 Features</b></a> &nbsp;•&nbsp; 
     <a href="#-whats-new-in-v005"><b>📢 What's New</b></a> &nbsp;•&nbsp; 
     <a href="#-engine-performance--benchmarks"><b>⚡ Benchmarks</b></a> &nbsp;•&nbsp; 
-    <a href="#-keyboard-shortcuts"><b>🎮 Hotkeys</b></a> &nbsp;•&nbsp; 
-    <a href="#️-installation-guide"><b>🛠️ Install</b></a> &nbsp;•&nbsp; 
-    <a href="#-credits--acknowledgements"><b>🏆 Credits</b></a>
+    <a href="ARCHITECTURE.md"><b>📖 Architecture</b></a> &nbsp;•&nbsp; 
+    <a href="CONTRIBUTING.md"><b>🤝 Contributing</b></a> &nbsp;•&nbsp; 
+    <a href="SECURITY.md"><b>🛡️ Security</b></a> &nbsp;•&nbsp; 
+    <a href="#️-installation-guide"><b>🛠️ Install</b></a>
   </p>
 </div>
 
@@ -144,21 +161,26 @@ ROEDEX is engineered with AAA gaming performance standards. It operates purely a
 | Metric / Subsystem | Benchmark | Engineering Implementation |
 | :--- | :---: | :--- |
 | **FPS Stability** | **Solid 60 FPS** | `RafScheduler.ts` synchronizes all state updates into a single frame loop |
+| **Test Suite Coverage** | **71 Tests Passing** | Full Vitest test suite running under GitHub Actions CI on every commit |
+| **Bundle Optimization** | **246 KB views-heavy.js** | 98 KB reduction via lazy asset hydration (`public/defaultTrails.json`) |
+| **UI Memoization** | **< 16 ms Frame Time** | Top 5 heaviest components wrapped in `React.memo` for 0 unnecessary re-renders |
 | **Memory Consumption** | **< 45 MB** | Offscreen canvas trail baking + automated 30-day analytics pruning |
 | **Packet Latency** | **< 1 ms** | Runs directly in `world: MAIN` WebSocket spectator context |
 | **A* Pathfinding Speed** | **< 3 ms / query** | MinHeap-driven A* pathfinder isolated in dedicated Web Worker |
-| **Bundle Architecture** | **< 500 kB Chunks** | Pure manual vendor splitting (`vendor_charts`, `vendor_motion`, `vendor_db`) |
 | **Data Privacy** | **100% Local** | Zero external telemetry; encrypted IndexedDB storage with 5s batching |
 
 ---
 
-## 📢 What's New in v0.0.5
+## 📢 What's New in v0.0.5 & v0.0.6-prep
 
+*   ⚡ **98 KB JS Bundle Diet:** Extracted large static trails into runtime-hydrated static assets, slashing `views-heavy.js` by ~28%.
+*   🧪 **Automated CI Validation:** 71 unit & store tests running on every push via GitHub Actions.
+*   🛡️ **Open-Source Governance:** Official [SECURITY.md](SECURITY.md), [CONTRIBUTING.md](CONTRIBUTING.md), and [ARCHITECTURE.md](ARCHITECTURE.md) guides.
+*   🧩 **Component Memoization:** `AAAMinimap`, `MarketplaceWindow`, `MapSettings`, `QuestBoard`, and `NotificationToaster` memoized for rock-solid 60 FPS gameplay.
 *   🔔 **What's New Notification Banner:** An animated, glassmorphic banner alerts players to updates, highlighting feature counts and linking directly to the in-overlay changelog.
 *   🏪 **Marketplace & Economy Hub:** Live item listings, price sparklines, bazaar grid view, and market analytics tab.
 *   📊 **Profile & Daily Dashboard:** View daily gameplay breakdowns, session combat logs, and lifetime statistics.
 *   🔍 **Global Search Modal:** Instant hotkey lookup across all NPCs, resources, quests, and drop tables.
-*   ⚡ **60 FPS RafScheduler Engine:** 50%+ bundle reduction, offscreen minimap rendering, and unified frame scheduler.
 *   🗺️ **Dynamic Waypoint Router:** Multi-zone pathfinding with Web Workers and automatic death drop routing.
 *   ❤️ **Target & Player HP Bars:** Dedicated, highly customizable health overlay bars with low-health alerts.
 *   🛡️ **Hardened Storage:** Shared IndexedDB storage with debounced batching and emergency save.

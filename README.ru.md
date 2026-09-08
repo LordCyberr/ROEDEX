@@ -16,12 +16,27 @@
   </p>
 
   <p align="center">
+    <a href="https://github.com/LordCyberr/ROEDEX/actions/workflows/ci.yml" target="_blank">
+      <img src="https://img.shields.io/github/actions/workflow/status/LordCyberr/ROEDEX/ci.yml?branch=master&style=for-the-badge&logo=githubactions&logoColor=white" alt="CI Status" />
+    </a>
     <a href="https://chromewebstore.google.com/detail/roedex/fgdehjebfkbdefdnenpgjejjnhlkchjh" target="_blank">
       <img src="https://img.shields.io/badge/Chrome_Web_Store-v0.0.5-22d3ee?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Chrome Web Store" />
     </a>
-    <img src="https://img.shields.io/badge/%D0%92%D0%B5%D1%80%D1%81%D0%B8%D1%8F-v0.0.5_%D0%A1%D1%82%D0%B0%D0%B1%D0%B8%D0%BB%D1%8C%D0%BD%D0%B0%D1%8F-3b82f6?style=for-the-badge&logo=github&logoColor=white" alt="Версия 0.0.5" />
+    <a href="https://github.com/LordCyberr/ROEDEX/releases/tag/v0.0.5" target="_blank">
+      <img src="https://img.shields.io/badge/%D0%92%D0%B5%D1%80%D1%81%D0%B8%D1%8F-v0.0.5_%D0%A1%D1%82%D0%B0%D0%B1%D0%B8%D0%BB%D1%8C%D0%BD%D0%B0%D1%8F-3b82f6?style=for-the-badge&logo=github&logoColor=white" alt="Версия 0.0.5" />
+    </a>
     <img src="https://img.shields.io/badge/%D0%94%D0%B2%D0%B8%D0%B6%D0%BE%D0%BA-60_FPS_Sync-8b5cf6?style=for-the-badge&logo=speedtest&logoColor=white" alt="60 FPS" />
     <img src="https://img.shields.io/badge/%D0%97%D0%B0%D1%89%D0%B8%D1%82%D0%B0-Anti--Cheat_Safe-10b981?style=for-the-badge&logo=shield&logoColor=white" alt="Anti-Cheat Safe" />
+  </p>
+
+  <p align="center">
+    <a href="https://chromewebstore.google.com/detail/roedex/fgdehjebfkbdefdnenpgjejjnhlkchjh" target="_blank">
+      <img src="https://img.shields.io/badge/Google_Chrome-%D0%A3%D1%81%D1%82%D0%B0%D0%BD%D0%BE%D0%B2%D0%B8%D1%82%D1%8C_%D0%B2_Chrome-4285f4?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Установить в Chrome" />
+    </a>
+    &nbsp;&nbsp;
+    <a href="https://github.com/LordCyberr/ROEDEX/releases/tag/v0.0.5" target="_blank">
+      <img src="https://img.shields.io/badge/%D0%A1%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C_ZIP-%D0%A0%D0%B5%D0%BB%D0%B8%D0%B7_v0.0.5-10b981?style=for-the-badge&logo=github&logoColor=white" alt="Скачать ZIP" />
+    </a>
   </p>
 
   <p align="center">
