@@ -4,8 +4,8 @@ scratch/
 .env
 .DS_Store
 *.zip
+CHROME_STORE_DESCRIPTION.txt
 .cursorrules
-ARCHITECTURE.md
 old_reference/
 stable/
 

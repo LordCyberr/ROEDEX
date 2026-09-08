@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ROEDEX",
   "version": "0.0.5",
-  "description": "Real-time overlay for Roots of Embervault! Live loot tracking, spawn timers, categorized NPC locations, and multi-language support.",
+  "description": "ROEDEX — The ultimate real-time overlay for Roots of Embervault. Live HUDs, interactive minimap, marketplace analytics, loot tracker, spawn timers & 4-language support.",
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
